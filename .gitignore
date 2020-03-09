@@ -1,0 +1,8 @@
+#ignore
+
+*
+
+# allow
+
+!.gitignore
+!*.c
