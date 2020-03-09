@@ -1,9 +1,5 @@
-#ignore
-
-*
-
-# allow
-
-!/c/ws1/*
+# Ignore everything in the root
+/*
+# Un-ignore all of subtree
+!/c/
 !.gitignore
-!ex*.c
