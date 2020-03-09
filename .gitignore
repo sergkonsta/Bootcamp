@@ -4,5 +4,6 @@
 
 # allow
 
+!/c/ws1/*
 !.gitignore
-!*.c
+!ex*.c
