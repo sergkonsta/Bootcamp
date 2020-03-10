@@ -1,7 +1,4 @@
-# Ignore everything in the root
-/*
-# Un-ignore all of subtree
-!/c/
-!.gitignore
+*.*
 
-
+!*.c
+!*.h
