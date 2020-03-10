@@ -1,8 +1,11 @@
 #ignore all
 *
 
-#all sub directories
-!*/
+#allow sub directories and types and ignore file
+
+!/**/
+
 !*.c
 !*.h
+
 !.gitignore
