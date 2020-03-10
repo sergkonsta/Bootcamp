@@ -9,12 +9,12 @@ void TestStrLen()
 	printf("%s\n",serg);
 	
 	size_t x = StrLen(&serg[0]);
-	printf("%ld",x);
+	printf("%ld\n",x);
 }
 
 int main()
 {
 
-	
+	TestStrLen();
 
 }
