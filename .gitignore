@@ -4,4 +4,5 @@
 #all sub directories
 !*/
 !*.c
+!*.h
 !.gitignore
