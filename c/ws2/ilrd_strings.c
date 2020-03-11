@@ -94,7 +94,7 @@ int StrCaseCmp(const char *s1, const char *s2)
 char *StrChr(const char *s, int c)
 {
 	char *res = (char *)s;
-	while((*res != (char)c) || (*res != '\0'))
+	while((*res != (char)c) && (*res != 0))
 	{
 		++res;
 	}

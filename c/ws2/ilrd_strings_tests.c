@@ -99,15 +99,14 @@ void TestStrLen()
 
 void TestStrChr()
 {
-	int c = 't';
-	char *char_location = 0;
+	int c = 'z';
 	char str[] = "this is my string";
 	
-	char_location = StrChr(str, c);
-	if (char_location == strchr(str, c))
+	if (StrChr(str, c) == strchr(str, c))
 	{
-		printf("all good");
+		printf("all good\n");
 	}
+	else printf("somethings wrong \n");
 	
 }
 
