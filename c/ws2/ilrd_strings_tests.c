@@ -97,10 +97,23 @@ void TestStrLen()
 	printf("%ld\n",x);
 }
 
+void TestStrChr()
+{
+	int c = 't';
+	char *char_location = 0;
+	char str[] = "this is my string";
+	
+	char_location = StrChr(str, c);
+	if (char_location == strchr(str, c))
+	{
+		printf("all good");
+	}
+	
+}
 
 int main()
 {
-	TestStrCaseCmp();
+	TestStrChr();
 	return 0;	
 
 }

@@ -66,7 +66,8 @@ char *StrCpy(char *dest, const char *src)
 **  Status:    Approved                **
 ****************************************/
 
-/* comparing 2 strings disregarding lower-case and upper-case differences using tolower() */
+/* comparing 2 strings disregarding lower-case and upper-case
+ differences using tolower() */
 
 int StrCaseCmp(const char *s1, const char *s2)
 {
@@ -89,12 +90,16 @@ int StrCaseCmp(const char *s1, const char *s2)
 ****************************************/
 
 /* returns the first occurance of the Char in the String */
-/*
-char *StrChr(const char *str, int c)
+
+char *StrChr(const char *s, int c)
 {
-	
+	char *res = (char *)s;
+	while((*res != (char)c) || (*res != '\0'))
+	{
+		++res;
+	}
+	return res;
 }
-*/
 
 
 
