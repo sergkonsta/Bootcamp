@@ -1,29 +1,32 @@
-#include <string.h> /* for strings */
-#include <stdio.h>
+#include <string.h> /*for strcmp*/
+#include <strings.h> /* for strcasecmp */
+#include <stdio.h>  /* io */
 #include "ilrd_strings.h"
 
 void TestStrCpy()
 {
-	int a = 0, b = 0, c = 0;	
+	const char str1[] = "abcdefgh";
+	const char str2[] = "abcdegh";
+	const char str3[] = "ab cdegh";
+	char str4[20] = "";
+	char str5[20] = "";
+	char str6[20] = "";
 
-	const char str1[50] = "abcdefgh";
-	const char str2[50] = "abcdegh";
-	const char str3[50] = "ab cdegh";
-	char str4[50];
-	char str5[50];
-	char str6[50];
+	StrCpy(str4, str1);
+	StrCpy(str5, str2);
+	StrCpy(str6, str3);
 
-	str4 = StrCpy(str4, str1);
-	str5 = StrCpy(str5, str2);
-	str6 = StrCpy(str6, str3);
-
-	a = StrCmp(str1, str4);
-	b = StrCmp(str2, str5);
-	c = StrCmp(str3, str6);
-
-	if(a == 0 && b == 0 && c == 0)
+	if( StrCmp(str4, str1) == 0)
 	{
-		printf("Success");	
+		printf("Success.\n");
+	}
+	if( StrCmp(str5, str2) == 0)
+	{
+		printf("Success.\n");
+	}
+	if( StrCmp(str6, str3) == 0)
+	{
+		printf("Success.\n");
 	}
 }	
 
@@ -61,6 +64,28 @@ void TestStrCmp()
 
 }
 
+
+void TestStrCaseCmp()
+{
+	char str1[6] = {'a','B','c','D','e','\0'};
+	char str2[6] = {'x','b','c','d','e','\0'};
+	
+	printf("%s\n",str1);
+	printf("%s\n",str2);
+
+	if(strcasecmp(str1, str2) != StrCaseCmp(str1, str2))
+	{
+		printf("Error in str 1 and 2");
+	}
+	
+	else
+	{
+		printf("Success\n");
+	}
+
+}
+
+
 void TestStrLen()
 {
 	char serg[10] = "Hello!";
@@ -75,7 +100,7 @@ void TestStrLen()
 int main()
 {
 	
-	TestStrCpy();
+	TestStrCaseCmp();
 	return 0;	
 
 }
