@@ -1,4 +1,4 @@
-#include <string.h> /*for strcmp*/
+#include <string.h> /*for strcmp, strchr*/
 #include <strings.h> /* for strcasecmp */
 #include <stdio.h>  /* io */
 #include "ilrd_strings.h"
@@ -68,7 +68,7 @@ void TestStrCmp()
 void TestStrCaseCmp()
 {
 	char str1[6] = {'a','B','c','D','e','\0'};
-	char str2[6] = {'x','b','c','d','e','\0'};
+	char str2[6] = {'A','b','c','d','e','\0'};
 	
 	printf("%s\n",str1);
 	printf("%s\n",str2);
@@ -97,9 +97,9 @@ void TestStrLen()
 	printf("%ld\n",x);
 }
 
+
 int main()
 {
-	
 	TestStrCaseCmp();
 	return 0;	
 

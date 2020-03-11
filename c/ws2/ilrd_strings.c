@@ -1,5 +1,7 @@
 
-#include <stdlib.h> /*for abs()*/
+
+#include <ctype.h>         /*  for tolower() inside StrCmpCmp  */
+#include <stdlib.h>        /*  for abs()                       */
 #include "ilrd_strings.h"
 
 
@@ -64,29 +66,35 @@ char *StrCpy(char *dest, const char *src)
 **  Status:    Approved                **
 ****************************************/
 
-/* comparing 2 strings disregarding lower-case and upper-case differences using ascii */
+/* comparing 2 strings disregarding lower-case and upper-case differences using tolower() */
 
 int StrCaseCmp(const char *s1, const char *s2)
 {
-
-	/*1st condition -  char equality AND not end of str
-	  2nd condition - s2 char is lowercase AND s1 char is uppercase AND they are the same letter
-	  3rd condition - s1 char is lowercase AND s2 char is uppercase AND they are the same letter */
-
-	while(((*s1 == *s2)&&(*s1 != '\0'))||
-	((65 <= *s1)&&(90 >= *s1)&&(97 <= *s2)&&(122 >= *s2)&&(32 == abs(*s1 - *s2)))||
-	((65 <= *s2)&&(90 >= *s2)&&(97 <= *s1)&&(122 >= *s1)&&(32 == abs(*s1 - *s2))))
+	while((tolower(*s1) == tolower(*s2)) && (*s1 != '\0'))
 	{
 		s1++;
 		s2++;
 	}
 	
 	return (*s1 - *s2);
+
 }
 
 
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      11.03.2020              **
+**  Reviewer:                          **
+**  Status:                            **
+****************************************/
 
-
+/* returns the first occurance of the Char in the String */
+/*
+char *StrChr(const char *str, int c)
+{
+	
+}
+*/
 
 
 
