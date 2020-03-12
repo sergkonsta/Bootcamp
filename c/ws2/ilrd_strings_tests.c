@@ -1,6 +1,7 @@
 #include <string.h> /*for strcmp, strchr*/
 #include <strings.h> /* for strcasecmp */
 #include <stdio.h>  /* io */
+#include <stdlib.h> /*  for free() */
 #include "ilrd_strings.h"
 
 void TestStrCpy()
@@ -130,12 +131,31 @@ void TestStrDup()
 		printf("\nsomethings wrong\n\n");
 	}
 	
+	free(new_str);
+	
 	return;
 }
 
+
+void TestStrCat()
+{
+	char str1[100] = "This is my first string. ";
+	char str2[] = "this is my second string. ";
+	
+	printf("\n %s\n\n", str1);
+	printf("\n %s\n\n", str2);
+	
+	printf("\n This is the new string: \n\n");	
+	printf("\n %s\n\n", StrCat(str1, str2));
+	
+	return;
+}
+
+
+
 int main()
 {
-	TestStrDup();
+	TestStrCat();
 	return 0;	
 
 }

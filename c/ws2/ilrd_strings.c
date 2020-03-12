@@ -87,7 +87,7 @@ int StrCaseCmp(const char *s1, const char *s2)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      12.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    Sent                        **
+**  Status:    Approved                **
 ****************************************/
 
 /* returns the first occurance of the Char in the String
@@ -115,7 +115,7 @@ char *StrChr(const char *s, int c)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      12.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    Sent                    **
+**  Status:    Approved                **
 ****************************************/
 
 /* returns a pointer to a new string which is a duplicate of the first one.
@@ -130,9 +130,9 @@ char *StrDup(const char *s)
 	char *dup_str = NULL;
 	char *result = NULL;
 	
-	dup_str = (char*)malloc((str_length+1)*sizeof(char));
+	result = (char*)malloc((str_length+1)*sizeof(char));
 
-	result = dup_str; 
+	dup_str = result; 
 	
 	while(*s != '\0')
 	{
@@ -151,14 +151,37 @@ char *StrDup(const char *s)
 /****************************************
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      12.03.2020              **
-**  Reviewer:          **
-**  Status:                        **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    Sent                    **
 ****************************************/
 
-/*  */
+/* the function appends src  string to dest string removing the NULL 
+char and creating a new one at the end of the appended strings */
 
-
-
+char *StrCat( char *dest, const char *src)
+{
+	char *dest_start = NULL;
+	
+	/* saving pointer for the return*/
+	dest_start = dest;
+	
+	/* increment dest pointer to the '\0' place */
+	while(*dest != '\0')
+	{
+		++dest;
+	}
+	
+	while (*src != '\0')
+	{
+		*dest = *src;	
+		++dest;
+		++src;
+	}
+	*dest = '\0';
+	
+	return dest_start;
+	
+}
 
 
 
