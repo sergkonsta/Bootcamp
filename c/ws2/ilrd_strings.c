@@ -93,12 +93,18 @@ int StrCaseCmp(const char *s1, const char *s2)
 
 char *StrChr(const char *s, int c)
 {
+	char *nullpointer = NULL;
 	char *res = (char *)s;
-	while((*res != (char)c) && (*res != 0))
+	
+	while(*res != '\0') 
 	{
+		if(*res == (char)c)
+		{
+			return res;
+		}
 		++res;
 	}
-	return res;
+	return nullpointer;
 }
 
 

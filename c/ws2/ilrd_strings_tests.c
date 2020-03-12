@@ -107,7 +107,6 @@ void TestStrChr()
 		printf("all good\n");
 	}
 	else printf("somethings wrong \n");
-	
 }
 
 int main()
