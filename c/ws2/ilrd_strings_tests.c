@@ -85,7 +85,6 @@ void TestStrCaseCmp()
 
 }
 
-
 void TestStrLen()
 {
 	char serg[10] = "Hello!";
@@ -109,9 +108,34 @@ void TestStrChr()
 	else printf("somethings wrong \n");
 }
 
+void TestStrDup()
+
+/*testing that the new string is identical to the original one. */
+
+{
+
+	const char str[] = "this is my stringaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+	char *new_str = NULL;
+	int result1 = 0;
+	
+	new_str = StrDup(str);
+	result1 = strcmp(new_str, str);
+
+	if(result1 == 0)
+	{
+		printf("\nAll good\n\n");
+	}
+	else 
+	{
+		printf("\nsomethings wrong\n\n");
+	}
+	
+	return;
+}
+
 int main()
 {
-	TestStrChr();
+	TestStrDup();
 	return 0;	
 
 }

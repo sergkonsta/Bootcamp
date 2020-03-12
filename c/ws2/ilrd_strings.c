@@ -1,7 +1,8 @@
 
 
 #include <ctype.h>         /*  for tolower() inside StrCmpCmp  */
-#include <stdlib.h>        /*  for abs()                       */
+#include <stdlib.h>        /*  for abs() ; malloc()            */
+#include <string.h>        /*  for strlen(), strdup() used in StrDup     */
 #include "ilrd_strings.h"
 
 
@@ -84,12 +85,13 @@ int StrCaseCmp(const char *s1, const char *s2)
 
 /****************************************
 **  Developer: Sergey Konstantinovsky  **
-**  Date:      11.03.2020              **
-**  Reviewer:                          **
-**  Status:                            **
+**  Date:      12.03.2020              **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    Sent                        **
 ****************************************/
 
-/* returns the first occurance of the Char in the String */
+/* returns the first occurance of the Char in the String
+   if it can't find the char - will return a pointer to null */
 
 char *StrChr(const char *s, int c)
 {
@@ -109,11 +111,51 @@ char *StrChr(const char *s, int c)
 
 
 
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      12.03.2020              **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    Sent                    **
+****************************************/
+
+/* returns a pointer to a new string which is a duplicate of the first one.
+   uses malloc 
+   
+   *******     CLIENT: remember to free memory after use!!!    ********** */
+   
+   
+char *StrDup(const char *s)
+{
+	size_t str_length = strlen(s);
+	char *dup_str = NULL;
+	char *result = NULL;
+	
+	dup_str = (char*)malloc((str_length+1)*sizeof(char));
+
+	result = dup_str; 
+	
+	while(*s != '\0')
+	{
+		*dup_str = *s;
+		++s;
+		++dup_str;
+	}
+	*dup_str = '\0';
+	
+	return result;
+}	
 
 
 
 
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      12.03.2020              **
+**  Reviewer:          **
+**  Status:                        **
+****************************************/
 
+/*  */
 
 
 
