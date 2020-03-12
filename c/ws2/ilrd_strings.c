@@ -187,7 +187,7 @@ char *StrCat(char *dest, const char *src)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      12.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    ----                    **
+**  Status:    Sent                    **
 ****************************************/
 
 /* the function finds the first occurance of the substring needle in the string
@@ -195,31 +195,23 @@ char *StrCat(char *dest, const char *src)
  
 char *StrStr(const char *haystack, const char *needle)
 {
-	/*assert(NULL != *haystack);
-	assert(NULL != *needle);
-	check case when needle string is longer than haystack*/
-	
-	char *location_in_haystack = (char *)haystack;
-	
-	
-	while(0 != StrCmp(location_in_haystack, needle))
+	size_t needle_length = StrLen(needle);
+	const char *location_in_haystack = haystack;
+
+	while(0 != strncmp(location_in_haystack, needle, needle_length))
 	{
 		/*looks for the first needle char in the haystack*/
 		location_in_haystack = strchr(haystack, (int)*needle);  
-		
-		if(NULL != location_in_haystack)
+				
+		if(NULL == location_in_haystack)
 		{
 			return NULL;
 		}
-	
-		++location_in_haystack;
-
+		
+		haystack = location_in_haystack + 1;
 	}
+			
 	return (char *)location_in_haystack;
-	
-	
-
-
 }
 
 

@@ -153,8 +153,8 @@ void TestStrCat()
 
 void TestStrStr()
 {
-	const char *strlong = "   Hello, my name is sergey konstantinovsky.";
-	const char *str = "serg";
+	const char *strlong = "   Hello, my name is sergey konstantinovskymy n.";
+	const char *str = "e";
 	if(StrStr(strlong, str) == strstr(strlong, str))
 	{
 		printf("\nsuccess\n\n");
