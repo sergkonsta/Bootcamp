@@ -155,7 +155,7 @@ void TestStrCat()
 
 int main()
 {
-	TestStrCat();
+	TestStrDup();
 	return 0;	
 
 }

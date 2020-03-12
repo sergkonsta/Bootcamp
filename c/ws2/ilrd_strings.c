@@ -1,5 +1,5 @@
 
-
+#include <assert.h>        /*  for assert() */
 #include <ctype.h>         /*  for tolower() inside StrCmpCmp  */
 #include <stdlib.h>        /*  for abs() ; malloc()            */
 #include <string.h>        /*  for strlen(), strdup() used in StrDup     */
@@ -96,13 +96,13 @@ int StrCaseCmp(const char *s1, const char *s2)
 char *StrChr(const char *s, int c)
 {
 	char *nullpointer = NULL;
-	char *res = (char *)s;
+	const char *res = s;
 	
 	while(*res != '\0') 
 	{
-		if(*res == (char)c)
+		if(*res == (const char)c)
 		{
-			return res;
+			return (char *)res;
 		}
 		++res;
 	}
@@ -131,16 +131,11 @@ char *StrDup(const char *s)
 	char *result = NULL;
 	
 	result = (char*)malloc((str_length+1)*sizeof(char));
-
+	assert(NULL != result);
+	
 	dup_str = result; 
 	
-	while(*s != '\0')
-	{
-		*dup_str = *s;
-		++s;
-		++dup_str;
-	}
-	*dup_str = '\0';
+	dup_str = StrCpy(dup_str, s);
 	
 	return result;
 }	
@@ -158,7 +153,7 @@ char *StrDup(const char *s)
 /* the function appends src  string to dest string removing the NULL 
 char and creating a new one at the end of the appended strings */
 
-char *StrCat( char *dest, const char *src)
+char *StrCat(char *dest, const char *src)
 {
 	char *dest_start = NULL;
 	
@@ -171,6 +166,7 @@ char *StrCat( char *dest, const char *src)
 		++dest;
 	}
 	
+	/*adding src string to the end of des string*/
 	while (*src != '\0')
 	{
 		*dest = *src;	
