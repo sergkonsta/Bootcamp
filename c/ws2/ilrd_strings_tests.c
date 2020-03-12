@@ -151,11 +151,25 @@ void TestStrCat()
 	return;
 }
 
+void TestStrStr()
+{
+	const char *strlong = "   Hello, my name is sergey konstantinovsky.";
+	const char *str = "serg";
+	if(StrStr(strlong, str) == strstr(strlong, str))
+	{
+		printf("\nsuccess\n\n");
+	}
+	else 
+	{
+		printf("\nsomethings wrong\n\n");
+	}
 
+	return;
+}
 
 int main()
 {
-	TestStrDup();
+	TestStrStr();
 	return 0;	
 
 }

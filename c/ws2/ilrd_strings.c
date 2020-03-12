@@ -183,6 +183,44 @@ char *StrCat(char *dest, const char *src)
 
 
 
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      12.03.2020              **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    ----                    **
+****************************************/
+
+/* the function finds the first occurance of the substring needle in the string
+ haystack. returns pointer to the start of needle if found. NULL if not found */
+ 
+char *StrStr(const char *haystack, const char *needle)
+{
+	/*assert(NULL != *haystack);
+	assert(NULL != *needle);
+	check case when needle string is longer than haystack*/
+	
+	char *location_in_haystack = (char *)haystack;
+	
+	
+	while(0 != StrCmp(location_in_haystack, needle))
+	{
+		/*looks for the first needle char in the haystack*/
+		location_in_haystack = strchr(haystack, (int)*needle);  
+		
+		if(NULL != location_in_haystack)
+		{
+			return NULL;
+		}
+	
+		++location_in_haystack;
+
+	}
+	return (char *)location_in_haystack;
+	
+	
+
+
+}
 
 
 
