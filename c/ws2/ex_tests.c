@@ -36,6 +36,10 @@ void TestIsPalindrome()
 	return;
 }
 
+
+/*------------------------------------------------------------------*/
+
+
 void LaunchBoom7()
 {
 	Boom7(1457, 9);
@@ -43,8 +47,40 @@ void LaunchBoom7()
 	return;
 }
 
+
+/*------------------------------------------------------------------*/
+
+
+void TestSwapIntPointers()
+{
+	int a = 1;
+	int b = 2;
+	
+	int *pa = &a;
+	int *pb = &b;
+
+	printf("\nData before swap:\n\n");	
+	printf("\n\n int a=%d is located at %p. A's pointer is located at %p:",a,(void*)&a,(void*)&pa);
+	printf("\n\n int b=%d is located at %p. B's pointer is located at %p:",b,(void*)&b,(void*)&pb);
+
+	SwapIntPointers(&pa, &pb);	
+	
+	printf("\nData after swap:\n\n");	
+	printf("\n\n int a=%d is located at %p. A's pointer is located at %p:",a,(void*)&a,(void*)&pa);
+	printf("\n\n int b=%d is located at %p. B's pointer is located at %p:",b,(void*)&b,(void*)&pb);
+
+	return;
+}
+
+
+/*------------------------------------------------------------------*/
+
+
+
 int main()
 {
-	LaunchBoom7();
+	TestSwapIntPointers
+();
+
 	return 0;
 }

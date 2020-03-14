@@ -121,7 +121,28 @@ void Boom7(int num1, int num2)
    
    
    
-   
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      14.03.2020              **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    sent                    **
+****************************************/
+
+/* swaps 2 pointers to integers*/
+
+void SwapIntPointers(int **p1, int **p2)
+{
+	int *tmp = NULL;
+	
+	assert(NULL != *p1);
+	assert(NULL != *p2);
+	
+	tmp = *p1;
+	*p1 = *p2;
+	*p2 = tmp;
+	
+	return;
+}
    
    
    
