@@ -170,7 +170,7 @@ void TestStrStr()
 void TestStrSpn()
 {
 	const char *strlong = "   Hello, my name is sergey konstantinovsky.";
-	const char *str = "ey.";
+	const char *str = " ";
 	if(StrSpn(strlong, str) == strspn(strlong, str))
 	{
 		printf("\nsuccess\n\n");
@@ -179,14 +179,14 @@ void TestStrSpn()
 	{
 		printf("\nsomethings wrong\n\n");
 	}
-
+	
 	return;
 }
 
 
 int main()
 {
-	TestStrSpn();
+	TestStrCat();
 	return 0;	
 
 }

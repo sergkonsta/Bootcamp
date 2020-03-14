@@ -157,6 +157,9 @@ char *StrCat(char *dest, const char *src)
 {
 	char *dest_start = NULL;
 	
+	assert(NULL != dest);
+	assert(NULL != src);
+	
 	/* saving pointer for the return*/
 	dest_start = dest;
 	
@@ -167,16 +170,9 @@ char *StrCat(char *dest, const char *src)
 	}
 	
 	/*adding src string to the end of des string*/
-	while (*src != '\0')
-	{
-		*dest = *src;	
-		++dest;
-		++src;
-	}
-	*dest = '\0';
-	
+	strcpy(dest, src);
+
 	return dest_start;
-	
 }
 
 
@@ -197,6 +193,9 @@ char *StrStr(const char *haystack, const char *needle)
 {
 	size_t needle_length = StrLen(needle);
 	const char *location_in_haystack = haystack;
+
+	assert(NULL != haystack);
+	assert(NULL != needle);
 
 	while(0 != strncmp(location_in_haystack, needle, needle_length))
 	{
@@ -226,31 +225,28 @@ char *StrStr(const char *haystack, const char *needle)
 **  Status:    sent                    **
 ****************************************/
 
-/* the function counts the ammount of chars in the accept str,that appear
- in str, from left to right. at the first char that doesn't appear in str,
- the function returns the counter  */
+/* the function counts how many chars from the start of the str,
+   all appear in the accept str                                        */
 
 size_t StrSpn(const char *str, const char *accept)
 {
 	size_t result = 0;
 	
-	while(NULL != strchr(str, (int)*accept) && '\0' != *accept)
-	{
-		++result;
-		++accept;
-	}
+	assert(NULL != accept);
+	assert(NULL != str);
 	
+	while('\0' != *str)
+	{
+		if(NULL != strchr(accept, (int)*str))
+		{
+			++result;
+			++str;
+		}
+		else
+		{
+			return result;
+		}
+	}
 	return result;
 }
-
-
-
-
-
-
-
-
-
-
-
 
