@@ -154,7 +154,7 @@ void TestStrCat()
 void TestStrStr()
 {
 	const char *strlong = "   Hello, my name is sergey konstantinovskymy n.";
-	const char *str = "e";
+	const char *str = "ey";
 	if(StrStr(strlong, str) == strstr(strlong, str))
 	{
 		printf("\nsuccess\n\n");
@@ -167,9 +167,26 @@ void TestStrStr()
 	return;
 }
 
+void TestStrSpn()
+{
+	const char *strlong = "   Hello, my name is sergey konstantinovsky.";
+	const char *str = "ey.";
+	if(StrSpn(strlong, str) == strspn(strlong, str))
+	{
+		printf("\nsuccess\n\n");
+	}
+	else 
+	{
+		printf("\nsomethings wrong\n\n");
+	}
+
+	return;
+}
+
+
 int main()
 {
-	TestStrStr();
+	TestStrSpn();
 	return 0;	
 
 }

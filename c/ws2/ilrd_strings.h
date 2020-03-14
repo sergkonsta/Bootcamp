@@ -8,3 +8,4 @@ size_t StrLen(const char *s);
 char *StrDup(const char *s);
 char *StrCat( char *dest, const char *src);
 char *StrStr(const char *haystack, const char *needle);
+size_t StrSpn(const char *str, const char *accept);

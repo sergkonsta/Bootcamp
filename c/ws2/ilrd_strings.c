@@ -147,7 +147,7 @@ char *StrDup(const char *s)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      12.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    Sent                    **
+**  Status:    Approved                **
 ****************************************/
 
 /* the function appends src  string to dest string removing the NULL 
@@ -187,7 +187,7 @@ char *StrCat(char *dest, const char *src)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      12.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    Sent                    **
+**  Status:    Approved                **
 ****************************************/
 
 /* the function finds the first occurance of the substring needle in the string
@@ -218,6 +218,30 @@ char *StrStr(const char *haystack, const char *needle)
 
 
 
+
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      14.03.2020              **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    sent                    **
+****************************************/
+
+/* the function counts the ammount of chars in the accept str,that appear
+ in str, from left to right. at the first char that doesn't appear in str,
+ the function returns the counter  */
+
+size_t StrSpn(const char *str, const char *accept)
+{
+	size_t result = 0;
+	
+	while(NULL != strchr(str, (int)*accept) && '\0' != *accept)
+	{
+		++result;
+		++accept;
+	}
+	
+	return result;
+}
 
 
 
