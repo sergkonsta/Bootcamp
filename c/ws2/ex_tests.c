@@ -1,4 +1,5 @@
 #include <stdio.h>
+
 #include "ex.h"
 
 /*tests for: even, odd, empty and 1 char string*/
@@ -77,13 +78,13 @@ void TestSwapIntPointers()
 
 void TestAddStrings()
 {
-	char str1[] = "1294";
-	char str2[] = "32";
-	char str3[] = "0000";
+	char str1[] = "12354984854646484646854";
+	char str2[] = "3242353465";
+	
 	
 	printf("\n %s \n\n",str1);
 	printf("\n %s \n\n",str2);
-	printf("\n %s \n\n",AddStr(str1, str2, str3));
+	printf("\n %s \n\n",AddStr(str1, str2));
 		
 	return;
 }

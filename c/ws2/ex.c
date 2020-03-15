@@ -1,6 +1,7 @@
 #include <string.h> 			/*for stlen()*/
 #include <assert.h>				/*for asser()*/
 #include <stdio.h>				/*for printf()*/
+#include <stdlib.h>				/*for malloc()*/
 
 int ContainsDigit(int number, int digit)
 {
@@ -180,18 +181,22 @@ void SwapIntPointers(int **p1, int **p2)
 /* makes string of numbers addition*/  
     
  
-char * AddStr(char *str1, char *str2, char *sumstr)
+char *AddStr(char *str1, char *str2)
 {
 	int carry = 0;
 	int sum = 0;
 	size_t counter = 0;	
 	size_t length1 = strlen(str1);
 	size_t length2 = strlen(str2);
-	char *res = sumstr;
-	
+	char *res = NULL;
+	char *sumstr = NULL;
+		
 	assert(NULL != str1);
 	assert(NULL != str2);
 	assert(length1 > length2);
+	
+	sumstr = (char *)malloc((length1 + 1) * sizeof(char));
+	res = sumstr;
 		
 	/*reverse strings*/
 	StrRev(str1); 
@@ -240,6 +245,17 @@ char * AddStr(char *str1, char *str2, char *sumstr)
    
    
    
+   
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      15.03.2020              **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    ____                    **
+****************************************/
+
+/* removes double white-spaces */  
+   
+
    
    
    
