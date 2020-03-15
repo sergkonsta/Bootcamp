@@ -77,9 +77,9 @@ void TestSwapIntPointers()
 
 void TestAddStrings()
 {
-	char *str1 = "1111111111111111111111111";
-	char *str2 = "1111111111111111111111";
-	char str3[100] = { 0 };
+	char str1[] = "1294";
+	char str2[] = "32";
+	char str3[] = "0000";
 	
 	printf("\n %s \n\n",str1);
 	printf("\n %s \n\n",str2);

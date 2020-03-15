@@ -22,13 +22,14 @@ int ContainsDigit(int number, int digit)
 
 void StrRev(char *str)
 {
-	int strlength = strlen(str);
+	int strlength = strlen(str) / 2;
 	char tmp = 0;
 	char *end = NULL;
 	
-	while('\0'
-	
-	while(0 != strlength / 2)
+	end = strchr(str,'\0');
+	--end;
+		
+	while(0 != strlength)
 	{
 		tmp = *str;
 		*str = *end;
@@ -173,7 +174,7 @@ void SwapIntPointers(int **p1, int **p2)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      15.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    ______                  **
+**  Status:    SENT                    **
 ****************************************/
 
 /* makes string of numbers addition*/  
@@ -181,31 +182,26 @@ void SwapIntPointers(int **p1, int **p2)
  
 char * AddStr(char *str1, char *str2, char *sumstr)
 {
-	
 	int carry = 0;
 	int sum = 0;
 	size_t counter = 0;	
 	size_t length1 = strlen(str1);
 	size_t length2 = strlen(str2);
-
-
 	char *res = sumstr;
 	
 	assert(NULL != str1);
 	assert(NULL != str2);
 	assert(length1 > length2);
-	
-	
-	
+		
 	/*reverse strings*/
-	StrRev(str1);
-	StrRev(str2);
+	StrRev(str1); 
+	StrRev(str2); 
 	
 	/*long addition for the parallel part of both strings*/
-	while(length2 >= counter)
+	while(length2 > counter)
 	{
 		sum = (*str1 - '0') + (*str2 - '0') + carry;
-		*sumstr = sum % 10;
+		*sumstr = (char)((sum % 10) + '0');
 		carry = sum / 10;
 		
 		++str1;
@@ -214,11 +210,11 @@ char * AddStr(char *str1, char *str2, char *sumstr)
 		++sumstr;
 	}
 	
-	/*Adds the remaining string*/
-	while(length1 >= counter)
+	/*Adds the remainder of the long string*/
+	while(length1 > counter)
 	{
 		sum = (*str1 - '0')+ carry;
-		*sumstr = sum % 10;
+		*sumstr = (char)((sum % 10) + '0');
 		carry = sum / 10;
 		
 		++str1;
@@ -232,9 +228,9 @@ char * AddStr(char *str1, char *str2, char *sumstr)
 		*sumstr = carry;
 		++sumstr;
 	}
-	
 	*sumstr = '\0';
 	
+	/*reverts back*/
 	StrRev(res);
 	
 	return res;
