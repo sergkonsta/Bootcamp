@@ -7,3 +7,5 @@ void SwapIntPointers(int **p1, int **p2);
 char * AddStr(char *str1, char *str2);
 
 char *StrRev(char *str);
+
+void RmSpaces(char *str);

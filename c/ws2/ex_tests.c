@@ -91,9 +91,21 @@ void TestAddStrings()
 
 /*------------------------------------------------------------------*/
 
+void TestRmSpaces()
+{
+	char str1[] = "1234   56  789";
+	printf("\n %s \n\n",str1);
+	RmSpaces(str1);
+	printf("\n %s \n\n",str1);
+	
+	return;
+}
+
+/*------------------------------------------------------------------*/
+
 int main()
 {
-	TestAddStrings();
+	TestRmSpaces();
 	
 	return 0;
 }

@@ -2,6 +2,7 @@
 #include <assert.h>				/*for asser()*/
 #include <stdio.h>				/*for printf() -Boom7 needs to be printed here*/ 
 #include <stdlib.h>				/*for malloc()*/
+#include <ctype.h>				/*for isspace()*/
 
 int ContainsDigit(int number, int digit)
 {
@@ -250,10 +251,37 @@ char *AddStr(char *str1, char *str2)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      15.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    ____                    **
+**  Status:    sent                    **
 ****************************************/
 
 /* removes double white-spaces */  
+
+void RmSpaces(char *str)
+{
+	char *writep = str;
+	
+	assert(NULL != str);
+	
+	/*loop until end of str*/
+	while('\0' != *str)
+	{
+		/*ignores single spaces. places writep at first white-space  
+		and moves str pointer to first char after white-spaces  */
+		while((0 != isspace(*str)) && (0 != isspace(*(str + 1))))
+		{
+			++str;
+		}
+		
+		*writep = *str;
+		++writep;
+		++str;		
+	}
+	
+	/*new end of str*/
+	*writep = '\0';
+	
+	return;
+}
    
 
    
