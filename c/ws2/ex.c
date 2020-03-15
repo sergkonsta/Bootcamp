@@ -49,7 +49,7 @@ void StrRev(char *str)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      14.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    sent                    **
+**  Status:    approved                **
 ****************************************/
 
 /* Tests if the string is a palindrome and returns: 
@@ -97,7 +97,7 @@ int IsPalindrome(const char *s)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      14.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    sent                    **
+**  Status:    approved                **
 ****************************************/
 
 /* prints all numbers in recieved range. 
@@ -149,7 +149,7 @@ void Boom7(int num1, int num2)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      14.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    sent                    **
+**  Status:    approved                **
 ****************************************/
 
 /* swaps 2 pointers to integers*/
@@ -175,7 +175,7 @@ void SwapIntPointers(int **p1, int **p2)
 **  Developer: Sergey Konstantinovsky  **
 **  Date:      15.03.2020              **
 **  Reviewer:  Yael Bar Avraham        **
-**  Status:    SENT                    **
+**  Status:    approved                **
 ****************************************/
 
 /* makes string of numbers addition*/  
