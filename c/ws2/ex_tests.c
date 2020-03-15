@@ -75,12 +75,24 @@ void TestSwapIntPointers()
 
 /*------------------------------------------------------------------*/
 
+void TestAddStrings()
+{
+	char *str1 = "1111111111111111111111111";
+	char *str2 = "1111111111111111111111";
+	char str3[100] = { 0 };
+	
+	printf("\n %s \n\n",str1);
+	printf("\n %s \n\n",str2);
+	printf("\n %s \n\n",AddStr(str1, str2, str3));
+		
+	return;
+}
 
+/*------------------------------------------------------------------*/
 
 int main()
 {
-	TestSwapIntPointers
-();
-
+	TestAddStrings();
+	
 	return 0;
 }

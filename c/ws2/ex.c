@@ -20,6 +20,28 @@ int ContainsDigit(int number, int digit)
 	return 0;
 }
 
+void StrRev(char *str)
+{
+	int strlength = strlen(str);
+	char tmp = 0;
+	char *end = NULL;
+	
+	while('\0'
+	
+	while(0 != strlength / 2)
+	{
+		tmp = *str;
+		*str = *end;
+		*end = tmp;
+		
+		++str;
+		--end;
+		--strlength;		
+	}
+	
+	return;
+}
+
 
 /****************************************
 **  Developer: Sergey Konstantinovsky  **
@@ -146,6 +168,78 @@ void SwapIntPointers(int **p1, int **p2)
    
    
    
+   
+/****************************************
+**  Developer: Sergey Konstantinovsky  **
+**  Date:      15.03.2020              **
+**  Reviewer:  Yael Bar Avraham        **
+**  Status:    ______                  **
+****************************************/
+
+/* makes string of numbers addition*/  
+    
+ 
+char * AddStr(char *str1, char *str2, char *sumstr)
+{
+	
+	int carry = 0;
+	int sum = 0;
+	size_t counter = 0;	
+	size_t length1 = strlen(str1);
+	size_t length2 = strlen(str2);
+
+
+	char *res = sumstr;
+	
+	assert(NULL != str1);
+	assert(NULL != str2);
+	assert(length1 > length2);
+	
+	
+	
+	/*reverse strings*/
+	StrRev(str1);
+	StrRev(str2);
+	
+	/*long addition for the parallel part of both strings*/
+	while(length2 >= counter)
+	{
+		sum = (*str1 - '0') + (*str2 - '0') + carry;
+		*sumstr = sum % 10;
+		carry = sum / 10;
+		
+		++str1;
+		++str2;
+		++counter;
+		++sumstr;
+	}
+	
+	/*Adds the remaining string*/
+	while(length1 >= counter)
+	{
+		sum = (*str1 - '0')+ carry;
+		*sumstr = sum % 10;
+		carry = sum / 10;
+		
+		++str1;
+		++counter;
+		++sumstr;
+	}
+	
+	/*adds last carry if exists and '\0' */
+	if(0 != carry)
+	{
+		*sumstr = carry;
+		++sumstr;
+	}
+	
+	*sumstr = '\0';
+	
+	StrRev(res);
+	
+	return res;
+
+}
    
    
    
