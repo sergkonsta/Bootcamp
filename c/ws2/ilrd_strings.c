@@ -3,6 +3,7 @@
 #include <ctype.h>         /*  for tolower() inside StrCmpCmp  */
 #include <stdlib.h>        /*  for abs() ; malloc()            */
 #include <string.h>        /*  for strlen(), strdup() used in StrDup     */
+
 #include "ilrd_strings.h"
 
 

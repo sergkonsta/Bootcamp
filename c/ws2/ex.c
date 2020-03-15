@@ -1,6 +1,6 @@
 #include <string.h> 			/*for stlen()*/
 #include <assert.h>				/*for asser()*/
-#include <stdio.h>				/*for printf()*/
+#include <stdio.h>				/*for printf() -Boom7 needs to be printed here*/ 
 #include <stdlib.h>				/*for malloc()*/
 
 int ContainsDigit(int number, int digit)
