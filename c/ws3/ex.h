@@ -1,1 +1,1 @@
-void PrintEnvLow(char **env);
+char **PrintEnvLow(char **env);

@@ -11,7 +11,7 @@ int main()
 	char **env = NULL;
 	
 	env = __environ;	
-	PrintEnvLow(env);
+	env = PrintEnvLow(env);
 
 	return 0;
 }
