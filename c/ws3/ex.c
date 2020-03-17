@@ -14,20 +14,18 @@
   returns *int instead of *char)   		     	*/
 char *StrDup(char *s)
 {
-	size_t str_length = strlen(s);
 	char *dup_str = NULL;
 	char *result = NULL;
 	
 	assert(NULL != s);
 	
-	result = (char*)malloc((str_length+1)*sizeof(char));
+	/*malloc for string , copies pointer to its beginning*/
+	result = (char*)malloc((strlen(s)+1)*sizeof(char));
 	assert(NULL != result);
-	
-	/*saves pointer to the begining*/
 	dup_str = result; 
 	
 	/*classic strcpy() only with lowercase casting*/	
-	while(*s != '\0')
+	while('\0' != *s)
 	{
 		*dup_str = tolower(*s);		
 		s++;
