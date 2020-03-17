@@ -28,8 +28,8 @@ char *StrDup(char *s)
 	while('\0' != *s)
 	{
 		*dup_str = tolower(*s);		
-		s++;
-		dup_str++;
+		++s;
+		++dup_str;
 	}
 	*dup_str = '\0';
 			
