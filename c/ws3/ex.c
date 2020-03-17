@@ -1,6 +1,6 @@
 #include <stdio.h>	/*	for printf		*/
 #include <ctype.h>	/*	for to lower()  */
-#include <assert.h> /*	for asseert		*/
+#include <assert.h> /*	for assert		*/
 #include <string.h> /*	for strlen		*/
 #include <stdlib.h> /*	for malloc		*/
 
