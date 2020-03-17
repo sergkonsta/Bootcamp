@@ -60,7 +60,7 @@ size_t ArrLen(char **str)
 
 /*receives pointer to array of pointers ending with NULL
   prints the strings at the end of each pointer and then frees its alloc.*/
-void PrintEnvironmentVar(char **str)
+void PrintAndFree(char **str)
 {
 	char **str_copy1 = str;
 	char **str_copy2 = str;
@@ -136,8 +136,8 @@ void PrintEnvLow(char **env)
 		++env;
 	}	
 	
-	/*prints new Env Vars*/
-	PrintEnvironmentVar(new_env_start);
+	/*prints new Env Vars and free memmory*/
+	PrintAndFree(new_env_start);
 			
 	return;
 }
