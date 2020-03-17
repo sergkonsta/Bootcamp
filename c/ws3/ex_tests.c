@@ -1,17 +1,11 @@
 #include <unistd.h>  		/*for **__environ*/
+#include <stdlib.h>			/*for free()	*/
 
 #include "ex.h"
 
-
-
-
 int main()
 {
-	/* declares **env for **__environ[array of strings of Env Vars */
-	char **env = NULL;
-	
-	env = __environ;	
-	env = PrintEnvLow(env);
+	PrintEnvLow(__environ);
 
 	return 0;
 }

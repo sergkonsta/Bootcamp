@@ -59,32 +59,35 @@ size_t ArrLen(char **str)
 
 
 /*receives pointer to array of pointers ending with NULL
-  prints the strings at the end of each pointer	in lower-case */
+  prints the strings at the end of each pointer and then frees its alloc.*/
 void PrintEnvironmentVar(char **str)
 {
+	char **str_copy1 = str;
+	char **str_copy2 = str;
+	assert(NULL != str);
+	
+	/*prints and then frees strings*/
 	while(NULL != *str)
-	{
-		/*prints values*/
-		while('\0' != **str)
-		{
-			printf("%c",**str);
-			++*str;		
-		}
-		
-		printf("\n\n");
-		
+	{	
+		printf("%s\n\n",*str);
 		++str;
+		free(*str_copy1);
+		++str_copy1;
 	}
-		
+	
+	/*free 'array of pointers'*/
+	free(str_copy2);
+	
 	return;
 }
 
 
+
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
-**  Date:      16.03.2020               **
+**  Date:      17.03.2020               **
 **  Reviewer:  Eliran					**
-**  Status:    Sent						**
+**  Status:    Approved					**
 *****************************************/
 
 /*	***** Uses multiple mallocs in order to make it less likely to fail. 	
@@ -111,7 +114,7 @@ void PrintEnvironmentVar(char **str)
 
 
 
-char **PrintEnvLow(char **env)
+void PrintEnvLow(char **env)
 {
 	char **new_env = NULL;
 	char **new_env_start = NULL;
@@ -135,7 +138,7 @@ char **PrintEnvLow(char **env)
 	
 	/*prints new Env Vars*/
 	PrintEnvironmentVar(new_env_start);
-	
-	return new_env_start;
+			
+	return;
 }
 
