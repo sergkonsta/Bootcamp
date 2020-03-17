@@ -186,9 +186,11 @@ char *AddStr(char *str1, char *str2)
 {
 	int carry = 0;
 	int sum = 0;
+	
 	size_t counter = 0;	
 	size_t length1 = strlen(str1);
 	size_t length2 = strlen(str2);
+	
 	char *res = NULL;
 	char *sumstr = NULL;
 		
@@ -228,7 +230,7 @@ char *AddStr(char *str1, char *str2)
 		++sumstr;
 	}
 	
-	/*adds last carry if exists and '\0' */
+	/*adds last carry and '\0' */
 	if(0 != carry)
 	{
 		*sumstr = carry;
