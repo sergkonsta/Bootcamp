@@ -1,4 +1,3 @@
-#include <unistd.h> /*	for *__environ	*/
 #include <stdio.h>	/*	for printf		*/
 #include <ctype.h>	/*	for to lower()  */
 #include <assert.h> /*	for asseert		*/
@@ -27,7 +26,7 @@ char *StrDup(char *s)
 	/*saves pointer to the begining*/
 	dup_str = result; 
 	
-	/*classic strcpy only with lowercase casting*/	
+	/*classic strcpy() only with lowercase casting*/	
 	while(*s != '\0')
 	{
 		*dup_str = tolower(*s);		
