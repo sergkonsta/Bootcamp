@@ -106,11 +106,11 @@ void PrintAndFree(char **str)
 		
 		-> link between new string and 'array of pointers'
 		
-		-> copy from old string to new string
+		-> copy from old string to new string in lowercase
 		
 		-> continue for next index
 		
-	4. return new pointer to 'array of pointers'*/
+	4. print all new strings and free them, free main array of pointers*/
 
 
 
