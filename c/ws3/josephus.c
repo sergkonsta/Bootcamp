@@ -1,60 +1,117 @@
-#include <stddef.h>		/*for size_t*/
-#include <stdbool.h>	/*for bool*/
 #include <stdlib.h>		/*for malloc*/
 #include <stdio.h>		/*for printf*/
+#include <assert.h>		/*for assert*/
 
 
-
-size_t HungerGames(size_t num_of_knights)
+/*Create Array of knights and assign them with '1'*/
+size_t *CreateArr(size_t num)
 {
-	bool *start = (bool *)malloc(num of knights * sizeof(bool));
-	bool *start_copy = start;
-	bool last_knight = false;
-	
-	size_t amount_alive = num_of_knights;
-	size_t counter = 0;
-	size_t result = 0;
-	
-	/*As long there is more than 1 knight alive*/
-	while(1 < amount_alive)
-	{
-		/*what knight starts the rotation*/
-		counter = 0;
-		
-		/*until a full circle is made (full pass of the array)*/
-		while(counter < num_of_knights)
-		{
-			/*if last knight is alive and the current knight is alive*/
-			if((true == last_knight) && (true == start[counter]))
-			{
-				start[counter] = false; 
-				last_knight = false;
-				--amount_alive;			
-			}
-			
-			else
-			{
-				last_knight = true;
-				
-				/*save last survivor place in array*/
-				if(2 == amount_alive)
-				{
-					result = counter;
-				}
-			}
-			
-			++counter;
-		}
+	size_t i = 0;
+	size_t *arr = malloc (sizeof(size_t) * num);
+	size_t *arr_cpy = arr;
+
+	assert(NULL != arr);
+
+	while(i < num)
+	{ 
+		*arr = 1;
+		++arr;
+		++i;
 	}
 	
-	free(start_copy);
+	return arr_cpy;
+}
+
+/*find last survivor*/
+size_t FindLastKnight(size_t *arr)
+{
+	size_t result = 0;
+	size_t *arr_cpy = arr;
+	while(0 == *arr)
+	{
+		++arr;
+	}
+	++arr;
+	
+	/*difference of adresses gives us the place*/
+	result = (size_t)(arr - arr_cpy);
+	
+	free(arr_cpy);
 	
 	return result;
+}
+
+
+/*****************************************
+**  Developer: Sergey Konstantinovsky   **
+**  Date:      19.03.2020               **
+**  Reviewer:  Eliran					**
+**  Status:    Sent						**
+*****************************************/
+
+/* 	
 	
+	ALGORITHM:
+	
+	1. create array according to users input, save its pointer & a copy
+	   according to the knight that should start.
+	
+	2. loop through the array while more than 1 knight are alive
+	
+	3. for every knight check its status:
+		
+		-> if its alive and needs to be killed - kill it & adjust counters
+		
+		-> if its alive but shouldnt be killed - adjust 'to_kill' counter
+		
+	4. after only 1 left, find its place, free memmory and return*/
+
+
+/*---------------------------------------------------------------------*/
+
+
+size_t Josephus(size_t total_knights, size_t place)
+{
+	size_t to_kill = 0;
+	size_t alive_count = total_knights;
+	size_t *arr = CreateArr(total_knights);
+	size_t *place_in_arr = arr + (place - 1);
+	
+	/*loops while there still more than 1 alive */
+	while (alive_count > 1)
+	{   
+		/*loops while end of array not reached*/
+		while((0 != total_knights - (size_t)(place_in_arr - arr)))   
+		{
+			/*if current knight is alive and needed to be killed - kill it*/
+			if((1 == *place_in_arr) && (1 == to_kill))
+			{
+				*place_in_arr = 0;
+				to_kill = 0;
+				--alive_count;
+			}
+			
+			/*if current knight is alive but doesnt needs to be killed*/
+			else if((1 == *place_in_arr) && (0 == to_kill))
+			{
+				to_kill = 1;
+			}
+		
+			++place_in_arr;
+		}
+		
+		place_in_arr = arr;
+	}
+	
+	/*checks and return the index of the remaining knight*/
+	return (FindLastKnight(arr));
+
 }
 
 int main()
 {
-	printf("\n The lasts survivors place is: %ld", HungerGames(100));
+	printf("\n The remaining knights index is: %ld\n\n", Josephus(100, 3));
+	
+	return 0;
 }
 

@@ -3,7 +3,7 @@
 #include <assert.h> /*	for assert		*/
 #include <string.h> /*	for strlen		*/
 #include <stdlib.h> /*	for malloc		*/
-#include <unistd.h>  		/*for **__environ*/
+#include <unistd.h> /*for **__environ	*/
 
  /*Duplicates the string in lower case
   (original c function strdup() doest work well,
