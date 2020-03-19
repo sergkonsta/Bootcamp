@@ -7,7 +7,7 @@
 size_t *CreateArrOfOnes(size_t num)
 {
 	size_t i = 0;
-	size_t *arr = malloc (sizeof(size_t) * num);
+	size_t *arr = (size_t *)malloc(sizeof(size_t) * num);
 	size_t *arr_cpy = arr;
 	
 	/*malloc check*/
@@ -38,9 +38,11 @@ size_t FindLastKnightAndFree(size_t *arr)
 	{
 		++arr;
 	}
+
+	/*another incremention because arrays start from index 0*/
 	++arr;
 	
-	/*difference of adresses gives us the place int the arr*/
+	/*difference of adresses gives us the place in the arr*/
 	result = (size_t)(arr - arr_cpy);
 	
 	free(arr_cpy);
@@ -80,13 +82,14 @@ size_t Josephus(size_t total_knights, size_t place)
 	size_t to_kill = 0;
 	size_t alive_count = total_knights;
 	size_t *arr = CreateArrOfOnes(total_knights);
+	/*place in arr from where we start the killings 
+	(place - 1) because the arr index starts from 0)*/
 	size_t *place_in_arr = arr + (place - 1);
 	
 	/*loops while there still more than 1 alive */
 	while (alive_count > 1)
 	{   
-		/*loops while end of array not reached
-		 ( 0 != total array places - (*/
+		/*loops while end of array not reached*/
 		while((0 != total_knights - (size_t)(place_in_arr - arr)))   
 		{
 			/*if current knight is alive and needed to be killed - kill it*/
