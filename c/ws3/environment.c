@@ -84,7 +84,7 @@ void PrintAndFree(char **str)
 **  Status:    Approved					**
 *****************************************/
 
-/*	***** Uses multiple mallocs in order to make it less likely to fail. 	
+/*	***** Uses multiple mallocs for versatility -----------------------------
 	
 	ALGORITHM:
 	
@@ -104,7 +104,9 @@ void PrintAndFree(char **str)
 		
 		-> continue for next index
 		
-	4. print all new strings and free them, free main array of pointers*/
+	4. print all new strings and free them, free main array of pointers
+	
+	-----------------------------------------------------------------------*/
 
 
 

@@ -4,14 +4,18 @@
 
 
 /*Create Array of knights and assign them with '1'*/
-size_t *CreateArr(size_t num)
+size_t *CreateArrOfOnes(size_t num)
 {
 	size_t i = 0;
 	size_t *arr = malloc (sizeof(size_t) * num);
 	size_t *arr_cpy = arr;
-
-	assert(NULL != arr);
-
+	
+	/*malloc check*/
+	if(NULL == arr)
+	{
+		return NULL;
+	}	
+	
 	while(i < num)
 	{ 
 		*arr = 1;
@@ -23,17 +27,20 @@ size_t *CreateArr(size_t num)
 }
 
 /*find last survivor*/
-size_t FindLastKnight(size_t *arr)
+size_t FindLastKnightAndFree(size_t *arr)
 {
 	size_t result = 0;
 	size_t *arr_cpy = arr;
+	
+	assert(NULL != arr);
+	
 	while(0 == *arr)
 	{
 		++arr;
 	}
 	++arr;
 	
-	/*difference of adresses gives us the place*/
+	/*difference of adresses gives us the place int the arr*/
 	result = (size_t)(arr - arr_cpy);
 	
 	free(arr_cpy);
@@ -49,8 +56,7 @@ size_t FindLastKnight(size_t *arr)
 **  Status:    Sent						**
 *****************************************/
 
-/* 	
-	
+/*---------------------------------------------------------------------
 	ALGORITHM:
 	
 	1. create array according to users input, save its pointer & a copy
@@ -64,23 +70,23 @@ size_t FindLastKnight(size_t *arr)
 		
 		-> if its alive but shouldnt be killed - adjust 'to_kill' counter
 		
-	4. after only 1 left, find its place, free memmory and return*/
-
-
-/*---------------------------------------------------------------------*/
+	4. after only 1 left, find its place, free memmory and return
+	
+---------------------------------------------------------------------*/
 
 
 size_t Josephus(size_t total_knights, size_t place)
 {
 	size_t to_kill = 0;
 	size_t alive_count = total_knights;
-	size_t *arr = CreateArr(total_knights);
+	size_t *arr = CreateArrOfOnes(total_knights);
 	size_t *place_in_arr = arr + (place - 1);
 	
 	/*loops while there still more than 1 alive */
 	while (alive_count > 1)
 	{   
-		/*loops while end of array not reached*/
+		/*loops while end of array not reached
+		 ( 0 != total array places - (*/
 		while((0 != total_knights - (size_t)(place_in_arr - arr)))   
 		{
 			/*if current knight is alive and needed to be killed - kill it*/
@@ -96,15 +102,17 @@ size_t Josephus(size_t total_knights, size_t place)
 			{
 				to_kill = 1;
 			}
-		
+			
+			/*continue to next knight*/
 			++place_in_arr;
 		}
 		
+		/*move back to the first knight in the array*/
 		place_in_arr = arr;
 	}
 	
 	/*checks and return the index of the remaining knight*/
-	return (FindLastKnight(arr));
+	return (FindLastKnightAndFree(arr));
 
 }
 
