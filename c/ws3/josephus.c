@@ -82,6 +82,7 @@ size_t Josephus(size_t total_knights, size_t place)
 	size_t to_kill = 0;
 	size_t alive_count = total_knights;
 	size_t *arr = CreateArrOfOnes(total_knights);
+	
 	/*place in arr from where we start the killings 
 	(place - 1) because the arr index starts from 0)*/
 	size_t *place_in_arr = arr + (place - 1);
