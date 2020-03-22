@@ -1,32 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-void Func1(){	system("stty icanon echo");	exit(0);}
-void Func2(){	printf("A is pressed \n");}
-void Func3(){	printf("T is pressed \n");}
+/*Functions for LUT*/
+void Func1(){system("stty icanon echo"); exit(0);}
+void Func2(){printf("A is pressed \n");}
+void Func3(){printf("T is pressed \n");}
 
 
 /*----------------------------------------------------------------------*/
 
 void LUT()
 {
-	/*initialize array of pointers with NULL */
+	/*initialize array for pointers with NULL */
 	void (*LutArr[256])(void) = {NULL};
 	
-	void(*p1)(void) = Func1;
-	void(*p2)(void) = Func2;
-	void(*p3)(void) = Func3;
-	
-	system("stty -icanon -echo");
-	
+	/*initializing pointers with functions addresses*/
+	void(*p1)(void) = &Func1;
+	void(*p2)(void) = &Func2;
+	void(*p3)(void) = &Func3;
+		
 	/*Decimal Values of A / T / ESC */
 	LutArr[27] = p1;
 	LutArr[65] = p2;
 	LutArr[84] = p3;
 	
-
+	/*disables echo, erase, kill, werase, and rprnt special characters*/
+	system("stty -icanon -echo");
 	
+	/*waits for char and calls for a func in LutArr*/	
 	while(1)
 	{
 		LutArr[getchar()]();
@@ -37,6 +38,7 @@ void LUT()
 
 void SwitchCase()
 {
+	/*disables echo, erase, kill, werase, and rprnt special characters*/
 	system("stty -icanon -echo");
 	
 	while(1)
@@ -63,6 +65,7 @@ void SwitchCase()
 
 void IfElse()
 {
+	/*disables echo, erase, kill, werase, and rprnt special characters*/
 	system("stty -icanon -echo");
 		
 	while(1)
