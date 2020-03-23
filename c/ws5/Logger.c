@@ -2,25 +2,35 @@
 #include <stdio.h>	/*for printf, files*/
 #include <unistd.h>	/*for */
 
-enum State {Succeeded = 0, Failed = -1, append_from_start = 2}; 
+enum op {succeeded = 0, failed = -1, exit_program = 2}; 
 
-enum State RemoveFile(const char *file_name);
-enum State PreAppend(char *str, const char *file_name);
-enum State Append(char *str, const char *file_name);
-enum State Compare(const char *s1, const char *s2);
+enum op RemoveFile();
+enum op PreAppend(const char *str);
+enum op Append(const char *str);
+enum op Compare(const char *s1, const char *s2);
+enum op Exit();
+size_t CountRows();
 
-void Exit();
-size_t CountRows(const char *file_name);
+/*global string for file name - NOT GOOD*/
+char file_path[100];
 
 
 /*-------------------------------------------------------------------------*/
 
 int main()
-{
-	char *str = "Hello!!!!!!!!!!!!!!!";
-	const char *file_name = "Log.txt";
+{	
+	/*string for user input*/
+	char str[100];
+		
+	/*file path and command input*/
+	printf("\nPlease enter the file path\n");
+	scanf("%s", file_path);
+	/*printf("\n%s\n", file_path);
+	printf("\nPlease enter your input\n");
+	scanf("%s", str);*/
+		
+	PreAppend("123456");
 	
-	printf("\n the row number is: %ld.\n",CountRows(file_name);
 	
 	return 1;
 }
@@ -29,79 +39,110 @@ int main()
 
 
 /*	Removes the Log file	*/
-enum State RemoveFile(const char *file_name)
+enum op RemoveFile()
 {
-	/*check if file opens successfully*/
- 	if(NULL == file_name)
- 	{
- 		return -1;
- 	}
- 	
-	return(remove(file_name));
+	if(remove(file_path) == 0)
+	{
+		return succeeded;
+	}
+	
+	return failed;
 }
 
-
+/*-------------------------------------------------------------------------*/
 
 /*	Program Exits	*/
-void Exit()
+enum op Exit()
 {
-	exit(0);
-	return;
+	return exit_program;
 }
 
+/*-------------------------------------------------------------------------*/
 
 /*	Function appends to the End of the file	*/
-enum State Append(char *str, const char *file_name)
+enum op Append(const char *str)
 {
+	
 	/*create file pointer and open it in append and read mode*/
 	FILE *file_pointer;
- 	file_pointer = fopen(file_name, "a+");
+ 	file_pointer = fopen(file_path, "a+");
  	
+ 	if(NULL == file_pointer)
+ 	{
+ 		return failed;
+ 	}
+
 	/*writes string to the file pointer and then starts a new line*/
 	fputs(str, file_pointer);
 	fputc('\n',file_pointer);
 	
 	/*closes the file*/
 	fclose(file_pointer);
-	
-	return 0;
+
+	return succeeded;
 }
 
+/*-------------------------------------------------------------------------*/
 
-/*Counts number of lines in the file*/
-size_t CountRows(const char *file_name)
+/*	Counts number of lines in the file	*/
+size_t CountRows()
 {
 	size_t rows = 0;
+	char ch = 0;
 	
-	FILE *file_pointer = fopen(file_name, "r");
-
-	/*check every char for end of line, while EOF is still zero */
-	while(0 == feof(fp))
+	FILE *file_pointer = fopen(file_path, "r");
+	
+	/*check every char for end of line char, while file not ended */
+	while(0 == feof(file_pointer))
 	{
-		ch = fgetc(fp);
-
+		ch = fgetc(file_pointer);
 		if(ch == '\n')
 		{
-			++rows;
+			rows++;
 		}
-
 	}
-	
-	return 0;
+		
+	return rows;
 }
 
+/*-------------------------------------------------------------------------*/
 
 /*Function appends to the beginning of the file*/
-enum State PreAppend(char *str, const char *file_name)
+enum op PreAppend(const char *str)
 {
+	unsigned char ch = 0;
+	
+	/*opening file and saving its pointer*/
+	FILE *file_pointer = fopen(file_path, "r");
+	
+	/*opening temp file and saving its pointer*/
+	FILE *temp_file_pointer = fopen("temp.txt", "w");
+	
+	/*copying original file to temp file, while original file not ended*/
+	while(0 == feof(file_pointer))
+	{
+		ch = fgetc(file_pointer);
+		fputc(ch, temp_file_pointer);
+	}
+	
+	
+    /**/
+     
+    
+	/*removing temp file*/
 	
 
+	/*closing file*/
+	fclose(file_pointer);
+	fclose(temp_file_pointer);
 	return 0;
 }
+
+/*-------------------------------------------------------------------------*/
 
 
 /* strcmp between string from user to each check*/
-enum State Compare(const char *s1, const char *s2)
+enum op Compare(const char *s1, const char *s2)
 {
 	/*	check if to append to file beggining	*/
 	if('<' == *s2)
