@@ -1,28 +1,63 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> /*	for: system("stty icanon echo"), print */
+#include <stdio.h>	/*	for printf */
 
-/*Functions for LUT*/
-void Func1(){system("stty icanon echo"); exit(0);}
-void Func2(){printf("A is pressed \n");}
-void Func3(){printf("T is pressed \n");}
+
+/*-----------------------Functions for LUT------------------------------*/
+
+/*Exit function*/
+void ExitFunc()
+{
+	system("stty icanon echo"); 
+	exit(0);
+}
+
+/*Prints A*/
+void PrintA()
+{
+	printf("A is pressed \n");
+}
+
+/*Prints T*/
+void PrintT()
+{
+	printf("T is pressed \n");
+}
+
+/*Does nothing*/
+void NonFunc()
+{
+	return;
+}
 
 
 /*----------------------------------------------------------------------*/
 
 void LUT()
 {
-	/*initialize array for pointers with NULL */
-	void (*LutArr[256])(void) = {NULL};
+	size_t i = 0;
 	
 	/*initializing pointers with functions addresses*/
-	void(*p1)(void) = &Func1;
-	void(*p2)(void) = &Func2;
-	void(*p3)(void) = &Func3;
+	void(*p1)(void) = &ExitFunc;
+	void(*p2)(void) = &PrintA;
+	void(*p3)(void) = &PrintT;
+	void(*p_non)(void) = &NonFunc;
 		
+	/*initialize array for pointers with NULL */
+	void (*lut_arr[256])(void) = {NULL};
+
+		
+	/*fill array with poiters to function which does nothing*/
+	while(256 > i)
+	{
+		lut_arr[i] = p_non;
+		++i;
+	}
+		
+	/*store the pointers in the array*/
 	/*Decimal Values of A / T / ESC */
-	LutArr[27] = p1;
-	LutArr[65] = p2;
-	LutArr[84] = p3;
+	lut_arr[27] = p1;
+	lut_arr[65] = p2;
+	lut_arr[84] = p3;
 	
 	/*disables echo, erase, kill, werase, and rprnt special characters*/
 	system("stty -icanon -echo");
@@ -30,7 +65,7 @@ void LUT()
 	/*waits for char and calls for a func in LutArr*/	
 	while(1)
 	{
-		LutArr[getchar()]();
+		lut_arr[getchar()]();
 	}
 }
 
