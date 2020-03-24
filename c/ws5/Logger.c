@@ -1,52 +1,82 @@
 #include <stdlib.h> /*for exit*/
 #include <stdio.h>	/*for printf, files*/
 #include <unistd.h>	/*for */
+#include <string.h>	/*for strcmp*/
 
-enum op {succeeded = 0, failed = -1, exit_program = 2}; 
+/*usued for error checking*/
+enum op {success = 0, fail = -1, nullpointer = 1, exit_program = 2}; 
 
-enum op RemoveFile();
-enum op PreAppend(const char *str);
-enum op Append(const char *str);
-enum op Compare(const char *s1, const char *s2);
+enum op CompareChar(char *str, char ch);
+enum op StrCmp(char *s1, char *s2);
+enum op AlwaysTrue();
+
+enum op RemoveFile(char *file_path);
+enum op PreAppend(char *str, char *file_path);
+enum op Append(char *str, char *file_path);
 enum op Exit();
-size_t CountRows();
 
-/*global string for file name - NOT GOOD*/
-char file_path[100];
+void GetInput(char *str);
+size_t CountRows(char *file_path);
 
 
 /*-------------------------------------------------------------------------*/
 
 int main()
 {	
-	/*string for user input*/
-	char str[100];
-		
-	/*file path and command input*/
+	/*strings for user input*/
+	char string[256];
+	char file_path[256];
+			
+	/*file path input*/
 	printf("\nPlease enter the file path\n");
-	scanf("%s", file_path);
-	/*printf("\n%s\n", file_path);
-	printf("\nPlease enter your input\n");
-	scanf("%s", str);*/
+	GetInput(file_path);
+	
+	/*command input*/
+	printf("\nPlease enter a command\n");
+	GetInput(string);
 		
-	PreAppend("123456");
+	/*call function*/
 	
 	
+		
 	return 1;
 }
+
+
+
+/*-------------------------------------------------------------------------*/
+
+
+/*gets input from user, placing '\0' when user presses 'ENTER' */
+void GetInput(char *str)
+{
+	char ch = getc(stdin);
+	size_t i = 0;
+	
+	while('\n' != ch)
+	{
+		str[i] = ch;
+		ch = getc(stdin);
+		++i;;
+	}
+	str[i] = '\0';
+	
+	return;
+}
+
 
 /*-------------------------------------------------------------------------*/
 
 
 /*	Removes the Log file	*/
-enum op RemoveFile()
+enum op RemoveFile(char *file_path)
 {
 	if(remove(file_path) == 0)
 	{
-		return succeeded;
+		return success;
 	}
 	
-	return failed;
+	return fail;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -60,7 +90,7 @@ enum op Exit()
 /*-------------------------------------------------------------------------*/
 
 /*	Function appends to the End of the file	*/
-enum op Append(const char *str)
+enum op Append(char *str, char *file_path)
 {
 	
 	/*create file pointer and open it in append and read mode*/
@@ -69,7 +99,7 @@ enum op Append(const char *str)
  	
  	if(NULL == file_pointer)
  	{
- 		return failed;
+ 		return fail;
  	}
 
 	/*writes string to the file pointer and then starts a new line*/
@@ -79,13 +109,13 @@ enum op Append(const char *str)
 	/*closes the file*/
 	fclose(file_pointer);
 
-	return succeeded;
+	return success;
 }
 
 /*-------------------------------------------------------------------------*/
 
 /*	Counts number of lines in the file	*/
-size_t CountRows()
+size_t CountRows(char *file_path)
 {
 	size_t rows = 0;
 	char ch = 0;
@@ -107,61 +137,86 @@ size_t CountRows()
 
 /*-------------------------------------------------------------------------*/
 
-/*Function appends to the beginning of the file*/
-enum op PreAppend(const char *str)
+/*	Function appends to the beginning of the file	*/
+enum op PreAppend(char *str, char *file_path)
 {
-	unsigned char ch = 0;
+	char ch = 0;
 	
-	/*opening file and saving its pointer*/
+	/*opening file & temp-file and initializing their pointers*/
 	FILE *file_pointer = fopen(file_path, "r");
-	
-	/*opening temp file and saving its pointer*/
 	FILE *temp_file_pointer = fopen("temp.txt", "w");
-	
-	/*copying original file to temp file, while original file not ended*/
-	while(0 == feof(file_pointer))
+	if(NULL == file_pointer || NULL == temp_file_pointer)
 	{
-		ch = fgetc(file_pointer);
-		fputc(ch, temp_file_pointer);
+		return nullpointer;
 	}
 	
+	/*copying original file to temp file, while original file not ended*/
+	ch = fgetc(file_pointer); 
+    while(0 == feof(file_pointer))
+    { 
+        fputc(ch, temp_file_pointer); 
+        ch = fgetc(file_pointer); 
+    } 
 	
-    /**/
-     
-    
-	/*removing temp file*/
-	
-
-	/*closing file*/
+	/*closing files*/
 	fclose(file_pointer);
 	fclose(temp_file_pointer);
+	
+	/*writing new str to original (deletes old data)*/
+    file_pointer = fopen(file_path, "w");
+    fputs(str, file_
+    pointer);
+    fputc('\n', file_pointer);	
+	fclose(file_pointer);
+	
+	/*opening original again in append mode */
+    file_pointer = fopen(file_path, "a");
+    temp_file_pointer = fopen("temp.txt", "r");
+	
+	/*appending back from temp to original*/	
+	ch = fgetc(temp_file_pointer); 
+    while(0 == feof(temp_file_pointer))
+    { 
+        fputc(ch, file_pointer); 
+        ch = fgetc(temp_file_pointer); 
+    } 
+	
+	/*closing files*/
+	fclose(file_pointer);
+	fclose(temp_file_pointer);
+	
+	/*removing temp file*/
+	remove("temp.txt");
+	
 	return 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
-
-/* strcmp between string from user to each check*/
-enum op Compare(const char *s1, const char *s2)
+/*Compares first char of str with ch*/			
+enum comp_t Compare(char *str, char ch)
 {
-	/*	check if to append to file beggining	*/
-	if('<' == *s2)
+	if(ch == *str)
 	{
-		return 2;
-	}
+		return success;
+	}	
 	
-	/*	strcmp	*/
-	while((*s1 == *s2) && (*s1 != '\0'))
-	{
-		s1++;
-		s2++;
-	}
-	
-	if ((*s1 - *s2) == 0)
-	{
-		return 0;
-	}
-
-	return -1;
+	return fail;
 }
 
+/*compares 2 strings*/
+enum op StrCmp(char *s1, char *s2)
+{
+	if(0 == strcmp(s1, s2))
+	{
+		return success;
+	}
+	
+	return fail;
+}
+
+/*always return success*/
+enum op AlwaysTrue()
+{
+	return success;
+}
