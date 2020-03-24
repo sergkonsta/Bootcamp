@@ -226,8 +226,12 @@ enum op PreAppend(char *file_path, char *str)
 	/*opening file & temp-file and initializing their pointers*/
 	FILE *file_pointer = fopen(file_path, "r");
 	FILE *temp_file_pointer = fopen("temp.txt", "w");
+
+    /*check if both files opened, if not, close and ret*/
 	if(NULL == file_pointer || NULL == temp_file_pointer)
 	{
+		fclose(temp_file_pointer);
+		fclose(file_pointer);
 		return file_fail;
 	}
 	
@@ -248,6 +252,13 @@ enum op PreAppend(char *file_path, char *str)
 	
 	/*writing new str to original (deletes old data)*/
     file_pointer = fopen(file_path, "w");
+   
+	/*check if file opened, if now return (before both files closed)*/
+    if(NULL == file_pointer)
+	{
+		return file_fail;
+	}
+	
     fputs(str, file_pointer);
     fputc('\n', file_pointer);	
 	fclose(file_pointer);
@@ -255,6 +266,14 @@ enum op PreAppend(char *file_path, char *str)
 	/*opening original again in append mode */
     file_pointer = fopen(file_path, "a");
     temp_file_pointer = fopen("temp.txt", "r");
+   
+    /*check if both files opened, if not, close and ret*/
+    if(NULL == file_pointer || NULL == temp_file_pointer)
+	{
+		fclose(temp_file_pointer);
+		fclose(file_pointer);
+		return file_fail;
+	}
 	
 	/*appending back from temp to original*/	
 	ch = fgetc(temp_file_pointer); 
