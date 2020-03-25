@@ -10,6 +10,8 @@ void ThreeBits(const unsigned int *arr);
 unsigned char ByteMirror(unsigned char b);
 bool TwoAndSix(unsigned char ch);
 bool TwoOrSix(unsigned char ch);
+unsigned char SwapBits(unsigned char ch);
+
 
 int main()
 {
@@ -17,6 +19,9 @@ int main()
 	unsigned int y = 5;
 	unsigned char b = 0x13;
 	const unsigned int arr[5] = {2149582848, 3758096384, 0, 4294967295, 11111};
+	
+	/*SwapBits check*/
+	printf("\nfrom 0xA7 to: %x\n",SwapBits(0xA7));
 	
 	/*TwoAndSix check*/
 	if(true == TwoAndSix(0x33))
@@ -272,9 +277,22 @@ bool TwoOrSix(unsigned char ch)
 }
 
 
+/*------------------------------------------------------------------------*/
+/*	-swap bits 3 and 5 and return new char.
+	-set aside a char with the original char without digits 3 and 5:
+	 using the mask: 0xE3
+	-mask the old char for bit 3 with 0x04, shift left twice, add into in result
+	-mask the old char for bit 5 with 0x10, shift right twice, add into result
+  	-return result */
+unsigned char SwapBits(unsigned char ch)
+{
+	unsigned char result = (ch & 0xE3);
+	
+	result |= (ch & 0x04) << 2;
+	result |= (ch & 0x10) >> 2;
 
-
-
+	return result;
+}
 
 
 
