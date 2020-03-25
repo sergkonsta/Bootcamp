@@ -2,13 +2,13 @@
 
 INTEGER TYPES:
 
-signed char
+signed char				- 1 byte
 char
 short int
 unsigned short int
-int
-unsigned int
-long int
+int						- 4 bytes
+unsigned int 			- 4 bytes
+long int 				- 8 bytes
 unsigned long it
 long long int
 unsigned long long int

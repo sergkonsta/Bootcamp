@@ -6,6 +6,8 @@
 /*amount of tests for arr of structs*/
 #define AMOUNT_OF_ACTIONS 5
 
+#define MAX_STR_SIZE 256
+
 /*enum used for error checking*/
 enum op {success = 0, fail = -1, exit_program = 1, file_fail = 2}; 
 
@@ -49,8 +51,10 @@ int main()
 	size_t arr_c = 0;
 		
 	/*strings for user input*/
-	char input[256];
-	char file_path[256];
+	char input[MAX_STR_SIZE];
+	char file_path[MAX_STR_SIZE];
+	
+	FILE *file_pointer = NULL;
 	
 	/*array of structs declaration*/
 	CHECK array[AMOUNT_OF_ACTIONS];
@@ -89,8 +93,11 @@ int main()
 	printf("\nPlease enter the file path\n");
 	GetInput(file_path);
 	
+	file_pointer = fopen(file_path, "w");
+	fclose(file_pointer);
+	
 	/*general loop untill user types -exit*/	
-	while(1)
+	while(0 == g_flag_file_fail && 0 == g_flag_exit)
 	{		
 		/*command input*/
 		printf("\nPlease enter a command\n");
@@ -109,16 +116,7 @@ int main()
 			}
 									
 			++arr_c;
-		}
-		
-		/*break general loop if failed or exited*/
-		if(1 == g_flag_file_fail || 1 == g_flag_exit)
-		{
-			printf("\nexit flag is: %ld\n",g_flag_exit);
-			printf("\nfile fail flag is: %ld\n",g_flag_file_fail);
-			break;
-		}
-	
+		}				
 	}
 		
 	return 1;
