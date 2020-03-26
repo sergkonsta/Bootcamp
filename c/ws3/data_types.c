@@ -17,7 +17,7 @@ unsigned long long int
 
 REAL NUMBERS:
 
-float
+float					- 4 bytes
 double
 long double
 
