@@ -15,13 +15,16 @@ long Pow2(unsigned int x, unsigned int y);
 int IsPow(unsigned int n);
 int IsPowNoLoop(unsigned int n);
 long AddOne(int x);
-void ThreeBits(const unsigned int *arr);
+void ThreeBits(const unsigned int *arr, size_t arr_size);
 unsigned char ByteMirror(unsigned char b);
+unsigned char ByteMirrorLoop(unsigned char b);
 bool TwoAndSix(unsigned char ch);
 bool TwoOrSix(unsigned char ch);
 unsigned char SwapBits(unsigned char ch);
 unsigned int ClosestNumber(unsigned int num);
 void SwapVar(int *x, int *y);
+size_t CountSetBits(int num);
+void PrintFloatBits(int fnum);
 
 
 int main()
@@ -31,15 +34,23 @@ int main()
 	unsigned int x = 7;
 	unsigned int y = 5;
 	unsigned int z = 0;
-	unsigned char b = 0x13;
+	unsigned char b = 0x18;
 	const unsigned int arr[5] = {2149582848, 3758096384, 0, 4294967295, 11111};
+	
+	float fnum = 0;
+	int *float_pointer = NULL;
+	
+	/*print float*/
+	fnum = 1.23;
+	float_pointer =(int *)&fnum;
+	PrintFloatBits(*float_pointer);
 			
 	/*ClosestNumber check*/
-	while(z < 161)
+	/*while(z < 161)
 	{
 		printf("\nclosest number to %d, divisable by 16: %d",z,ClosestNumber(z));
 		++z;
-	}
+	}*/
 	
 	/*SwapBits check*/
 	printf("\nfrom 0xA7 to: %x\n",SwapBits(0xA7));
@@ -69,9 +80,10 @@ int main()
 	/*ByteMirror check*/
 	printf("\nthe char is %x",b);
 	printf("\nthe flipped char is %x",ByteMirror(b));
+	printf("\nthe flipped with loop char is %x",ByteMirrorLoop(b));
 	
 	/*ThreeBits check*/
-	ThreeBits(arr);
+	ThreeBits(arr, 5);
 	
 	/*Pow2 ckeck*/
 	printf("\nThe result of Pow2 with x: %d, y: %d, is: %ld\n",x,y,Pow2(x,y));
@@ -99,7 +111,13 @@ int main()
 	SwapVar(&c,&d);
 	printf("\nc & d after swap: %d, %d\n",c,d);
 	SwapVar(&c,&d);
+	
+	/*CountSetBits check*/
+	printf("\nThe amount of set bits in %d is: %ld \n",c,CountSetBits(c));
 		
+	
+
+	
 	return 0;
 }
 
@@ -110,7 +128,7 @@ int main()
 
 
 /*------------------------------------------------------------------------*/
-/*	APPROVED - 
+/*	Review status: APPROVED	 - 
 
 	multiplication by 2 is left shift once.
 	so if the formula is x*(2^y), 
@@ -123,7 +141,7 @@ long Pow2(unsigned int x, unsigned int y)
 }
 
 /*------------------------------------------------------------------------*/
-/*	APPROVED - 	
+/*	Review status: APPROVED	 - 	
 
 	n is a power of 2 if only 1 bit in the number is lit:
 	____________________________________
@@ -172,7 +190,7 @@ int IsPowNoLoop(unsigned int n)
 }
 
 /*------------------------------------------------------------------------*/
-/*	APPROVED
+/*	Review status: APPROVED	
 
 	adds one to an int without the use of aritjmetic operators:
 
@@ -204,21 +222,20 @@ long AddOne(int x)
 
 
 /*------------------------------------------------------------------------*/
-/*	SENT
+/*	Review status: APPROVED	
 	
 	-go through the array, 
 	-for every number in the array check its bits for amount of '1's
 	 using a mask of single bit.
 	 
-	 ARRAY SIZE GIVEN!!!
+
   */
 	
-void ThreeBits(const unsigned int *arr)
+void ThreeBits(const unsigned int *arr, size_t arr_size)
 {
 	size_t arr_counter = 0;
 	size_t bit_counter = 0;
 	size_t amount_ones = 0;
-	size_t arr_size = 5;
 	size_t result = 0;
 	
 	unsigned int mask = 1;
@@ -252,9 +269,48 @@ void ThreeBits(const unsigned int *arr)
 }
 
 /*------------------------------------------------------------------------*/
-/*	SENT
+/* Review status: SENT	
 
-	the algorithm for nyte mirroring:
+   return a mirrored variable using a loop:
+   -iterating over the original byte and shifting it to ther right
+    to match the 1 in the mask
+   -XOR with the mask to save the bits needed
+   -shift original byte right, shift mirror byte left
+    */
+unsigned char ByteMirrorLoop(unsigned char b)
+{
+
+	unsigned char mirror_b = 0;	
+	unsigned char mask = 1;
+	
+	/*according to (bit amount-1)*/
+	int counter = 7;	
+		
+	/*iterate over the whole byte,*/	
+	while ((0 != b) && (0 != counter))
+	{		
+		if ((mask & b) != 0)
+		{
+			mirror_b = mirror_b ^ mask;
+		}
+			
+		mirror_b <<= 1;		
+		b >>= 1;
+		--counter;
+	}
+			
+	mirror_b |= b; 
+	mirror_b <<= counter;
+		
+	return mirror_b;
+		
+	
+}
+
+/*------------------------------------------------------------------------*/
+/*	Review status: APPROVED	
+
+	the algorithm for byte mirroring:
 	divide the bits into 2 groups, switch their places
 	each group divide into 2 groups and switch their places
 	continue until every single char is switched. 
@@ -285,7 +341,7 @@ unsigned char ByteMirror(unsigned char b)
 }
 
 /*------------------------------------------------------------------------*/
-/*	SENT
+/*	Review status: APPROVED	
 
 	bit number 2 and bit number 6 are both on will return true:
 	-OR with mask "1101,1101" - 0xDD
@@ -301,7 +357,7 @@ bool TwoAndSix(unsigned char ch)
 }
 
 /*------------------------------------------------------------------------*/
-/*	SENT
+/*	Review status: APPROVED	
 
 	bit number 2 OR bit number 6 are both on will return true:
 	-AND with mask "0010,0010" - 0x22
@@ -318,7 +374,7 @@ bool TwoOrSix(unsigned char ch)
 
 
 /*------------------------------------------------------------------------*/
-/*	SENT	
+/*	Review status: APPROVED		
 
 	-swap bits 3 and 5 and return new char.
 	-set aside a char with the original char without digits 3 and 5:
@@ -338,7 +394,7 @@ unsigned char SwapBits(unsigned char ch)
 
 
 /*------------------------------------------------------------------------*/
-/*	SENT	
+/*	Review status: APPROVED		
 
 	-return the closest bit divisable by 16 with no remainder:
 	-take all the first digits until you reach the 2^3 (4 first bits)
@@ -355,12 +411,8 @@ unsigned int ClosestNumber(unsigned int x)
 
 
 /*------------------------------------------------------------------------*/
-/*	SENT	
-
-	-return the closest bit divisable by 16 with no remainder:
-	-take all the first digits until you reach the 2^3 (4 first bits)
-	 bit and turn them to zero using the mask: 0xFFFFFFF0;
-	-return the new number
+/*	Review status: APPROVED	
+	-swaps two ints	
 	  */
 void SwapVar(int *x, int *y)
 {
@@ -371,7 +423,73 @@ void SwapVar(int *x, int *y)
 	return;
 }
 
+/*------------------------------------------------------------------------*/
+/*	 SENT 
+	
+	iterates thorugh every bit of the integer using a rotating 1 bit mask
+	for every bit lit in the int - increments amount_ones
+  */
+	
+size_t CountSetBits(int num)
+{
+	size_t bit_counter = 0;
+	size_t amount_ones = 0;
+	
+	int mask = 1;
+	
+	/*integer bits loop*/
+	while(32 > bit_counter)
+	{
+		/* if the tested bit is '1', increase the counter with it*/
+		if(0 != (mask & num))
+		{
+			++amount_ones;
+		}
+		
+		/*change the mask so it will check the next bit*/
+		mask <<= 1;	
+				
+		++bit_counter;
+	} 
+		
+	return amount_ones;
+}
 
-
-
+/*------------------------------------------------------------------------*/
+/*	NOT YET SENT 
+	
+	print the bits of float
+	iterate through 4 bytes of the float from MSB to LSB and print the bit
+	iteration using a mask of: 0x80000000
+	
+  */
+	
+void PrintFloatBits(int fnum)
+{
+	size_t bit_counter = 0;
+	int mask = 0x80000000;
+	
+	printf("\n");
+	
+	/*integer bits loop*/
+	while(32 > bit_counter)
+	{
+		if((mask & fnum) != 0)
+		{
+			printf("1 ");
+		}
+		
+		else
+		{
+			printf("0 ");
+		}		
+				
+		++bit_counter;
+		mask = mask >> 1;
+	} 
+	
+	printf("\n");
+			
+	return;
+}
 
