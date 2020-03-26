@@ -23,8 +23,9 @@ bool TwoOrSix(unsigned char ch);
 unsigned char SwapBits(unsigned char ch);
 unsigned int ClosestNumber(unsigned int num);
 void SwapVar(int *x, int *y);
+size_t CountSetBitsLoop(int num);
 size_t CountSetBits(int num);
-void PrintFloatBits(int fnum);
+void PrintFloatBits(float fnum);
 
 
 int main()
@@ -38,12 +39,11 @@ int main()
 	const unsigned int arr[5] = {2149582848, 3758096384, 0, 4294967295, 11111};
 	
 	float fnum = 0;
-	int *float_pointer = NULL;
+	
 	
 	/*print float*/
 	fnum = 1.23;
-	float_pointer =(int *)&fnum;
-	PrintFloatBits(*float_pointer);
+	PrintFloatBits(fnum);
 			
 	/*ClosestNumber check*/
 	/*while(z < 161)
@@ -112,9 +112,10 @@ int main()
 	printf("\nc & d after swap: %d, %d\n",c,d);
 	SwapVar(&c,&d);
 	
-	/*CountSetBits check*/
-	printf("\nThe amount of set bits in %d is: %ld \n",c,CountSetBits(c));
-		
+	/*CountSetBitsLoop check*/
+	printf("\nThe amount of set bits in %d is: %ld \n",c,CountSetBitsLoop(c));
+	/*CountSetBitsLoop check*/
+	printf("\nThe amount of set bits in %d is: %ld \n",c,CountSetBits(c));	
 	
 
 	
@@ -424,13 +425,13 @@ void SwapVar(int *x, int *y)
 }
 
 /*------------------------------------------------------------------------*/
-/*	 SENT 
+/*	 Review status: SENT		 
 	
 	iterates thorugh every bit of the integer using a rotating 1 bit mask
 	for every bit lit in the int - increments amount_ones
   */
 	
-size_t CountSetBits(int num)
+size_t CountSetBitsLoop(int num)
 {
 	size_t bit_counter = 0;
 	size_t amount_ones = 0;
@@ -455,38 +456,53 @@ size_t CountSetBits(int num)
 	return amount_ones;
 }
 
+
+
 /*------------------------------------------------------------------------*/
-/*	NOT YET SENT 
+/*	 Review status: SENT		 
+	
+	recursive solution:
+	sums all the 1 digits, while shifting right.
+	recursion breaks after the remaining number is filled only with zeros
+  */
+size_t CountSetBits(int num) 
+{
+	if (num == 0)
+	{
+   		return 0; 
+	}
+
+	return (size_t)((num & 1) + CountSetBits(num >> 1)); 
+} 
+
+
+
+
+/*------------------------------------------------------------------------*/
+/*	 Review status: SENT		 
 	
 	print the bits of float
-	iterate through 4 bytes of the float from MSB to LSB and print the bit
-	iteration using a mask of: 0x80000000
+	-iterate through the float number bits
+	-iteration must be made using a pointer to int
+	
 	
   */
 	
-void PrintFloatBits(int fnum)
+void PrintFloatBits(float fnum)
 {
-	size_t bit_counter = 0;
-	int mask = 0x80000000;
+	/*Check bits from end to beggining because on terminait will be reversed*/
+	size_t bit_counter = 32;
+
+	int *fp = (int *)(&fnum);
 	
 	printf("\n");
 	
 	/*integer bits loop*/
-	while(32 > bit_counter)
+	while(0 < bit_counter)
 	{
-		if((mask & fnum) != 0)
-		{
-			printf("1 ");
-		}
-		
-		else
-		{
-			printf("0 ");
-		}		
-				
-		++bit_counter;
-		mask = mask >> 1;
-	} 
+		printf("%d ",(*fp >> bit_counter) & 1);
+		--bit_counter;
+	}
 	
 	printf("\n");
 			
