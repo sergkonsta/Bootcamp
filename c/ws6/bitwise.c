@@ -1,3 +1,11 @@
+
+/*****************************************
+**  Developer: Sergey Konstantinovsky   **
+**  Date:      25.03.2020               **
+**  Reviewer:  Roy						**
+**  Status:    SENT						**
+*****************************************/
+
 #include <stdio.h>	/*for printf*/
 #include <math.h>	/*for pow()*/
 #include <assert.h>	/*for assert*/
@@ -5,20 +13,33 @@
 
 long Pow2(unsigned int x, unsigned int y);
 int IsPow(unsigned int n);
+int IsPowNoLoop(unsigned int n);
 long AddOne(int x);
 void ThreeBits(const unsigned int *arr);
 unsigned char ByteMirror(unsigned char b);
 bool TwoAndSix(unsigned char ch);
 bool TwoOrSix(unsigned char ch);
 unsigned char SwapBits(unsigned char ch);
+unsigned int ClosestNumber(unsigned int num);
+void SwapVar(int *x, int *y);
 
 
 int main()
 {
+	int c = 111;
+	int d = 22;
 	unsigned int x = 7;
 	unsigned int y = 5;
+	unsigned int z = 0;
 	unsigned char b = 0x13;
 	const unsigned int arr[5] = {2149582848, 3758096384, 0, 4294967295, 11111};
+			
+	/*ClosestNumber check*/
+	while(z < 161)
+	{
+		printf("\nclosest number to %d, divisable by 16: %d",z,ClosestNumber(z));
+		++z;
+	}
 	
 	/*SwapBits check*/
 	printf("\nfrom 0xA7 to: %x\n",SwapBits(0xA7));
@@ -59,20 +80,26 @@ int main()
 	x = 1;
 		
 	printf("\nThe result of IsPow with x: %d, is: %d\n",x,IsPow(x));
+	printf("\nThe result of IsPow with x: %d, is: %d\n",x,IsPowNoLoop(x));
 	
 	/*AddOne check*/
-	x = 0;
+	x = 214748364;
 	
-	while(1000000 != x)
+	if(AddOne((int)x) != x+1)
 	{
-		if(AddOne((int)x) != x+1)
-		{
-			printf("\nWRONG on: %d\n",x);
-		}
-		
-		++x;		
+		printf("\nWRONG on: %d\n",x);
 	}
-
+	else 
+	{
+		printf("\nsuccess with 214748364\n");
+	}
+		
+	/*Swap Var check*/
+	printf("\nc & d before swap: %d, %d\n",c,d);
+	SwapVar(&c,&d);
+	printf("\nc & d after swap: %d, %d\n",c,d);
+	SwapVar(&c,&d);
+		
 	return 0;
 }
 
@@ -81,15 +108,11 @@ int main()
 
 
 
-/*****************************************
-**  Developer: Sergey Konstantinovsky   **
-**  Date:      25.03.2020               **
-**  Reviewer:  Roy						**
-**  Status:    SENT						**
-*****************************************/
 
 /*------------------------------------------------------------------------*/
-/*	multiplication by 2 is left shift once.
+/*	APPROVED - 
+
+	multiplication by 2 is left shift once.
 	so if the formula is x*(2^y), 
 	we need to shift X left (y) times */
 long Pow2(unsigned int x, unsigned int y)
@@ -100,7 +123,9 @@ long Pow2(unsigned int x, unsigned int y)
 }
 
 /*------------------------------------------------------------------------*/
-/*	n is a power of 2 if only 1 bit in the number is lit:
+/*	APPROVED - 	
+
+	n is a power of 2 if only 1 bit in the number is lit:
 	____________________________________
 	2^4	|	2^3	|	2^2	|	2^1	|	2^0
 	____|_______|_______|_______|_______
@@ -111,11 +136,11 @@ long Pow2(unsigned int x, unsigned int y)
 	
 	with loop - rotate number 32 times and increment counter when but is lit
 	
-	w/o loop  - return: (	(0 != x) && ~(x & (x-1))	) */
+	w/o loop  - c */
 	
 int IsPow(unsigned int n)
 {
-	size_t counter = 0;
+	size_t bit_counter = 0;
 	int result = 0;
 	
 	/*0 is not a power of 2*/
@@ -125,11 +150,11 @@ int IsPow(unsigned int n)
 	}
 		
 	/*check LSB with 0x0001 mask, and shift to next LSB*/
-	while(counter < 32)
+	while(bit_counter < 32 && result > 1)
 	{
 		result += (n & 1);
 		n = n >> 1;
-		++counter;
+		++bit_counter;
 	}
 	
 	/*return 0 if more than 1 bit in n is lit*/
@@ -141,8 +166,15 @@ int IsPow(unsigned int n)
 	return 1;	
 }
 
+int IsPowNoLoop(unsigned int n)
+{
+	return((0 != n) && ~(n & (n-1))	);
+}
+
 /*------------------------------------------------------------------------*/
-/*	adds one to an int without the use of aritjmetic operators:
+/*	APPROVED
+
+	adds one to an int without the use of aritjmetic operators:
 
 	-until you reach the first '0' from the LSB:
 		-NOT all the '1's using XOR with 'single bit' mask
@@ -172,7 +204,9 @@ long AddOne(int x)
 
 
 /*------------------------------------------------------------------------*/
-/*	-go through the array, 
+/*	SENT
+	
+	-go through the array, 
 	-for every number in the array check its bits for amount of '1's
 	 using a mask of single bit.
 	 
@@ -218,7 +252,9 @@ void ThreeBits(const unsigned int *arr)
 }
 
 /*------------------------------------------------------------------------*/
-/*	the algorithm for nyte mirroring:
+/*	SENT
+
+	the algorithm for nyte mirroring:
 	divide the bits into 2 groups, switch their places
 	each group divide into 2 groups and switch their places
 	continue until every single char is switched. 
@@ -249,7 +285,9 @@ unsigned char ByteMirror(unsigned char b)
 }
 
 /*------------------------------------------------------------------------*/
-/*	bit number 2 and bit number 6 are both on will return true:
+/*	SENT
+
+	bit number 2 and bit number 6 are both on will return true:
 	-OR with mask "1101,1101" - 0xDD
 	-NOT it to reach a state that if both bits were on, now all the bits are 0
 	-return a converted NOT(char) to bool
@@ -263,7 +301,9 @@ bool TwoAndSix(unsigned char ch)
 }
 
 /*------------------------------------------------------------------------*/
-/*	bit number 2 OR bit number 6 are both on will return true:
+/*	SENT
+
+	bit number 2 OR bit number 6 are both on will return true:
 	-AND with mask "0010,0010" - 0x22
 	-if at least one digit is on,
 	 the number won't be zero and wont convert to false
@@ -278,7 +318,9 @@ bool TwoOrSix(unsigned char ch)
 
 
 /*------------------------------------------------------------------------*/
-/*	-swap bits 3 and 5 and return new char.
+/*	SENT	
+
+	-swap bits 3 and 5 and return new char.
 	-set aside a char with the original char without digits 3 and 5:
 	 using the mask: 0xE3
 	-mask the old char for bit 3 with 0x04, shift left twice, add into in result
@@ -295,9 +337,39 @@ unsigned char SwapBits(unsigned char ch)
 }
 
 
+/*------------------------------------------------------------------------*/
+/*	SENT	
+
+	-return the closest bit divisable by 16 with no remainder:
+	-take all the first digits until you reach the 2^3 (4 first bits)
+	 bit and turn them to zero using the mask: 0xFFFFFFF0;
+	-return the new number
+	  */
+unsigned int ClosestNumber(unsigned int x)
+{
+	/*counter to reach the 2^3 bit*/
+	unsigned int mask = 0xFFFFFFF0;
+			
+	return (x & mask);
+}
 
 
+/*------------------------------------------------------------------------*/
+/*	SENT	
 
+	-return the closest bit divisable by 16 with no remainder:
+	-take all the first digits until you reach the 2^3 (4 first bits)
+	 bit and turn them to zero using the mask: 0xFFFFFFF0;
+	-return the new number
+	  */
+void SwapVar(int *x, int *y)
+{
+	*x = *x ^ *y;
+	*y = *x ^ *y;
+	*x = *x ^ *y;
+	
+	return;
+}
 
 
 
