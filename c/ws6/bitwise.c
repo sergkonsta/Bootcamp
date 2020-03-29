@@ -3,7 +3,7 @@
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      25.03.2020               **
 **  Reviewer:  Roy						**
-**  Status:    SENT						**
+**  Status:    APPROVED						**
 *****************************************/
 
 #include <stdio.h>	/*for printf*/
@@ -26,7 +26,7 @@ long Pow2(unsigned int x, unsigned int y)
 }
 
 /*------------------------------------------------------------------------*/
-/*	Review status: APPROVED	 - 	
+/*	Review status: APPROVED	  	
 
 	n is a power of 2 if only 1 bit in the number is lit:
 	____________________________________
@@ -154,7 +154,7 @@ void ThreeBits(const unsigned int *arr, size_t arr_size)
 }
 
 /*------------------------------------------------------------------------*/
-/* Review status: SENT	
+/* Review status: APPROVED	
 
    return a mirrored variable using a loop:
    -iterating over the original byte and shifting it to ther right
@@ -288,7 +288,6 @@ unsigned char SwapBits(unsigned char ch)
 	  */
 unsigned int ClosestNumber(unsigned int x)
 {
-	/*counter to reach the 2^3 bit*/
 	unsigned int mask = 0xFFFFFFF0;
 			
 	return (x & mask);
@@ -309,7 +308,7 @@ void SwapVar(int *x, int *y)
 }
 
 /*------------------------------------------------------------------------*/
-/*	 Review status: SENT		 
+/*	 Review status: APPROVED		 
 	
 	iterates thorugh every bit of the integer using a rotating 1 bit mask
 	for every bit lit in the int - increments amount_ones
@@ -343,7 +342,7 @@ size_t CountSetBitsLoop(int num)
 
 
 /*------------------------------------------------------------------------*/
-/*	 Review status: SENT		 
+/*	 Review status: APPROVED		 
 	
 	recursive solution:
 	sums all the 1 digits, while shifting right.
@@ -363,7 +362,7 @@ size_t CountSetBits(int num)
 
 
 /*------------------------------------------------------------------------*/
-/*	 Review status: SENT		 
+/*	 Review status: APPROVED		 
 	
 	print the bits of float
 	-iterate through the float number bits
