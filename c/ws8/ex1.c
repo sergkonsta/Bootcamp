@@ -131,9 +131,7 @@ int InitIntCell(CELL *arr_cell, long int num)
 
 int InitFloatCell(CELL *arr_cell, float num)
 {
-	long int *ip = (long int *)&num;
-	
-	arr_cell->data_ptr = (void *)(long int *)*ip;
+	*(float *)&arr_cell->data_ptr = num;
 	arr_cell->print = PrintFloat;
 	arr_cell->add = AddFloat;
 	arr_cell->cleanup = DoNothing;
@@ -155,7 +153,7 @@ int InitFloatCell(CELL *arr_cell, float num)
 				|	print func pointer		|	-	print
 				|___________________________|
 				|							|
-				|	AddFloat func pointer	|	-	add
+				|	AddString func pointer	|	-	add
 				|___________________________|
 */
 int InitStringCell(CELL *arr_cell, const char *str)
@@ -175,7 +173,7 @@ int InitStringCell(CELL *arr_cell, const char *str)
 	
 	arr_cell->data_ptr = (void *)s_ptr;
 	arr_cell->print = PrintString;
-	/*arr_cell->add = AddFloat;*/
+	/*arr_cell->add = AddString;*/
 	arr_cell->cleanup = CleanupString;
 	
 	/*checks that the values match*/
@@ -191,9 +189,7 @@ int InitStringCell(CELL *arr_cell, const char *str)
 */
 int AddInt(CELL *arr_cell, int num)
 {
-	
 	*(int *)&arr_cell->data_ptr += num;	
-	/*arr_cell->data_ptr = (void *)((long int)arr_cell->data_ptr + (long int)num);*/
 
 	return 1;
 }
