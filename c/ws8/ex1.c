@@ -72,7 +72,7 @@ int main()
 	
 	InitFloatCell(&test2, 12.59);
 	test2.print(test2.data_ptr);
-	AddInt(&test2, x);
+	AddFloat(&test2, x);
 	test2.print(test2.data_ptr);
 	test2.cleanup(test2.data_ptr);
 	
@@ -203,9 +203,7 @@ int AddInt(CELL *arr_cell, int num)
 */
 int AddFloat(CELL *arr_cell, int num)
 {
-	float fnum = *(float *)&arr_cell->data_ptr + (float)num;
-	printf("%f",fnum);
-	
+	*(float *)&arr_cell->data_ptr += num;	
 	
 	return 1;
 }
