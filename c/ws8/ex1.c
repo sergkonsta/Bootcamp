@@ -204,7 +204,7 @@ int AddInt(CELL *arr_cell, int num)
 int AddFloat(CELL *arr_cell, int num)
 {
 
-	(float *)&arr_cell->data_ptr += (float)num;
+	arr_cell->data_ptr = (void *)(unsigned int*)(*(float*)arr_cell->data_ptr + num);
 	
 	return 1;
 }
