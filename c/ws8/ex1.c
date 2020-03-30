@@ -2,8 +2,8 @@
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      30.03.2020               **
-**  Reviewer:  ?????					**
-**  Status:    ?????					**
+**  Reviewer:  Irina					**
+**  Status:    Sent						**
 *****************************************/
 
 #include <stdio.h>	/*for printf*/
@@ -34,10 +34,9 @@ typedef struct _mystruct
 } CELL;
 
 /*init functions for cells in the array*/
-int InitIntCell(long num, CELL *arr_cell);
-int InitFloatCell(float num, CELL *arr_cell);
-/*with Malloc*/
-int InitStringCell(const char *str, CELL *arr_cell);
+int InitIntCell(CELL *arr_cell, long num);
+int InitFloatCell(CELL *arr_cell, float num);
+int InitStringCell(CELL *arr_cell, const char *str);
 
 /*print function*/
 void PrintInt(void *data);
@@ -45,10 +44,10 @@ void PrintFloat(void *data);
 void PrintString(void *data);
 
 /*add function*/
-int AddInt(int num, void *data);
-int AddFloat(int num, void *data);
+int AddInt(CELL *arr_cell, int num);
+int AddFloat(CELL *arr_cell, int num);
 /*with malloc*/
-int AddString(int num, void *data);
+int AddString(CELL *arr_cell, int num);
 
 /*cleanup functions for mallocs*/
 int DoNothing(void *data);
@@ -63,15 +62,21 @@ int main()
 	CELL test2;
 	CELL test3;
 	
-	InitIntCell(123, &test1);
+	int x = 5;
+	
+	InitIntCell(&test1, 123);
+	test1.print(test1.data_ptr);
+	AddInt(&test1, x);
 	test1.print(test1.data_ptr);
 	test1.cleanup(test1.data_ptr);
 	
-	InitFloatCell(12.59, &test2);
+	InitFloatCell(&test2, 12.59);
+	test2.print(test2.data_ptr);
+	AddInt(&test2, x);
 	test2.print(test2.data_ptr);
 	test2.cleanup(test2.data_ptr);
 	
-	InitStringCell("Serg", &test3);
+	InitStringCell(&test3, "Serg");
 	test3.print(test3.data_ptr);
 	test3.cleanup(test3.data_ptr);
 
@@ -80,7 +85,6 @@ int main()
 }
 
 /*---------------------------------------------------------------------------*/
-
 /*	initializes struct cell with "INT":
 				_____________________________
 				|							|
@@ -94,13 +98,13 @@ int main()
 				|___________________________|
 
 */
-int InitIntCell(long int num, CELL *arr_cell)
+int InitIntCell(CELL *arr_cell, long int num)
 {
 	assert(0 != arr_cell);
 	
 	arr_cell->data_ptr = (void *)num;
 	arr_cell->print = PrintInt;
-	/*arr_cell->add = AddInt;*/
+	arr_cell->add = AddInt;
 	arr_cell->cleanup = DoNothing;
 	
 	/*checks that the values match*/
@@ -110,7 +114,6 @@ int InitIntCell(long int num, CELL *arr_cell)
 }
 
 /*---------------------------------------------------------------------------*/
-
 /*	initializes struct cell with "FLOAT":
 	using malloc - Float type not compatible with pointer casting
 				_____________________________
@@ -126,13 +129,13 @@ int InitIntCell(long int num, CELL *arr_cell)
 */
 
 
-int InitFloatCell(float num, CELL *arr_cell)
+int InitFloatCell(CELL *arr_cell, float num)
 {
 	long int *ip = (long int *)&num;
 	
 	arr_cell->data_ptr = (void *)(long int *)*ip;
 	arr_cell->print = PrintFloat;
-	/*arr_cell->add = AddFloat;*/
+	arr_cell->add = AddFloat;
 	arr_cell->cleanup = DoNothing;
 	
 	/*checks that the values match*/
@@ -142,7 +145,6 @@ int InitFloatCell(float num, CELL *arr_cell)
 }
 
 /*---------------------------------------------------------------------------*/
-
 /*	initializes struct cell with "STRING":
 	using malloc 
 				_____________________________
@@ -156,7 +158,7 @@ int InitFloatCell(float num, CELL *arr_cell)
 				|	AddFloat func pointer	|	-	add
 				|___________________________|
 */
-int InitStringCell(const char *str, CELL *arr_cell)
+int InitStringCell(CELL *arr_cell, const char *str)
 {
 	char *s_ptr = NULL;
 		
@@ -184,7 +186,33 @@ int InitStringCell(const char *str, CELL *arr_cell)
 
 
 /*---------------------------------------------------------------------------*/
+/*	Adds an int to the Data recieved
 
+*/
+int AddInt(CELL *arr_cell, int num)
+{
+	arr_cell->data_ptr = (void *)((long int)arr_cell->data_ptr + (long int)num);
+
+	return 1;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*	Adds a float to the Data recieved
+
+*/
+int AddFloat(CELL *arr_cell, int num)
+{
+
+	(float *)&arr_cell->data_ptr += (float)num;
+	
+	return 1;
+}
+
+
+
+
+/*---------------------------------------------------------------------------*/
 /*	prints int from data_ptr
 
 */
@@ -196,7 +224,6 @@ void PrintInt(void *data)
 }
 
 /*---------------------------------------------------------------------------*/
-
 /*	prints float from data_ptr
 
 */
@@ -208,7 +235,6 @@ void PrintFloat(void *data)
 }
 
 /*---------------------------------------------------------------------------*/
-
 /*	prints string from data_ptr
 
 */
@@ -221,7 +247,6 @@ void PrintString(void *data)
 
 
 /*---------------------------------------------------------------------------*/
-
 /*	does nothing
 
 */
@@ -233,7 +258,6 @@ int DoNothing(void *data)
 
 
 /*---------------------------------------------------------------------------*/
-
 /*	frees malloc of the string
 
 */
