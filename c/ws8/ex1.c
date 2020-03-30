@@ -191,7 +191,9 @@ int InitStringCell(CELL *arr_cell, const char *str)
 */
 int AddInt(CELL *arr_cell, int num)
 {
-	arr_cell->data_ptr = (void *)((long int)arr_cell->data_ptr + (long int)num);
+	
+	*(int *)&arr_cell->data_ptr += num;	
+	/*arr_cell->data_ptr = (void *)((long int)arr_cell->data_ptr + (long int)num);*/
 
 	return 1;
 }
