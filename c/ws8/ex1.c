@@ -203,8 +203,9 @@ int AddInt(CELL *arr_cell, int num)
 */
 int AddFloat(CELL *arr_cell, int num)
 {
-
-	arr_cell->data_ptr = (void *)(unsigned int*)(*(float*)arr_cell->data_ptr + num);
+	float fnum = *(float *)&arr_cell->data_ptr + (float)num;
+	printf("%f",fnum);
+	
 	
 	return 1;
 }
