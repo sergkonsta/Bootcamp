@@ -1,7 +1,9 @@
 
+/*####### STILL HAS MEMMORY LOSS ##########*/
+
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
-**  Date:      30.03.2020               **
+**  Date:      31.03.2020               **
 **  Reviewer:  Irina					**
 **  Status:    Sent						**
 *****************************************/
@@ -11,12 +13,10 @@
 #include <assert.h>	/*for assert*/
 #include <string.h>	/*for strlen, strcpy, strcmp*/
 
-
 /*amount of elements in array*/
-#define AMOUNT_OF_ELEMENTS (10)
+#define AMOUNT_OF_ELEMENTS (5)
 #define NULL_CHAR_SIZE (1)
 #define UNUSED(data) (void)(data)
-
 
 /*defining function pointers for struct*/
 typedef void (*printfunc)();
@@ -34,61 +34,56 @@ typedef struct _mystruct
 } CELL;
 
 /*init functions for cells in the array*/
-int InitIntCell(CELL *arr_cell, long num);
-int InitFloatCell(CELL *arr_cell, float num);
-int InitStringCell(CELL *arr_cell, const char *str);
+int InitIntCell		(CELL *arr_cell, int num);
+int InitFloatCell	(CELL *arr_cell, float num);
+int InitStringCell	(CELL *arr_cell, const char *str);
 
 /*print function*/
-void PrintInt(void *data);
-void PrintFloat(void *data);
+void PrintInt	(void *data);
+void PrintFloat	(void *data);
 void PrintString(void *data);
 
 /*add function*/
-int AddInt(CELL *arr_cell, int num);
-int AddFloat(CELL *arr_cell, int num);
-/*with malloc*/
-int AddString(CELL *arr_cell, int num);
+int AddInt		(CELL *arr_cell, int num);
+int AddFloat	(CELL *arr_cell, int num);
+int AddString	(CELL *arr_cell, int num);
 
 /*cleanup functions for mallocs*/
-int DoNothing(void *data);
-int CleanupString(void *data);
+int DoNothing		(void *data);
+int CleanupString	(void *data);
 
+/*BL funcs*/
+void InitArray(CELL *arr);
+void PrintArray(CELL *arr);
+void AddArray(CELL *arr, int int_to_add);
+void CleanArray(CELL *arr);
 
 /*---------------------------------------------------------------------------*/
 
 int main()
 {
-	CELL test1;
-	CELL test2;
-	CELL test3;
+	CELL arr[AMOUNT_OF_ELEMENTS];
 	
-	int x = 5;
+	int int_to_add = 999;
 	
-	InitIntCell(&test1, 123);
-	test1.print(test1.data_ptr);
-	AddInt(&test1, x);
-	test1.print(test1.data_ptr);
-	test1.cleanup(test1.data_ptr);
-	
-	InitFloatCell(&test2, 12.59);
-	test2.print(test2.data_ptr);
-	AddFloat(&test2, x);
-	test2.print(test2.data_ptr);
-	test2.cleanup(test2.data_ptr);
-	
-	InitStringCell(&test3, "Serg");
-	test3.print(test3.data_ptr);
-	test3.cleanup(test3.data_ptr);
-
+	InitArray(arr);
+	PrintArray(arr);
+	AddArray(arr, int_to_add);
+	PrintArray(arr);
+	CleanArray(arr);
 
 	return 0;
 }
+
+
+
+
 
 /*---------------------------------------------------------------------------*/
 /*	initializes struct cell with "INT":
 				_____________________________
 				|							|
-				|	casted int to (void *)	|	-	data_ptr
+				|	num						|	-	data_ptr
 				|___________________________|
 				|							|
 				|	print func pointer		|	-	print
@@ -98,17 +93,14 @@ int main()
 				|___________________________|
 
 */
-int InitIntCell(CELL *arr_cell, long int num)
+int InitIntCell(CELL *arr_cell, int num)
 {
 	assert(0 != arr_cell);
 	
-	arr_cell->data_ptr = (void *)num;
+	*(int *)&arr_cell->data_ptr = num;
 	arr_cell->print = PrintInt;
 	arr_cell->add = AddInt;
 	arr_cell->cleanup = DoNothing;
-	
-	/*checks that the values match*/
-	assert(num == (long int)arr_cell->data_ptr);
 	
 	return 1;
 }
@@ -118,7 +110,7 @@ int InitIntCell(CELL *arr_cell, long int num)
 	using malloc - Float type not compatible with pointer casting
 				_____________________________
 				|							|
-				|	pointer to the float num|	-	data_ptr
+				|	float					|	-	data_ptr
 				|___________________________|
 				|							|
 				|	print func pointer		|	-	print
@@ -131,13 +123,12 @@ int InitIntCell(CELL *arr_cell, long int num)
 
 int InitFloatCell(CELL *arr_cell, float num)
 {
+	assert(0 != arr_cell);
+	
 	*(float *)&arr_cell->data_ptr = num;
 	arr_cell->print = PrintFloat;
 	arr_cell->add = AddFloat;
 	arr_cell->cleanup = DoNothing;
-	
-	/*checks that the values match*/
-	assert(num == *((float*)&arr_cell->data_ptr));
 	
 	return 1;
 }
@@ -173,22 +164,19 @@ int InitStringCell(CELL *arr_cell, const char *str)
 	
 	arr_cell->data_ptr = (void *)s_ptr;
 	arr_cell->print = PrintString;
-	/*arr_cell->add = AddString;*/
+	arr_cell->add = AddString;
 	arr_cell->cleanup = CleanupString;
-	
-	/*checks that the values match*/
-	assert(0 == strcmp(str, (const char *)arr_cell->data_ptr));
-	
+		
 	return 1;
 }
 
 
 /*---------------------------------------------------------------------------*/
-/*	Adds an int to the Data recieved
-
-*/
+/*	Adds an int to the Data recieved	*/
 int AddInt(CELL *arr_cell, int num)
 {
+	assert(0 != arr_cell);
+	
 	*(int *)&arr_cell->data_ptr += num;	
 
 	return 1;
@@ -196,34 +184,59 @@ int AddInt(CELL *arr_cell, int num)
 
 
 /*---------------------------------------------------------------------------*/
-/*	Adds a float to the Data recieved
-
-*/
+/*	Adds a float to the Data recieved	*/
 int AddFloat(CELL *arr_cell, int num)
 {
+	assert(0 != arr_cell);
+	
 	*(float *)&arr_cell->data_ptr += num;	
 	
 	return 1;
 }
 
-
-
+/*---------------------------------------------------------------------------*/
+/*	Adds a string to the Data recieved	*/
+int AddString(CELL *arr_cell, int num)
+{
+	int temp_num = num;
+	
+	size_t chars_in_int = 1;
+	size_t realloc_chars = 0;
+	
+	char *s_ptr = NULL;
+	
+	assert(0 != arr_cell);
+	
+	/*counting number of chars in int*/
+	while(0 != temp_num)
+	{
+		++chars_in_int;
+		temp_num /= 10;
+	}	
+	
+	realloc_chars = (strlen(arr_cell->data_ptr) + chars_in_int + NULL_CHAR_SIZE);
+	
+	s_ptr = (char *)realloc(arr_cell->data_ptr, sizeof(char) * realloc_chars);
+	
+	/*on C99 should use snprintf - to limit amount of bytes to 'realloc_chars'*/
+	sprintf(s_ptr, "%s%d",s_ptr,num);
+	
+	arr_cell->data_ptr = (void *)s_ptr;
+	
+	return 1;
+}
 
 /*---------------------------------------------------------------------------*/
-/*	prints int from data_ptr
-
-*/
+/*	prints int from data_ptr	*/
 void PrintInt(void *data)
-{
+{		
 	printf("\nThe data is: %ld\n", (long int)data);
 	
 	return;
 }
 
 /*---------------------------------------------------------------------------*/
-/*	prints float from data_ptr
-
-*/
+/*	prints float from data_ptr	*/
 void PrintFloat(void *data)
 {
 	printf("\nThe data is: %f\n", *(float *)&data);
@@ -232,9 +245,7 @@ void PrintFloat(void *data)
 }
 
 /*---------------------------------------------------------------------------*/
-/*	prints string from data_ptr
-
-*/
+/*	prints string from data_ptr	*/
 void PrintString(void *data)
 {
 	printf("\nThe data is: %s\n", (char *)data);
@@ -244,9 +255,7 @@ void PrintString(void *data)
 
 
 /*---------------------------------------------------------------------------*/
-/*	does nothing
-
-*/
+/*	does nothing	*/
 int DoNothing(void *data)
 {
 	UNUSED(data);
@@ -255,12 +264,82 @@ int DoNothing(void *data)
 
 
 /*---------------------------------------------------------------------------*/
-/*	frees malloc of the string
-
-*/
+/*	frees malloc of the string	*/
 int CleanupString(void *data)
 {
 	free(data);
 	
 	return 1;
 }
+
+/*---------------------------------------------------------------------------*/
+/*	initializes array of CELLs*/
+void InitArray(CELL *arr)
+{	
+	assert(0 != arr);
+	
+	InitIntCell(&arr[0], 123);
+	InitIntCell(&arr[1], 89745648);
+	
+	InitFloatCell(&arr[2], 123.58f);
+	InitFloatCell(&arr[3], 0.00054f);
+	
+	InitStringCell(&arr[4], "This Is a      Test String");
+	
+	return;	
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*	prints data in array of CELLs*/
+void PrintArray(CELL *arr)
+{
+	size_t c = 0;
+
+	assert(0 != arr);
+	
+	while(AMOUNT_OF_ELEMENTS > c)
+	{
+		arr[c].print(arr[c].data_ptr);
+		++c;
+	}
+	
+	return;
+}
+
+
+
+/*---------------------------------------------------------------------------*/
+/*	adds int to array of CELLs*/
+void AddArray(CELL *arr, int i)
+{
+	size_t c = 0;
+
+	assert(0 != arr);
+	
+	while(AMOUNT_OF_ELEMENTS > c)
+	{
+		arr[c].add(&arr[c].data_ptr, i);
+		++c;
+	}
+	
+	return;
+}
+
+/*---------------------------------------------------------------------------*/
+/*	frees all memory allocated to array of CELLs*/
+void CleanArray(CELL *arr)
+{
+	size_t c = 0;
+
+	assert(0 != arr);
+	
+	while(AMOUNT_OF_ELEMENTS > c)
+	{
+		arr[c].cleanup(&arr[c].data_ptr);
+		++c;
+	}
+	
+	return;
+}
+
