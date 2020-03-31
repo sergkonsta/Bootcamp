@@ -18,17 +18,6 @@
 #define SIZEOF_TYPE(object) (char *)(&object+1) - (char *)(&object)
 /*---------------------------------------------------------------------------*/
 
-
-
-
-
-
-/*####### STILL HAS MEMMORY LOSS ##########*/
-
-
-
-
-
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      31.03.2020               **
