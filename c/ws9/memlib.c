@@ -10,12 +10,12 @@
 
 void *Memset(void *s, int c, size_t n)
 {
-	void *temp_pointer = s;
+	char *temp_pointer = (char *)s;
 
 	while(n > 0)
 	{
-		*(int *)&temp_pointer = c;
-		*(int *)&temp_pointer += 1;
+		*temp_pointer = c;
+		temp_pointer += 1;
 		--n;
 	}
 	
