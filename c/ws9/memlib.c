@@ -6,11 +6,7 @@
 **  Status:    SENT						**
 *****************************************/		
 
-#include <stddef.h>		/*for size_t*/
-#include <assert.h>		/*for assert*/
-#include <stdlib.h>		/*for malloc*/
-
-
+#include "memlib.h"
 
 /*Memsetting word by word when possible*/
 void *MemSet(void *s, int c, size_t n)
@@ -68,21 +64,63 @@ void *MemSet(void *s, int c, size_t n)
 }
 
 
-/*Memcopying byte by byte with typecast to char - ignoring any offsets*/
+/*Memcopying word by word when possible with typecast to char - 
+	ignoring any offsets between the two mem blocks*/
 void *MemCpy(void *dest, const void *src, size_t n)
 {
- 	char *temp_src = (char *)src;
-	char *temp_dest = (char *)dest;
+ 	char *char_psrc = (char *)src;
+	char *char_pdest = (char *)dest;
+	
+	size_t *word_psrc = NULL;
+	size_t *word_pdest = NULL;
+	
+	size_t words_left = 0;
 	
 	assert(NULL != dest && NULL != src);
-	
-	while(0 < n)
+				
+	/*set char by char while char_psrc & char_pdest is not aligned in memory
+	 and n is not 0*/
+	while ((0 != ((size_t)char_psrc % sizeof(size_t))) 
+			&& (0 != n)
+			&& (0 != ((size_t)char_pdest % sizeof(size_t))))
 	{
-		*temp_dest = *temp_src;
-		++temp_dest;
-		++temp_src;
-		--n;
+       	*char_pdest = *char_psrc;		
+		++char_pdest;
+		++char_psrc;
+		--n;	
 	}
+
+	/*typecast for word counting*/
+	word_psrc = (size_t *)char_psrc;
+	word_pdest = (size_t *)char_pdest;
+
+	/*save word amount counter*/
+	words_left = n / sizeof(size_t);
+
+	/*save remainder of n*/
+	n %= sizeof(size_t);
+
+	/* copies blocks of 8 bytes from src to dest */
+	while (0 != words_left)
+	{           
+        *word_pdest = *word_psrc;
+		++word_pdest;
+		++word_psrc;
+		--words_left;
+	}
+	
+	/*typecast back to char counting*/
+	char_pdest=(char *)word_pdest;
+	char_psrc=(char *)word_psrc;
+	
+	/*copies the remaining chars*/
+	while (0 != n)
+	{
+		*char_pdest = *char_psrc;
+		++char_pdest;
+		++char_psrc;
+		--n;
+	}	
 
 	return dest;	
 }
@@ -152,8 +190,6 @@ void *MemMove(void *dest, const void *src, size_t n)
 -take each digit of the int and convert it to char
 -place each converted char to the str
 -end with null terminator
-
------------------- MUST FREE STR IN MAIN ------------------------
 */
 char *IntToString(int i, char *str, unsigned int base)
 {
@@ -191,8 +227,66 @@ char *IntToString(int i, char *str, unsigned int base)
 
 
 
+/*--------------------------------------------------------------------------*/
+/* string to int algorithm:
 
+-recieve a str and a base
+-check its length
+-for every char in the string from head to end (according to atoi()):
+ check if the char fits the base
+	-if yes: add to int in selected base
+	-if not: return int
+	
+	why up to base 36? --> 0-9 + A-Z - total of 36 chars.. 
+	won't be what to represent the chars of the higher bases with.
+*/
+/*--------NOT DONE, NEED LUT TABLE for 0-9 a-z-------------*/
+int StringToInt(const char *str, unsigned int base)
+{
+	int result = 0;
+	size_t c = 0;
+	int base_counter = 0;
+	
+	/*got to end of str*/
+	while('\0' != *(str))
+	{
+		++str;
+		++c;
+	}
+	--str; 
+		
+	while(0 != c)
+	{		
+		result += Power(base,base_counter) * (int)(*str - 0x30);
+		++base_counter;
+		--str;	
+		--c; 
+	}
+	
+	return result;	
+}
 
+int Power(int x, int y)
+{	 
+    int temp = 0; 
+    
+    if( y == 0) 
+    {
+    	return 1; 
+    }
+    
+    temp = Power(x, y/2); 
+    
+    if (y%2 == 0) 
+    {
+    	return temp*temp; 
+    }
+    
+    else
+    {
+    	return x*temp*temp; 
+    }
+}
 
 
 

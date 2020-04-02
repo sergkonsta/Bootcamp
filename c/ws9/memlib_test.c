@@ -10,8 +10,11 @@
 
 int main()
 {
-	int i = INT_FOR_ITOA;
-	unsigned int base = BASE_FOR_ITOA;
+	int i_1 = INT_FOR_ITOA;
+	char *str = STR_FOR_ATOI;
+	
+	unsigned int base_1 = BASE_FOR_ITOA;
+	unsigned int base_2 = BASE_FOR_ATOI;
 	
 	char *free_test_1 = NULL;
 	char *free_test_2 = NULL;
@@ -40,7 +43,8 @@ int main()
 	TestMemMove(test_space_1, test_space_2);
 	ZeroMem(test_space_2);
 
-	TestIntToString(i,base);
+	TestIntToString(i_1,base_1);
+	TestStringToInt(str, base_2);
 	
 	printf("All done,\nIf no errors were printed, you're good.\n\n");
 	
@@ -156,6 +160,7 @@ int TestIntToString(int i, unsigned int base)
 	
 	str = IntToString(i, str, 10);
 
+
 	printf("\nInt to string test:\nint is: %d\nstring is: %s\n\n",i,str);
 
 	free(str);
@@ -163,7 +168,14 @@ int TestIntToString(int i, unsigned int base)
 	return 1;
 }
 
-
+int TestStringToInt(const char *str, unsigned int base)
+{	
+	printf("\nTesting for String To Int:\n");
+	printf("%s in base %u is: %d\n\n",str,base, StringToInt(str, base));
+	
+	
+	return 1;
+}
 
 
 
