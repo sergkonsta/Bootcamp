@@ -6,7 +6,6 @@
 **  Status:    ???						**
 *****************************************/		
 
-#include <stdlib.h>		/*for atoi*/
 #include <stddef.h>		/*for size_t*/
 #include <assert.h>		/*for assert*/
 
@@ -67,10 +66,10 @@ void *Memmove(void *dest, const void *src, size_t n)
 	assert(NULL != dest && NULL != src);
 	
 	/*check overlap here - move should start from end of dest*/
-	if(0xNUMBER_OF_PLACES > (temp_dest - temp_src) && 0 < (temp_dest - temp_src))
+	/*if(0xNUMBER_OF_PLACES > (temp_dest - temp_src) && 0 < (temp_dest - temp_src))
 	{
 	
-	}
+	}*/
 	
 	while(0 < n)
 	{
