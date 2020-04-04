@@ -9,13 +9,8 @@
 #include "memlib.h"
 
 int main()
-{
-	int i_1 = INT_FOR_ITOA;
-	char *str = STR_FOR_ATOI;
-	
-	unsigned int base_1 = BASE_FOR_ITOA;
-	unsigned int base_2 = BASE_FOR_ATOI;
-	
+{	
+
 	char *free_test_1 = NULL;
 	char *free_test_2 = NULL;
 	
@@ -43,9 +38,6 @@ int main()
 	TestMemMove(test_space_1, test_space_2);
 	ZeroMem(test_space_2);
 
-	TestIntToString(i_1,base_1);
-	TestStringToInt(str, base_2);
-	
 	printf("All done,\nIf no errors were printed, you're good.\n\n");
 	
 	/*free mem*/
@@ -138,47 +130,6 @@ int ZeroMem(char *s)
 		
 	return 1;
 }
-
-
-int TestIntToString(int i, unsigned int base)
-{
-	size_t digits = 0;
-	char *str = NULL;
-	int tmp = i;
-	
-	while(0 != tmp)
-	{
-		tmp /= 10;
-		++digits;
-	} 
-
-	str = (char *)malloc((digits + SIZE_OF_NULL_TERM) * sizeof(char));
-	if(NULL == str)
-	{
-		return 0;
-	}
-	
-	str = IntToString(i, str, 10);
-
-
-	printf("\nInt to string test:\nint is: %d\nstring is: %s\n\n",i,str);
-
-	free(str);
-	
-	return 1;
-}
-
-int TestStringToInt(const char *str, unsigned int base)
-{	
-	printf("\nTesting for String To Int:\n");
-	printf("%s in base %u is: %d\n\n",str,base, StringToInt(str, base));
-	
-	
-	return 1;
-}
-
-
-
 
 
 
