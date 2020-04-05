@@ -14,8 +14,8 @@
 
 #define SIZEOF_VAR(object) 	(char *)(&object+1) - (char *)(&object)
 
-#define DECLARE_TYPE(type) __typeof__(type) newvar
-#define SIZEOF_TYPE(object) (char *)(&object+1) - (char *)(&object)
+
+#define SIZEOF_TYPE(var) ((size_t)(1 + (var*)0))
 /*---------------------------------------------------------------------------*/
 
 /*****************************************
