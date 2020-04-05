@@ -1,36 +1,39 @@
 #ifndef __BIT_ARRAY_H__
 #define __BIT_ARRAY_H__
 
-#define UNUSED(x) void(x)
+#define UNUSED(x) (void)(x)
 
-typedef size_t bit_array_type;
+#include <stddef.h>		/*for size_t*/
+#include <assert.h>		/*for assert*/
+
+typedef size_t bit_arr_t;
 
 /*Bit Array functions*/
 
-bit_array_t SetAll(bit_array_t arr);
+bit_arr_t BArrSetAll(bit_arr_t arr);
 
-bit_array_t ResetAll(bit_array_t arr);
+bit_arr_t BArrResetAll(bit_arr_t arr);
 
-int GetVal(bit_array_t arr, size_t bit_pos);
+int BArrGetVal(bit_arr_t arr, size_t bit_index);
 
-bit_array_t SetBit(bit_array_t arr, size_t bit_pos, int valude);
+bit_arr_t BArrRotR(bit_arr_t arr, size_t num_of_rot);
 
-bit_array_t FlipBit(bit_array_t arr, size_t bit_pos);
+bit_arr_t BArrRotL(bit_arr_t arr, size_t num_of_rot);
 
-bit_array_t SetOn(bit_array_t arr, size_t bit_pos);
+size_t BArrCountOn(bit_arr_t arr);
 
-bit_array_t SetOff(bit_array_t arr, size_t bit_pos);
+size_t BArrCountOff(bit_arr_t arr);
 
-size_t CountOn(bit_array_t);
+bit_arr_t BArrSetOn(bit_arr_t arr, size_t bit_index);
 
-size_t CountOn(bit_array_t);
+bit_arr_t BArrSetOff(bit_arr_t arr, size_t bit_index);
 
-bit_array_t Mirror(bit_array_t arr);
+bit_arr_t BArrSetBit(bit_arr_t arr, size_t bit_index, int val_to_set);
 
-bit_array_t RotR(bit_array_t arr, size_t bit_pos);
+bit_arr_t BArrFlipBit(bit_arr_t arr, size_t bit_index);
 
-bit_array_t RotL(bit_array_t arr, size_t bit_pos);
+bit_arr_t BArrMirror(bit_arr_t arr);
 
-char *ToString(bit_array_t arr, char *bits_string);
+char *BArrToString(bit_arr_t arr, char *bits_string);
 
 #endif
