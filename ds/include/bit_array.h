@@ -5,6 +5,9 @@
 
 #include <stddef.h>		/*for size_t*/
 #include <assert.h>		/*for assert*/
+#include <stdio.h>		/*for printf*/
+#include <stdlib.h>
+#include <limits.h> /*limit*/
 
 typedef size_t bit_arr_t;
 
