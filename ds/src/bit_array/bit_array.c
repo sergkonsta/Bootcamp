@@ -2,7 +2,7 @@
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      05.04.2020               **
 **  Reviewer:  Eden						**
-**  Status:    SENT				**
+**  Status:    APPROVED					**
 *****************************************/
 
 #include "bit_array.h"
@@ -95,7 +95,7 @@ bit_arr_t BArrFlipBit(bit_arr_t arr, size_t bit_index)
 
 /*--------------------------------------------------------------------------*/
 /*counts amount of Ones in the bit_array using  Kernighan’s Algorithm
-  - STATUS: SENT */
+  - STATUS: APPROVED */
 
 size_t BArrCountOn(bit_arr_t arr)
 {
@@ -122,7 +122,7 @@ size_t BArrCountOff(bit_arr_t arr)
 
 
 /*--------------------------------------------------------------------------*/
-/*mirrors the bit_array - STATUS: SENT */
+/*mirrors the bit_array - STATUS: APPROVED */
 bit_arr_t BArrMirror(bit_arr_t arr)
 {
 	arr = (arr & 0xFFFFFFFF00000000) >> 32 | (arr & 0x00000000FFFFFFFF) << 32;
@@ -137,7 +137,7 @@ bit_arr_t BArrMirror(bit_arr_t arr)
 
 
 /*--------------------------------------------------------------------------*/
-/* Rotate the array Left - STATUS: SENT */
+/* Rotate the array Left - STATUS: APPROVED */
 bit_arr_t BArrRotL(bit_arr_t arr, size_t num_to_rotate)
 { 		 
 	return (arr << num_to_rotate) | (arr >> (SIZE_OF_BARR - num_to_rotate));
@@ -145,7 +145,7 @@ bit_arr_t BArrRotL(bit_arr_t arr, size_t num_to_rotate)
 
 
 /*--------------------------------------------------------------------------*/
-/* Rotate the array Right - STATUS: SENT */
+/* Rotate the array Right - STATUS: APPROVED */
 bit_arr_t BArrRotR(bit_arr_t arr, size_t num_to_rotate)
 { 	
 	return (arr >> num_to_rotate) | (arr << (SIZE_OF_BARR - num_to_rotate));
@@ -153,7 +153,7 @@ bit_arr_t BArrRotR(bit_arr_t arr, size_t num_to_rotate)
 
 
 /*--------------------------------------------------------------------------*/
-/* ToString function  - STATUS: SENT */
+/* ToString function  - STATUS: APPROVED */
 char *BArrToString(bit_arr_t arr, char *bits_string)
 {
 	size_t index = 0;
@@ -192,7 +192,7 @@ char *StrRev(char *str)
 }
 
 /*--------------------------------------------------------------------------*/
-/* return Mirror of the array -Using Look-Up Table - STATUS: SENT */
+/* return Mirror of the array -Using Look-Up Table - STATUS: APPROVED */
 bit_arr_t BArrMirrorLut(bit_arr_t arr)
 {
 	bit_arr_t result = 0x0;
@@ -211,12 +211,13 @@ bit_arr_t BArrMirrorLut(bit_arr_t arr)
 }
 
 /*--------------------------------------------------------------------------*/
-/* Count the bits that's on - Using Look-Up table - STATUS: SENT */
+/* Count the bits that's on - Using Look-Up table - STATUS: APPROVED */
 int BArrCountBitLut(bit_arr_t arr) 
 {
 	size_t i = 0;
 
-	static size_t bit_count_array[] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+	static size_t bit_count_array[] = {0, 1, 1, 2, 1, 2, 2, 3,
+										1, 2, 2, 3, 2, 3, 3, 4};
 	
   	size_t count = 0;
 	
