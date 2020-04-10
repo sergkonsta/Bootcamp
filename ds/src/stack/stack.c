@@ -19,44 +19,55 @@ struct stack
 	};
 
 stack_t *StackCreate(size_t capacity)
-{
-
-		
-	/*creating the stack struct for global access*/
-	stack_t *stack_struct = (stack_t *)malloc(sizeof(stack_t));
-	if(NULL == stack_struct)
+{	
+	/*creating the stack struct*/
+	stack_t *stack_ptr = (stack_t *)malloc(sizeof(stack_t));
+	if(NULL == stack_ptr)
 	{
 		return NULL;
 	}
 	
 	/*assert reasonable input from user*/
-	assert(0 != capacity);
-	
+	assert(0 < capacity);
+		
 	/*initializing members: size & capacity*/
-	stack_struct->capacity = capacity; 
-	stack_struct->size = 0;
+	stack_ptr->capacity = capacity; 
+	stack_ptr->size = 0;
 	
 	/*initializing member that points to the stack array*/
 	
-	stack_struct->base_element = malloc(sizeof(void *) * stack_struct->capacity);
-	if(NULL == stack_struct)
+	stack_ptr->base_element = (void**)malloc(sizeof(void *) * stack_ptr->capacity);
+	if(NULL == stack_ptr->base_element)
 	{
-		free(stack_struct);
+		free(stack_ptr);
 		return NULL;
 	}
 	
-	return stack_struct;
+	return stack_ptr;
 }
 
 
 /*----------------------------------------------------------------------------*/
-
+/*frees allocated memory and rmeoves dangaling pointers*/
 void StackDestroy(stack_t *s_ptr)
 {
-	assert(NULL != s_ptr);
+	/*tmps for free()*/
+	stack_t *tmp_1 = s_ptr;
+	void *tmp_2 = s_ptr->base_element;
 	
-	free(s_ptr->base_element);
-	free(s_ptr);
+	assert(NULL != s_ptr);
+
+	while(0 != s_ptr->capacity)
+	{
+		 s_ptr->base_element = NULL;
+		 ++s_ptr->base_element;
+		 --s_ptr->capacity;
+	}
+	
+	s_ptr = NULL;
+	
+	free(tmp_2);
+	free(tmp_1);
 	
 	return;	
 }

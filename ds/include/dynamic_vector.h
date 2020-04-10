@@ -3,18 +3,9 @@
 
 #include <stddef.h>		/* for size_t */
 
-
 typedef struct vector vector_t;
 
-/*
-struct vector 
-{
-	void **base;
-	size_t capacity;
-	size_t size;
-};*/
-
-
+/*implement with 1 malloc only - struct come before the array in the memory*/
 vector_t *DynVecCreate(size_t capacity);
 void DynVecDestroy(vector_t *dyn_vec);
 
