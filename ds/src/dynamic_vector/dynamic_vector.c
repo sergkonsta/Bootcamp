@@ -188,30 +188,3 @@ int DynVecReserve(vector_t *dyn_vec, size_t add_size)
 	return (fail_flag);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
