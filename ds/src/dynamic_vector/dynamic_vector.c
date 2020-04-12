@@ -56,9 +56,9 @@ void DynVecDestroy(vector_t *dyn_vec)
 	assert(NULL != dyn_vec);
 	
 	free(dyn_vec->base);
-	free(dyn_vec);
-
 	dyn_vec->base = NULL;	
+
+	free(dyn_vec);
 	dyn_vec = NULL;
 	
 	return;	
@@ -113,9 +113,7 @@ int DynVecAppend(vector_t *dyn_vec, void *data)
 	
 	if(dyn_vec->size == dyn_vec->capacity)
 	{
-		fail_flag = DynVecReserve(dyn_vec, dyn_vec->capacity * 2);	
-		
-		dyn_vec->capacity *= 2;			
+		fail_flag = DynVecReserve(dyn_vec, dyn_vec->capacity);	
 	}
 		
 	dyn_vec->base[dyn_vec->size] = data;
@@ -154,12 +152,16 @@ void *DynVecGetValue(const vector_t *dyn_vec, size_t index)
 
 void DynVecSetValue(vector_t *dyn_vec, size_t index, void *data)
 {
-	assert(index < dyn_vec->capacity);
+	assert(index <= dyn_vec->size);
 	assert(NULL != dyn_vec);
 	
 	dyn_vec->base[index] = data;
 
-/*	++dyn_vec->size;*/
+	/*checks if data is added at a new index*/
+	if (index >= dyn_vec->size)
+	{
+		++dyn_vec->size;
+	}
 	
 	return;
 }

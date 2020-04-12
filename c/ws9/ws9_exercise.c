@@ -24,6 +24,9 @@
 									printf("big endian"); : \
 									printf("little endian");
 	
+/*space ascii value in dec*/
+#define SPACE_ASCII (32)
+
 /*letters from A-Z*/
 #define NUMBER_OF_LETTERS (26)
 
@@ -266,7 +269,8 @@ int StringToInt(const char *str, unsigned int base)
 	
 	assert(NULL != str);
 	
-	while(32 == *str)
+	/*space case*/
+	while(SPACE_ASCII == *str)
 	{
 		++str;
 	}
