@@ -24,7 +24,7 @@ stack_t *StackCreate(size_t capacity)
 	stack_t *stack_ptr = (stack_t *)malloc(sizeof(stack_t));
 	if(NULL == stack_ptr)
 	{
-		return NULL;
+		return (NULL);
 	}
 	
 	/*assert reasonable input from user*/
@@ -40,10 +40,11 @@ stack_t *StackCreate(size_t capacity)
 	if(NULL == stack_ptr->base_element)
 	{
 		free(stack_ptr);
-		return NULL;
+		stack_ptr = NULL;
+		return (NULL);
 	}
 	
-	return stack_ptr;
+	return (stack_ptr);
 }
 
 
@@ -51,23 +52,13 @@ stack_t *StackCreate(size_t capacity)
 /*frees allocated memory and rmeoves dangaling pointers*/
 void StackDestroy(stack_t *s_ptr)
 {
-	/*tmps for free()*/
-	stack_t *tmp_1 = s_ptr;
-	void *tmp_2 = s_ptr->base_element;
-	
 	assert(NULL != s_ptr);
-
-	while(0 != s_ptr->capacity)
-	{
-		 s_ptr->base_element = NULL;
-		 ++s_ptr->base_element;
-		 --s_ptr->capacity;
-	}
 	
+	free(s_ptr->base_element);
+	free(s_ptr);
+	
+	s_ptr->base_element = NULL;
 	s_ptr = NULL;
-	
-	free(tmp_2);
-	free(tmp_1);
 	
 	return;	
 }
@@ -116,7 +107,7 @@ size_t StackSize(stack_t *s_ptr)
 {
 	assert(NULL != s_ptr);
 	
-	return s_ptr->size;
+	return (s_ptr->size);
 }
 
 
@@ -126,7 +117,7 @@ int StackIsEmpty(stack_t *s_ptr)
 {
 	assert(NULL != s_ptr);
 	
-	return !(s_ptr->size && s_ptr->size);
+	return (0 == s_ptr->size);
 }
 
 
@@ -135,7 +126,7 @@ size_t StackCapacity(stack_t *s_ptr)
 {
 	assert(NULL != s_ptr);
 	
-	return s_ptr->capacity;
+	return (s_ptr->capacity);
 }
 
 
