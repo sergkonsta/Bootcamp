@@ -1,9 +1,9 @@
 
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
-**  Date:      15.04.2020               **
+**  Date:      18.04.2020               **
 **  Reviewer:  Eden						**
-**  Status:    ????						**
+**  Status:    SENT						**
 *****************************************/		
 
 #include <stdlib.h>		/*for malloc*/
@@ -249,12 +249,7 @@ int SListForEach(slist_iter_t from, slist_iter_t to,
 }
 
 
-
-
-
-
-
-
+/*----------------------------------------------------------------------------*/
 
 
 

@@ -19,7 +19,7 @@ int main()
 	slist_t *slist = SListCreate();
 
 	slist_iter_t iterator = slist->head;
-	slist_iter_t iter_end = NULL;
+
 
 
 	iterator = SListInsert(iterator, (void *)1);	
@@ -33,12 +33,8 @@ int main()
 	iterator = SListInsert(iterator, (void *)5);	
 	
 	
-	iterator = SListBegin(slist);
-	iter_end = SListEnd(slist);
 	
-	SListForEach(iterator, iter_end, (int)SListSetData, (void*)7);
-	
-	printf("iterator data returned from find is: %d", *(int *)iterator);
+
 	
 	
 	printf("\nlist count: %ld.\n",SListCount(slist));
