@@ -68,6 +68,7 @@ void SListDestroy(slist_t *slist)
 		temp = slist->head;
 		slist->head = slist->head->next; 
 	
+		temp->data = NULL;
 		temp->next = NULL;
 		free(temp);
 		temp = NULL;
@@ -140,7 +141,7 @@ slist_iter_t SListInsert(slist_iter_t iterator, void *data)
 	iterator->next = new_node;
 	
 	/*first insert head and tail seperation*/
-	if(slist->head == slist->tail)
+	if(slist->head->next == NULL)
 	{
 		slist->head = iterator;
 	}
@@ -159,8 +160,8 @@ slist_iter_t SListRemove(slist_iter_t iterator)
 	
 	assert(NULL != iterator);
 	
-	/*returniter if it points to dummy at the end*/
-	if(iterator->data != iterator)
+	/*return iter if it points to dummy at the end*/
+	if(iterator->data == iterator)
 	{
 		return (iterator);
 	}
@@ -233,11 +234,19 @@ int SListIsIterEqual(const slist_iter_t iter1, const slist_iter_t iter2)
 slist_iter_t SListFind(slist_iter_t from, slist_iter_t to,
 						int (*is_equal)(void *data, void *param), void *param)
 {
+	/*make sure 'from' comes before 'to' in the list*/
+	slist_iter_t order_tester = to;
+	while(NULL != order_tester->data)
+	{
+		assert(1 != SListIsIterEqual(order_tester, from));
+		order_tester = order_tester->next;
+	}
+	
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != is_equal);
 	
-	while(0 == SListIsIterEqual(from, to) && 0 != is_equal(from->data, param))
+	while(1 != SListIsIterEqual(from, to) && 1 != is_equal(from->data, param))
 	{
 		from = from->next;
 	}	
@@ -252,6 +261,14 @@ int SListForEach(slist_iter_t from, slist_iter_t to,
 {
 	int result = 0;
 	
+	/*make sure 'from' comes before 'to' in the list*/
+	slist_iter_t order_tester = to;
+	while(NULL != order_tester->data)
+	{
+		assert(1 != SListIsIterEqual(order_tester, from));
+		order_tester = order_tester->next;
+	}
+		
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != action_func);
@@ -268,14 +285,19 @@ int SListForEach(slist_iter_t from, slist_iter_t to,
 
 /*----------------------------------------------------------------------------*/
 
+slist_t *SListAppendList(slist_t *dest, slist_t *src)
+{
+	/*moving src head node to dest tail (dummy) node*/
+	dest->tail->data = src->head->data;
+	dest->tail->next = src->head->next;
+	
+	/*updates dest tail node*/	
+	dest->tail = src->tail;
 
-
-
-
-
-
-
-
-
-
-
+	/*src head and tail point to former src->head node*/
+	src->tail = src->head;
+	src->head->data = NULL;
+	src->head->next = NULL;
+	
+	return (dest);
+}

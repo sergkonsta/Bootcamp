@@ -22,30 +22,49 @@ int IsEqual(void *data_1, void *data_2)
 
 int main()
 {
-	slist_t *slist = SListCreate();
+	slist_t *slist1 = SListCreate();
+	slist_t *slist2 = SListCreate();
 
-	slist_iter_t iterator = slist->head;
+	slist_iter_t iter1 = SListBegin(slist1);
+	slist_iter_t iter2 = SListBegin(slist2);
 
 
 
-	iterator = SListInsert(iterator, (void *)1);	
+	iter1 = SListInsert(iter1, (void *)1);	
 	
-	iterator = SListInsert(iterator, (void *)2);	
+	iter1 = SListInsert(iter1, (void *)2);	
 	
-	iterator = SListInsert(iterator, (void *)3);
+	iter1 = SListInsert(iter1, (void *)3);
 	
-	iterator = SListInsert(iterator, (void *)4);
+	iter1 = SListInsert(iter1, (void *)4);
 	
-	iterator = SListInsert(iterator, (void *)5);	
+	iter1 = SListInsert(iter1, (void *)5);	
 	
 	
+	iter2 = SListInsert(iter2, (void *)6);	
 	
+	iter2 = SListInsert(iter2, (void *)7);	
+	
+	iter2 = SListInsert(iter2, (void *)8);
+	
+	iter2 = SListInsert(iter2, (void *)9);
+	
+	iter2 = SListInsert(iter2, (void *)10);	
 
+	SListAppendList(slist1, slist2);
 	
+	iter1 = SListBegin(slist1);
 	
-	printf("\nlist count: %ld.\n",SListCount(slist));
+	while(NULL != iter1->next)
+	{
+		printf("%d, ",*(int *)&iter1->data);
+		iter1 = iter1->next;
+	}
 	
-	SListDestroy(slist);
+	printf("\nlist count: %ld.\n",SListCount(slist1));
+	
+	SListDestroy(slist1);
+	SListDestroy(slist2);
 	
 	return 0;
 }
