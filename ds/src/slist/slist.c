@@ -17,6 +17,12 @@ struct slist_node
   struct slist_node *next;
 };
 
+struct slist
+{
+	struct slist_node *head;
+	struct slist_node *tail;
+};
+
 slist_t *SListCreate(void)
 {
 	struct slist_node *dummy = NULL;
@@ -41,7 +47,7 @@ slist_t *SListCreate(void)
 	new_list->tail = dummy;
 	
 	/*hold tail address int dummy data*/
-	dummy->data = (void *)new_list;
+	dummy->data = new_list;
 	dummy->next = NULL;
 	
 	return (new_list);
@@ -153,8 +159,11 @@ slist_iter_t SListRemove(slist_iter_t iterator)
 	
 	assert(NULL != iterator);
 	
-	/*makes sure not pointing to dummy at the end*/
-	assert(iterator->data != iterator);
+	/*returniter if it points to dummy at the end*/
+	if(iterator->data != iterator)
+	{
+		return (iterator);
+	}
 		
 	iterator->data = iterator->next->data; 
 	
@@ -196,26 +205,26 @@ void SListSetData(slist_iter_t iterator, void *data)
 
 size_t SListCount(const slist_t *slist)
 {
-	size_t c = 0;
+	size_t node_counter = 0;
 	slist_iter_t iter = slist->head; 
 	
 	assert(NULL != slist);
 	
 	while(NULL != iter->next)
 	{
-		++c;
+		++node_counter;
 		iter = iter->next;
 	}
 	
-	return (c);
+	return (node_counter);
 }
 
 
 /*----------------------------------------------------------------------------*/
-/*return 0 for equality*/
+/*return 1 for equality*/
 int SListIsIterEqual(const slist_iter_t iter1, const slist_iter_t iter2)
 {
-	return !(iter1 == iter2);
+	return !!(iter1 == iter2);
 }
 
 
@@ -224,7 +233,11 @@ int SListIsIterEqual(const slist_iter_t iter1, const slist_iter_t iter2)
 slist_iter_t SListFind(slist_iter_t from, slist_iter_t to,
 						int (*is_equal)(void *data, void *param), void *param)
 {
-	while(0 != SListIsIterEqual(from, to) && 0 != is_equal(from->data, param))
+	assert(NULL != from);
+	assert(NULL != to);
+	assert(NULL != is_equal);
+	
+	while(0 == SListIsIterEqual(from, to) && 0 != is_equal(from->data, param))
 	{
 		from = from->next;
 	}	
@@ -233,19 +246,23 @@ slist_iter_t SListFind(slist_iter_t from, slist_iter_t to,
 }
 
 /*----------------------------------------------------------------------------*/
-
+/*return 0 on success*/
 int SListForEach(slist_iter_t from, slist_iter_t to,
 				 int(*action_func)(void *data, void *arg), void *param)
 {
 	int result = 0;
 	
-	while(0 != SListIsIterEqual(from, to))
+	assert(NULL != from);
+	assert(NULL != to);
+	assert(NULL != action_func);
+	
+	while(0 == SListIsIterEqual(from, to))
 	{
 		result += action_func(from->data, param);
 		from = from->next;
 	}
 	
-	return (result);
+	return (!result);
 }
 
 

@@ -5,11 +5,7 @@
 
 typedef struct slist_node* slist_iter_t;
 
-typedef struct slist
-{
-	struct slist_node *head;
-	struct slist_node *tail;
-} slist_t;
+typedef struct slist slist_t;
 
 slist_t *SListCreate(void);
 void SListDestroy(slist_t *slist);

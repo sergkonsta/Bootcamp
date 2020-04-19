@@ -8,6 +8,12 @@ struct slist_node
   struct slist_node *next;
 };
 
+struct slist
+{
+	struct slist_node *head;
+	struct slist_node *tail;
+};
+
 /*return 0 for equality*/
 int IsEqual(void *data_1, void *data_2)
 {
