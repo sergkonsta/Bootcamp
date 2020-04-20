@@ -13,13 +13,10 @@ queue:
 
 
 
-vlgg:
+vlg:
 	valgrind --leak-check=yes --track-origins=yes ./out
 
-
-
-
-gitpushh:
+gitp:
 	git add .; git commit -ma; git push -u;
 
 
