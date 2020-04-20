@@ -7,5 +7,6 @@
 
 !*.c
 !*.h
+!makefile
 
 !.gitignore
