@@ -4,19 +4,27 @@ DS_INCLUDE=-iquote ds/include/
 DS_SRC=ds/src/
 DS_TEST=ds/test/
 
+
+
+#-------------------------------DATA STRUCTURES--------------------------------#
 slist: 
-	$(CC) $(CFLAGS) $(DS_INCLUDE) -o out.o $(DS_TEST)slist_test.c $(DS_SRC)slist/slist.c
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o out.o\
+	 $(DS_TEST)slist_test.c\
+	 $(DS_SRC)slist/slist.c
 
 queue:
-	$(CC) $(CFLAGS) $(DS_INCLUDE) -o out.o $(DS_TEST)queue_test.c $(DS_SRC)queue/queue.c $(DS_SRC)slist/slist.c
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o out.o\
+	$(DS_TEST)queue_test.c\
+	$(DS_SRC)queue/queue.c\
+	$(DS_SRC)slist/slist.c
 
 
-
+#-------------------------------GLOBALS----------------------------------------#
 vlg:
 	valgrind --leak-check=yes --track-origins=yes ./out.o
 
 #update git repository
 gitp:
-	git add .; git commit -ma; git push -u; sergey.konstantinovsky;
+	git add .; git commit -ma; git push -u; 
 
 
