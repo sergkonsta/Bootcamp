@@ -79,7 +79,7 @@ void QueueDeq(queue_t *que)
 	assert(NULL != que);
 	assert(0 != QueueSize(que));
 	
-	/*removes the data from the end of queue*/
+	/*removes the data from the begining of queue*/
 	SListRemove(SListBegin(que->queue));
 	
 	return;
@@ -90,13 +90,9 @@ void QueueDeq(queue_t *que)
 /* O(1) */
 void *QueuePeek(const queue_t *que)
 {
-
-
 	assert(NULL != que);
 	assert(0 != QueueSize(que));
-	
-
-	
+		
 	return(SListGetData(SListBegin(que->queue)));
 }					
 
@@ -117,7 +113,7 @@ int QueueIsEmpty(const queue_t *que)
 {
 	assert(NULL != que);
 
-	return (0 == QueueSize(que));
+	return (SListBegin(que->queue) == SListEnd(que->queue));
 }				
 
 

@@ -41,19 +41,22 @@ node_t *Flip(node_t *head)
 /*tells wether a given slist has loop*/
 int HasLoop(const node_t *head)
 {
-	const node_t *slow_p = head;
-	const node_t *fast_p = head; 
+	assert(NULL != head);
+	
+	const node_t *one_step_p = head;
+	const node_t *two_step_p = head; 
 
 	assert(NULL != head);
 
-	while (NULL != slow_p && NULL != fast_p && NULL != fast_p->next)
+	while (NULL != one_step_p && NULL != two_step_p && NULL != two_step_p->next)
 	{ 
-		slow_p = slow_p->next; 
-		fast_p = fast_p->next->next; 
+		one_step_p = one_step_p->next; 
+		two_step_p = two_step_p->next->next; 
 		
-		if (slow_p == fast_p)
+		if (one_step_p == two_step_p)
 		{ 
 			printf("Found Loop"); 
+			
 			return 1; 
 		} 
 	} 
@@ -71,11 +74,15 @@ node_t *FindIntersection(node_t *head_1, node_t *head_2)
 
 	node_t *temp = NULL;
 
+	assert(NULL != head_1);
+	assert(NULL != head_2);
+
+	/*find difference in lengths*/
 	if (c1 >= c2) 
 	{ 
 		diff = c1 - c2; 
 	} 
-
+	
 	/*swap pointers if needed*/
 	else if(c2 > c1)
 	{ 
@@ -85,17 +92,14 @@ node_t *FindIntersection(node_t *head_1, node_t *head_2)
 		head_2 = temp;
 	}
 
+	/*iterate through the longer list until lists are equal in length*/
 	for (i = 0; i < diff; i++) 
 	{ 
-		if (head_1 == NULL) 
-		{ 
-			return NULL; 
-		} 
-
 		head_1 = head_1->next; 
 	} 
 
-	while (head_1 != NULL && head_2 != NULL) 
+	/*iterate through rest of the lists and return common node if found*/
+	while (head_1 != NULL) 
 	{ 
 		if (head_1 == head_2) 
 		{
