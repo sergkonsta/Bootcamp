@@ -67,11 +67,9 @@ void SListDestroy(slist_t *slist)
 	{
 		temp = slist->head;
 		slist->head = slist->head->next; 
-	
-		temp->data = NULL;
-		temp->next = NULL;
-		free(temp);
-		temp = NULL;
+		
+		/*no dangling pointer here because user can't access this address*/
+		free(temp);		
 	}
 	
 	/*frees head and temp pointers*/
@@ -208,7 +206,7 @@ size_t SListCount(const slist_t *slist)
 {
 	size_t node_counter = 0;
 	slist_iter_t iter = slist->head; 
-	
+
 	assert(NULL != slist);
 	
 	while(NULL != iter->next)
@@ -216,6 +214,11 @@ size_t SListCount(const slist_t *slist)
 		++node_counter;
 		iter = iter->next;
 	}
+
+/*
+	NICE WAY TO CODE REUSE:
+	return SListForEach(SListBegin(slist), SListEnd(slist), IncFun(), &node_counter);
+*/
 	
 	return (node_counter);
 }
@@ -230,18 +233,10 @@ int SListIsIterEqual(const slist_iter_t iter1, const slist_iter_t iter2)
 
 
 /*----------------------------------------------------------------------------*/
-
+/*O(1)*/
 slist_iter_t SListFind(slist_iter_t from, slist_iter_t to,
 						int (*is_equal)(void *data, void *param), void *param)
-{
-	/*make sure 'from' comes before 'to' in the list*/
-	slist_iter_t order_tester = to;
-	while(NULL != order_tester->data)
-	{
-		assert(1 != SListIsIterEqual(order_tester, from));
-		order_tester = order_tester->next;
-	}
-	
+{	
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != is_equal);
@@ -261,14 +256,6 @@ int SListForEach(slist_iter_t from, slist_iter_t to,
 {
 	int result = 0;
 	
-	/*make sure 'from' comes before 'to' in the list*/
-	slist_iter_t order_tester = to;
-	while(NULL != order_tester->data)
-	{
-		assert(1 != SListIsIterEqual(order_tester, from));
-		order_tester = order_tester->next;
-	}
-		
 	assert(NULL != from);
 	assert(NULL != to);
 	assert(NULL != action_func);

@@ -47,6 +47,7 @@ queue_t *QueueCreate(void)
 void QueueDestroy(queue_t *que)
 {
 	assert(NULL != que);
+	assert(NULL != que->queue);
 	
 	SListDestroy(que->queue);
 	
@@ -60,15 +61,17 @@ void QueueDestroy(queue_t *que)
 
 /*----------------------------------------------------------------------------*/
 /* O(1) */
+/*insert the data into the end of list 
+		and then return:
+						 0 for success
+						 1 for failed SListInsert */
 
 int	QueueEnq(queue_t *que, void *data)
 {
 	assert(NULL != que);
-	
-	/*insert the data into the end of list*/
-	SListInsert(SListEnd(que->queue), data);
-
-	return 0;	
+	assert(NULL != que->queue);
+		
+	return (!SListInsert(SListEnd(que->queue), data));	
 }				
 
 
@@ -77,6 +80,7 @@ int	QueueEnq(queue_t *que, void *data)
 void QueueDeq(queue_t *que)
 {
 	assert(NULL != que);
+	assert(NULL != que->queue);
 	assert(0 != QueueSize(que));
 	
 	/*removes the data from the begining of queue*/
@@ -91,6 +95,7 @@ void QueueDeq(queue_t *que)
 void *QueuePeek(const queue_t *que)
 {
 	assert(NULL != que);
+	assert(NULL != que->queue);
 	assert(0 != QueueSize(que));
 		
 	return(SListGetData(SListBegin(que->queue)));
@@ -102,6 +107,7 @@ void *QueuePeek(const queue_t *que)
 size_t QueueSize(const queue_t *que)
 {
 	assert(NULL != que);
+	assert(NULL != que->queue);
 	
 	return(SListCount(que->queue));
 }		
@@ -112,7 +118,8 @@ size_t QueueSize(const queue_t *que)
 int QueueIsEmpty(const queue_t *que)
 {
 	assert(NULL != que);
-
+	assert(NULL != que->queue);
+	
 	return (SListBegin(que->queue) == SListEnd(que->queue));
 }				
 
