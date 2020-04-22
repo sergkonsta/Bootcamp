@@ -8,14 +8,19 @@
 
 void TestCase(	size_t case_num, size_t buf_capacity, size_t dest_size,
 				size_t src_size, size_t num_2_write, size_t num_2_read);
+				
+void TestCaseReadFromEmpty(	size_t buf_capacity, size_t dest_size, 
+							size_t num_2_read);
 
+void TestCaseNoSpaceInCBuff(size_t buf_capacity, size_t src_size, 
+							size_t num_2_write);
 /*
 
 TEST CASES:
 
 	BufSize		dest	src			2write		2read
-	
-[		2		10		10			10			10		]	-	CASE 1
+[		10		10								10		]	-	read from empty
+[		5				10			10					]	-	no space in buff
 [		10		10		10			10			0		]	-	CASE 2
 [		10		10		10			1			10		]	-	CASE 3
 [		10		10		10			0			10		]	-	CASE 4
@@ -29,7 +34,8 @@ TEST CASES:
 
 int main()
 {	
-	TestCase(1,2,10,10,10,10);
+	TestCaseReadFromEmpty(10,10,10);
+	TestCaseNoSpaceInCBuff(5,10,10);
 	
 	TestCase(2,10,10,10,10,0);
 	
@@ -56,10 +62,10 @@ void TestCase(	size_t case_num, size_t buf_capacity, size_t dest_size,
 	char *src = (char *)malloc(sizeof(char)*src_size);
 	char *dest = (char *)malloc(sizeof(char)*dest_size);
 	
-	size_t tmp = 0;
-	size_t min_3 = 0;
-	size_t min_2 = 0;
-	size_t size_counter = 0;
+	ssize_t tmp = 0;
+	ssize_t min_3 = 0;
+	ssize_t min_2 = 0;
+	ssize_t size_counter = 0;
 	
 	/*		creating buffer		*/
 	cbuff = CirBufferCreate(buf_capacity);
@@ -83,28 +89,19 @@ void TestCase(	size_t case_num, size_t buf_capacity, size_t dest_size,
 	/*		writing to buffer		*/	
 	min_3 = MIN3(num_2_write, src_size, CirBufferFreeSpace(cbuff));
 	min_2 = MIN2(num_2_write, CirBufferFreeSpace(cbuff));
-	size_counter += CirBufferWrite(cbuff, src, num_2_write);
-	
-	
-	/*checks for case:		 num_2_write <= src_size	*/	
-	/*if(min_3 != size_counter)
-	{
-		printf("\nproblem in line: %d, case: %ld",__LINE__,case_num);
-	}*/
-	 	
-	/*checks for case:		any num_2_write 	*/
+	size_counter = CirBufferWrite(cbuff, src, num_2_write);
+
 	if(min_2 != size_counter)
 	{
 		printf("\nproblem in line: %d, case: %ld",__LINE__,case_num);
 	}
-	
-	 	
+		 	
 	if((!(num_2_write)) != CirBufferIsEmpty(cbuff))
 	{
 		printf("\nproblem in line: %d, case: %ld",__LINE__,case_num);
 	}
 	
-	if(size_counter != CirBufferSize(cbuff))
+	if(size_counter != (ssize_t)CirBufferSize(cbuff))
 	{
 		printf("\nproblem in line: %d, case: %ld",__LINE__,case_num);
 	}
@@ -133,7 +130,7 @@ void TestCase(	size_t case_num, size_t buf_capacity, size_t dest_size,
 		printf("\nproblem in line: %d, case: %ld",__LINE__,case_num);
 	}
 	
-	if(size_counter != CirBufferSize(cbuff))
+	if(size_counter != (ssize_t)CirBufferSize(cbuff))
 	{
 		printf("\nproblem in line: %d, case: %ld",__LINE__,case_num);
 	}
@@ -151,4 +148,79 @@ void TestCase(	size_t case_num, size_t buf_capacity, size_t dest_size,
 	return;
 }
 
+void TestCaseReadFromEmpty(	size_t buf_capacity, size_t dest_size, 
+							size_t num_2_read)
+{
+	c_buff_t *cbuff = NULL;	
+	char *dest = (char *)malloc(sizeof(char)*dest_size);
+	
+	ssize_t tmp = 0;
+	ssize_t min_3 = 0;
+	ssize_t size_counter = 0;
+	
+	/*		creating buffer		*/
+	cbuff = CirBufferCreate(buf_capacity);
+		
+	/*		reading from buffer		*/	
+	min_3 = MIN3(num_2_read, dest_size, CirBufferSize(cbuff));
+	
+	tmp = CirBufferRead(cbuff, dest, num_2_read); 		
+	
+	size_counter -= tmp;
+	
+	if(min_3 != tmp)
+	{
+		printf("\nproblem in line: %d, case: READ FROM EMPTY",__LINE__);
+	}
+		
+	if((!(size_counter)) != CirBufferIsEmpty(cbuff))
+	{
+		printf("\nproblem in line: %d, case: READ FROM EMPTY",__LINE__);
+	}
+	
+	if(size_counter != (ssize_t)CirBufferSize(cbuff))
+	{
+		printf("\nproblem in line: %d, case: READ FROM EMPTY",__LINE__);
+	}
+	
+	if((buf_capacity - size_counter) != CirBufferFreeSpace(cbuff))
+	{
+		printf("\nproblem in line: %d, case: READ FROM EMPTY",__LINE__);
+	}
+	
+	CirBufferDestroy(cbuff);
+
+	free(dest);
+
+	return;
+}
+
+
+void TestCaseNoSpaceInCBuff(size_t buf_capacity, size_t src_size, 
+							size_t num_2_write)
+{
+	c_buff_t *cbuff = NULL;	
+	char *src = (char *)malloc(sizeof(char)*src_size);
+
+	ssize_t size_counter = 0;
+	
+	/*		creating buffer		*/
+	cbuff = CirBufferCreate(buf_capacity);
+		
+	/*		writing to buffer		*/	
+	size_counter = CirBufferWrite(cbuff, src, num_2_write);
+
+	if(-1 != size_counter)
+	{
+		printf("\nproblem in line: %d, case: NO SPACE IN BUFFER",__LINE__);
+	}
+		
+	
+	CirBufferDestroy(cbuff);
+	
+
+	free(src);
+
+	return;
+}
 

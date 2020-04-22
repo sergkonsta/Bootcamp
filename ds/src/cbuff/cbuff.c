@@ -120,16 +120,29 @@ if it is, stop writing and return number of bytes written*/
 
 /*	if num_to_write is greater than memory segment pointed by src, 
 	then unknown data will be copied*/
+
+/*return on error for:
 	
+	- EFAULT src is outside of accessible adress space
+	
+	- EINVAL cbuff unreadable 	also src/num_to_write/cbuff offset not aligned,
+								but we work in 1 bytes intervals so irrelevant
+			
+	- ENOSPC cbuff has no space to be written to*/
+
 ssize_t CirBufferWrite(c_buff_t *cbuff, const void *src, size_t num_to_write)
 {
 	ssize_t written_counter = 0;
 	char *tmp = (char *)src;
 	
-	assert(NULL != src);
-	assert(NULL != cbuff);
+	if(NULL == src || NULL == cbuff)
+	{
+		written_counter = (-1);
+	}
 	
-	while(	(cbuff->write_p + 1) != cbuff->read_p &&
+	while(	(-1) != written_counter &&
+			0 != CirBufferFreeSpace(cbuff) &&
+			/*(cbuff->write_p + 1) != cbuff->read_p &&*/
 			(size_t)written_counter < num_to_write && 
 			(size_t)written_counter < cbuff->capacity)			
 	{		
@@ -139,6 +152,12 @@ ssize_t CirBufferWrite(c_buff_t *cbuff, const void *src, size_t num_to_write)
 		++written_counter;
 	}	
 	
+	if(	0 == CirBufferFreeSpace(cbuff) && 
+		written_counter < (ssize_t)num_to_write)
+	{
+		written_counter = (-1);
+	}
+	
 	return (written_counter);
 }
 
@@ -147,17 +166,25 @@ ssize_t CirBufferWrite(c_buff_t *cbuff, const void *src, size_t num_to_write)
 /*----------------------------------------------------------------------------*/
 /*make sure read_p doens't pass write_p*/
 
-
+/*return on error for:
+	
+	- EFAULT dest is outside of accessible adress space
+	
+	- EINVAL cbuff unreadable 	also dest/num_to_read/cbuff offset not aligned,
+								but we work in 1 bytes intervals so irrelevant*/
 ssize_t CirBufferRead(c_buff_t *cbuff, void *dest, size_t num_to_read)
 {
 	ssize_t read_counter = 0;
 	char *tmp = (char *)dest;
 		
-	assert(NULL != dest);
-	assert(NULL != cbuff);
-	
-	while(	(cbuff->read_p) != cbuff->write_p &&
-			(size_t)read_counter < num_to_read)						
+	if(NULL == dest || NULL == cbuff)
+	{
+		read_counter = (-1);
+	}
+			
+	while(	(-1) != read_counter &&
+			cbuff->read_p != cbuff->write_p &&
+			(size_t)read_counter < num_to_read)							
 	{		
 		*tmp = *cbuff->read_p;		
 		++cbuff->read_p;
