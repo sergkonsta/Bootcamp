@@ -8,20 +8,25 @@ DS_TEST=ds/test/
 
 #-------------------------------DATA STRUCTURES--------------------------------#
 slist: 
-	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)out $(DS_TEST)slist_test.c $(DS_SRC)slist/slist.c
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)slist_test.c $(DS_SRC)slist/slist.c
 
 queue:
-	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)out $(DS_TEST)queue_test.c $(DS_SRC)queue/queue.c	$(DS_SRC)slist/slist.c
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)queue_test.c $(DS_SRC)queue/queue.c	$(DS_SRC)slist/slist.c
 
 cbuff:
-	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)out $(DS_TEST)cbuff_test.c $(DS_SRC)cbuff/cbuff.c
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)cbuff_test.c $(DS_SRC)cbuff/cbuff.c
 
+dlist:
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)dlist_test.c $(DS_SRC)dlist/dlist.c
+	
+	
+	
 #-------------------------------GLOBALS----------------------------------------#
 cgdb_ds:
-	cgdb $(DS_OBJ)out
+	cgdb $(DS_OBJ)a.out
 
 vlg_ds:
-	valgrind --leak-check=yes --track-origins=yes ./$(DS_OBJ)out
+	valgrind --leak-check=yes --track-origins=yes ./$(DS_OBJ)a.out
 
 #update git repository
 gitp:
