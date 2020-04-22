@@ -3,7 +3,7 @@
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      21.04.2020               **
 **  Reviewer:  Yael						**
-**  Status:    ?????					**
+**  Status:    SENT						**
 *****************************************/
 
 #include <stdlib.h>		/*for malloc*/
@@ -128,7 +128,6 @@ ssize_t CirBufferWrite(c_buff_t *cbuff, const void *src, size_t num_to_write)
 	
 	assert(NULL != src);
 	assert(NULL != cbuff);
-	assert(0 < num_to_write);
 	
 	while(	(cbuff->write_p + 1) != cbuff->read_p &&
 			(size_t)written_counter < num_to_write && 
@@ -148,21 +147,28 @@ ssize_t CirBufferWrite(c_buff_t *cbuff, const void *src, size_t num_to_write)
 /*----------------------------------------------------------------------------*/
 /*make sure read_p doens't pass write_p*/
 
-/*
+
 ssize_t CirBufferRead(c_buff_t *cbuff, void *dest, size_t num_to_read)
 {
 	ssize_t read_counter = 0;
-	
+	char *tmp = (char *)dest;
+		
 	assert(NULL != dest);
 	assert(NULL != cbuff);
-	assert(0 < num_to_read);
 	
-	
+	while(	(cbuff->read_p) != cbuff->write_p &&
+			(size_t)read_counter < num_to_read)						
+	{		
+		*tmp = *cbuff->read_p;		
+		++cbuff->read_p;
+		++tmp;
+		++read_counter;
+	}
 	
 	return (read_counter);
 }
 
-*/
+
 
 
 
