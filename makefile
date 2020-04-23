@@ -11,7 +11,7 @@ slist:
 	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)slist_test.c $(DS_SRC)slist/slist.c
 
 queue:
-	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)queue_test.c $(DS_SRC)queue/queue.c	$(DS_SRC)slist/slist.c
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)queue_test.c $(DS_SRC)queue/ queue.c	$(DS_SRC)slist/slist.c
 
 cbuff:
 	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)cbuff_test.c $(DS_SRC)cbuff/cbuff.c

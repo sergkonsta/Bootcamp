@@ -74,7 +74,9 @@ void CirBufferDestroy(c_buff_t *cbuff)
 size_t CirBufferFreeSpace(const c_buff_t *cbuff)
 {
 	size_t steps = 0;	
+	
 	int address_diff = cbuff->write_p - cbuff->read_p;
+	
 	assert(NULL != cbuff);
 	
 	/*write_p is ahead of read_p in 'flex array' buffer*/
@@ -142,9 +144,7 @@ ssize_t CirBufferWrite(c_buff_t *cbuff, const void *src, size_t num_to_write)
 	
 	while(	(-1) != written_counter &&
 			0 != CirBufferFreeSpace(cbuff) &&
-			/*(cbuff->write_p + 1) != cbuff->read_p &&*/
-			(size_t)written_counter < num_to_write && 
-			(size_t)written_counter < cbuff->capacity)			
+			(size_t)written_counter < num_to_write) 
 	{		
 		*cbuff->write_p = *tmp;		
 		++cbuff->write_p;
@@ -152,8 +152,7 @@ ssize_t CirBufferWrite(c_buff_t *cbuff, const void *src, size_t num_to_write)
 		++written_counter;
 	}	
 	
-	if(	0 == CirBufferFreeSpace(cbuff) && 
-		written_counter < (ssize_t)num_to_write)
+	if(	0 == CirBufferFreeSpace(cbuff) && 0 == written_counter)
 	{
 		written_counter = (-1);
 	}
