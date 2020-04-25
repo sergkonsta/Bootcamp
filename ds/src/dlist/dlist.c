@@ -3,7 +3,7 @@
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      22.04.2020               **
 **  Reviewer:  Irina					**
-**  Status:    ????						**
+**  Status:    sent						**
 *****************************************/		
 
 #include <stdlib.h>		/*for malloc*/
@@ -13,7 +13,6 @@
 
 #define UNUSED(x) (void)(x)
 
-int IsEqual(const void *arg_1, const void *arg_2);
 int IncrementSizetByOne(void *arg, void *num);
 
 struct node
@@ -23,7 +22,7 @@ struct node
 	struct node *prev;	
 };
 
-struct dlist
+struct dlist_node
 {
 	struct node head;
 	struct node tail;
@@ -131,10 +130,10 @@ O(1)
 Returns the next node 
 */ 
 
-dlist_iter_t DListNext(const dlist_iter_t iter)
+dlist_iter_t DListNext(dlist_iter_t iter)
 {
 	assert(NULL != iter);
-	assert(NULL != iter->next);	
+	assert(NULL != iter->next);
 	
 	return (iter->next);
 }
@@ -147,11 +146,10 @@ O(1)
 Returns the previous node 
 */ 
 
-dlist_iter_t DListPrev(const dlist_iter_t iter)
+dlist_iter_t DListPrev(dlist_iter_t iter)
 {
 	assert(NULL != iter);
-	assert(NULL != iter->prev->prev);	
-		
+	
 	return (iter->prev);
 }
 
@@ -195,7 +193,7 @@ int DListForEach(dlist_iter_t from, dlist_iter_t to,
 	
 	while(0 == DListIsIterEqual(from, to))
 	{
-		result += action_func(from->data, param);
+		result += action_func(DListGetData(from), param);
 		from = from->next;
 	}
 
@@ -210,7 +208,7 @@ O(1)
 Returns 1 (true) if iterators are equal, else returns 0 (false) 
 */
 
-int DListIsIterEqual(const dlist_iter_t iter1, const dlist_iter_t iter2)
+int DListIsIterEqual(dlist_iter_t iter1, dlist_iter_t iter2)
 {
 	return !!(iter1 == iter2);
 }
@@ -296,7 +294,7 @@ dlist_iter_t DListPushFront(dlist_t *dlist, void *data)
 {
 	assert(NULL != dlist);
 	
-	return (DListInsert(dlist->head.next, data));
+	return (DListInsert(DListBegin(dlist), data));
 }
 
 
@@ -312,7 +310,7 @@ dlist_iter_t DListPushBack(dlist_t *dlist, void *data)
 {
 	assert(NULL != dlist);
 	
-	return (DListInsert(&dlist->tail, data));
+	return (DListInsert(DListEnd(dlist), data));
 }
 
 
@@ -327,7 +325,7 @@ dlist_iter_t DListPopFront(dlist_t *dlist)
 {
 	assert(NULL != dlist);
 	
-	return (DListRemove(dlist->head.next));
+	return (DListRemove(DListBegin(dlist)));
 }
 
 
@@ -342,7 +340,7 @@ dlist_iter_t DListPopBack(dlist_t *dlist)
 {
 	assert(NULL != dlist);
 	
-	return (DListRemove(dlist->tail.prev));
+	return (DListRemove(DListEnd(dlist)->prev));
 }
 
 
@@ -354,9 +352,15 @@ O(1)
 Returns the data of the node
 */
 
-void *DListGetData(const dlist_iter_t iter)
+void *DListGetData(dlist_iter_t iter)
 {
 	assert(NULL != iter);
+	
+	/*if points to END (dummy)*/
+	if(NULL == iter->next)
+	{
+		iter = DListPrev(iter);
+	}
 	
 	return (iter->data);
 }
@@ -371,6 +375,12 @@ Sets data of the node
 void DListSetData(dlist_iter_t iter, void *data)
 {
 	assert(NULL != iter);
+	
+	/*if points to END (dummy)*/
+	if(NULL == iter->next)
+	{
+		iter = DListPrev(iter);
+	}
 	
 	iter->data = data;
 	
@@ -387,7 +397,7 @@ int DListIsEmpty(const dlist_t *dlist)
 {
 	assert(NULL != dlist);
 	
-	return (DListIsIterEqual(dlist->head.next, (const dlist_iter_t)&dlist->tail));
+	return (DListIsIterEqual(DListBegin(dlist), DListEnd(dlist)));
 }
 
 
@@ -400,7 +410,7 @@ iterator to the first found node.
 If failed, returns to (the first element outside of the range).
 */
 
-dlist_iter_t DListFind(	const dlist_iter_t from, const dlist_iter_t to, 
+dlist_iter_t DListFind(	dlist_iter_t from, dlist_iter_t to, 
 						int(*is_equal)(const void *data, const void *param), 
 						const void *param)
 {
@@ -411,9 +421,9 @@ dlist_iter_t DListFind(	const dlist_iter_t from, const dlist_iter_t to,
 	assert(NULL != is_equal);
 	
 	while(	0 == DListIsIterEqual(temp_from, to) && 
-			0 == IsEqual(temp_from->data, param))
+			0 == is_equal(DListGetData(temp_from), param))
 	{		
-		temp_from = temp_from->next;
+		temp_from = DListNext(temp_from);
 	}
 
 	return (temp_from);
@@ -429,7 +439,7 @@ places their adresses inside outlist and returns:
 success: 0
 fail: else
 */
-int DListMultiFind(	const dlist_iter_t from, const dlist_iter_t to, 
+int DListMultiFind(	dlist_iter_t from, dlist_iter_t to, 
 					int(*is_equal)(const void *data, const void *param), 
 					const void *param, dlist_t *outlist)
 {
@@ -445,7 +455,7 @@ int DListMultiFind(	const dlist_iter_t from, const dlist_iter_t to,
 	while(0 == DListIsIterEqual(temp_from, to) && status_iter != &outlist->tail)
 	{		
 		/*in case a match found*/
-		if(1 == IsEqual(temp_from->data, param))
+		if(1 == is_equal(DListGetData(temp_from), param))
 		{
 			/*store dress to the param in outlist*/
 			status_iter = DListInsert(DListBegin(outlist), (void *)temp_from);
@@ -514,17 +524,6 @@ int IncrementSizetByOne(void *arg, void *num)
 }
 
 
-
-/*----------------------------------------------------------------------------*/
-/*
-O(1)
-returns 1 if arg_1 == arg_2
-*/  
-
-int IsEqual(const void *arg_1, const void *arg_2)
-{	
-	return (!!(arg_1 == arg_2));
-}
 
 
 

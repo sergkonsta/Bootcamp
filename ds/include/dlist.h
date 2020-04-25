@@ -5,7 +5,7 @@
 
 typedef struct node *dlist_iter_t;
 
-typedef struct dlist dlist_t;
+typedef struct dlist_node dlist_t;
 
 
 /*----------------------------------------------------------------------------*/
@@ -38,20 +38,20 @@ dlist_iter_t DListBegin(const dlist_t *dlist);
 
 /*----------------------------------------------------------------------------*/
 /*O(1)
-Returns END.*/
+Returns END (dummy at end)*/
 dlist_iter_t DListEnd(const dlist_t *dlist);
 
 
 /*----------------------------------------------------------------------------*/
 /*O(1) 
 Returns the next node */ 
-dlist_iter_t DListNext(const dlist_iter_t iter);
+dlist_iter_t DListNext(dlist_iter_t iter);
 
 
 /*----------------------------------------------------------------------------*/
 /*O(1) 
 Returns the previous node */ 
-dlist_iter_t DListPrev(const dlist_iter_t iter);
+dlist_iter_t DListPrev(dlist_iter_t iter);
 
 
 /*----------------------------------------------------------------------------*/
@@ -106,7 +106,7 @@ int DListForEach(	dlist_iter_t from, dlist_iter_t to,
 /*----------------------------------------------------------------------------*/
 /*O(1)
 Returns the data of the node*/
-void *DListGetData(const dlist_iter_t iterator);
+void *DListGetData(dlist_iter_t iterator);
 
 
 /*----------------------------------------------------------------------------*/
@@ -130,7 +130,7 @@ int DListIsEmpty(const dlist_t *dlist);
 /*----------------------------------------------------------------------------*/
 /*O(1)
 Returns 1 (true) if iterators are equal, else returns 0 (false) */
-int DListIsIterEqual(const dlist_iter_t iter1, const dlist_iter_t iter2); 
+int DListIsIterEqual(dlist_iter_t iter1, dlist_iter_t iter2); 
 
 
 
@@ -140,7 +140,7 @@ int DListIsIterEqual(const dlist_iter_t iter1, const dlist_iter_t iter2);
 If param is in the range (from (included), to(not included)), return
 iterator to the first found node. If failed, returns to (the first element 
 outside of the range).*/
-dlist_iter_t DListFind(	const dlist_iter_t from, const dlist_iter_t to, 
+dlist_iter_t DListFind(	dlist_iter_t from, dlist_iter_t to, 
 						int(*is_equal)(const void *data, const void *param), 
 						const void *param);
 
@@ -155,7 +155,7 @@ success: 0
 fail: else..
 
 */
-int DListMultiFind(const dlist_iter_t from, const dlist_iter_t to, 
+int DListMultiFind(dlist_iter_t from, dlist_iter_t to, 
 							int(*is_equal)(const void *data, const void *param), 
 							const void *param, dlist_t *outlist);
 						

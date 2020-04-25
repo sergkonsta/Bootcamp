@@ -2,7 +2,7 @@
 
 #include "dlist.h"
 
-int IsEqual(const void *arg_1, const void *arg_2);
+static int IsEqual(const void *arg_1, const void *arg_2);
 
 int main()
 {		
@@ -207,8 +207,10 @@ O(1)
 returns 1 if arg_1 == arg_2
 */  
 
-int IsEqual(const void *arg_1, const void *arg_2)
+static int IsEqual(const void *arg_1, const void *arg_2)
 {	
 	return (!!(arg_1 == arg_2));
 }
+
+
 
