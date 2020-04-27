@@ -79,7 +79,7 @@ void DListDestroy(dlist_t *dlist)
 {
 	assert(NULL != dlist);
 		
-	while(dlist->head.next != &dlist->tail)
+	while(DListBegin(dlist) != DListEnd(dlist))
 	{
 		DListRemove(dlist->head.next);
 	}
@@ -185,7 +185,7 @@ Returns 0 for success, else failure
 int DListForEach(dlist_iter_t from, dlist_iter_t to, 
 					int(*action_func)(void*data, void *arg), void *param)
 {
-	size_t result = 0;
+	int result = 0;
 	
 	assert(NULL != from);
 	assert(NULL != to);
@@ -263,6 +263,8 @@ dlist_iter_t DListRemove(dlist_iter_t who)
 	dlist_iter_t return_node = NULL;
 
 	assert(NULL != who);
+	assert(NULL != who->next);
+	assert(NULL != who->prev);
 	
 	return_node = who->next;
 	
@@ -452,20 +454,20 @@ int DListMultiFind(	dlist_iter_t from, dlist_iter_t to,
 	assert(NULL != outlist);
 	
 	/*global range loop && as long as insert doesnt fail*/
-	while(0 == DListIsIterEqual(temp_from, to) && status_iter != &outlist->tail)
+	while(0 == DListIsIterEqual(temp_from, to) && status_iter != DListEnd(outlist))
 	{		
 		/*in case a match found*/
 		if(1 == is_equal(DListGetData(temp_from), param))
 		{
-			/*store dress to the param in outlist*/
+			/*store address to the param in outlist*/
 			status_iter = DListInsert(DListBegin(outlist), (void *)temp_from);
 		}
 		
-		temp_from = temp_from->next;
+		temp_from = DListNext(temp_from);
 	}
 
 	/*returns 0 as long as insert to outlist hasn't failed*/
-	return (!(&outlist->tail != status_iter));
+	return (!(DListEnd(outlist) != status_iter));
 }
 						
 					
