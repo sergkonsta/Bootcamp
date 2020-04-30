@@ -20,7 +20,13 @@ dlist:
 	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)dlist_test.c $(DS_SRC)dlist/dlist.c
 	
 sorted_list:
-	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)sorted_list_test.c $(DS_SRC)sorted_list/sorted_list.c $(DS_SRC)dlist/dlist.c	
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)sorted_list_test.c $(DS_SRC)sorted_list/sorted_list.c $(DS_SRC)dlist/dlist.c
+	
+uid:
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)uid_test.c $(DS_SRC)uid/uid.c
+	
+pqueue:
+	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)pqueue_test.c $(DS_SRC)pqueue/pqueue.c $(DS_SRC)sorted_list/sorted_list.c $(DS_SRC)dlist/dlist.c
 	
 #-------------------------------GLOBALS----------------------------------------#
 cgdb_ds:

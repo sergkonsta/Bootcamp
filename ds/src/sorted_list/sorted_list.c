@@ -10,7 +10,7 @@
 #include <assert.h>		/*for assert*/
 
 #include "sorted_list.h"
-#include "dlist.h"
+
 
 #define UNUSED(x) (void)(x)
 
@@ -37,6 +37,10 @@ sort_list_t *SortListCreate
 	
 	/*reserve space for  list struct*/
 	list = (sort_list_t *)malloc(sizeof(sort_list_t));
+	if(NULL == list)
+	{
+		return (NULL);
+	}
 	
 	/*assign the user's comparison func to the sorted list*/
 	list->is_before = is_before;
@@ -47,6 +51,8 @@ sort_list_t *SortListCreate
 	{
 		free(list);
 		list = NULL;
+
+		return (NULL);
 	}
 	
 	return (list);
@@ -59,13 +65,15 @@ Destroy sorted list
 */
 void SortListDestroy(sort_list_t *list)
 {
+	assert(NULL != list);
+	assert(NULL != list->dlist);
+	
 	DListDestroy(list->dlist);
 	list->dlist = NULL;
 	
 	list->is_before = NULL;
 	
 	free(list);
-	list = NULL;
 	
 	return;
 }
@@ -81,7 +89,8 @@ sort_list_iter_t SortListBegin(sort_list_t *list)
 	sort_list_iter_t iter = {NULL};
 	
 	assert(NULL != list);
-	
+	assert(NULL != list->dlist);
+		
 	iter = CreateIter(list);
 	iter.iter = DListBegin(list->dlist);
 	
@@ -99,6 +108,7 @@ sort_list_iter_t SortListEnd(sort_list_t *list)
 	sort_list_iter_t iter = {NULL};
 	
 	assert(NULL != list);
+	assert(NULL != list->dlist);
 	
 	iter = CreateIter(list);
 	iter.iter = DListEnd(list->dlist);
@@ -149,13 +159,12 @@ sort_list_iter_t SortListInsert(sort_list_t *list, void *data)
 	sort_list_iter_t where = {NULL};
 	
 	assert(NULL != list);
+	assert(NULL != list->dlist);
 	
 	where = CreateIter(list);	
 	
 	where.iter = DListInsert( 
-							SortListFind(	list, SortListBegin(list), 
-											SortListEnd(list), 	data).iter, 
-							data );
+	SortListFind(list, SortListBegin(list), SortListEnd(list), data).iter, data);
 	
 	return(where);
 }
@@ -187,6 +196,7 @@ sort_list_iter_t SortListPopFront(sort_list_t *list)
 	sort_list_iter_t iter = {NULL}; 
 
 	assert(NULL != list);
+	assert(NULL != list->dlist);
 	
 	iter = CreateIter(list);
 	
@@ -206,6 +216,7 @@ sort_list_iter_t SortListPopBack(sort_list_t *list)
 	sort_list_iter_t iter = {NULL}; 
 
 	assert(NULL != list);
+	assert(NULL != list->dlist);
 	
 	iter = CreateIter(list);
 	
@@ -223,6 +234,7 @@ Count of valid nodes in list
 size_t SortListCount(const sort_list_t *list)
 {
 	assert(NULL != list);
+	assert(NULL != list->dlist);
 	
 	return ( DListCount(list->dlist) );
 }
@@ -236,6 +248,7 @@ Return True if list is empty
 int SortListIsEmpty(const sort_list_t *list)
 {
 	assert(NULL != list);
+	assert(NULL != list->dlist);
 	
 	return ( DListIsEmpty(list->dlist) );
 }
@@ -278,13 +291,15 @@ sort_list_iter_t SortListFind(	const sort_list_t *list, sort_list_iter_t from,
 	sort_list_iter_t from_temp = from;
 		
 	assert(from.list == to.list);
+	assert(NULL != list);
+	assert(NULL != list->dlist);
 		
 	while(	(0 == list->is_before(param, SortListGetData(from_temp))) && 
 			(0 == SortListIsIterEqual(from_temp, to)))
 	{
 		from_temp = SortListNext(from_temp);
 	}
-	
+		
 	return (from_temp);
 }
 
@@ -305,6 +320,7 @@ sort_list_iter_t SortListFindIf
 						const void *param)
 {
 	assert(from.list == to.list);
+	assert(NULL != is_equal);
 	
 	to.iter = DListFind(from.iter, to.iter, is_equal, param);
 	
@@ -326,6 +342,7 @@ int SortListForEach(sort_list_iter_t from,
 					void *arg)
 {
 	assert(from.list == to.list);		
+	assert(NULL != action_func);
 	
 	return (DListForEach(from.iter, to.iter, action_func, arg));
 }
@@ -338,11 +355,13 @@ after merge source_list is empty(source list is not destroyed.)
 */
 sort_list_t *SortListMerge(sort_list_t *dest_list, sort_list_t *source_list)
 {
-	while(0 == SortListIsEmpty(source_list))
-	{
-		SortListInsert(dest_list, SortListGetData(SortListBegin(source_list)));
-		SortListRemove( SortListBegin(source_list) );
-	}
+	assert(NULL != dest_list);
+	assert(NULL != source_list);
+	assert(NULL != source_list->dlist);
+	assert(NULL != dest_list->dlist);
+	
+	DListSplice( SortListBegin(source_list).iter, SortListEnd(source_list).iter, 			 
+				 SortListEnd(dest_list).iter);
 	
 	return (dest_list);
 }
@@ -355,7 +374,8 @@ sort_list_iter_t CreateIter(sort_list_t *list)
 	sort_list_iter_t iter = {NULL};
 	dlist_iter_t dlist_iter = NULL;
 	
-	assert(NULL != list);	
+	assert(NULL != list);
+	assert(NULL != list->dlist);	
 	
 	iter.iter = dlist_iter;
 		
