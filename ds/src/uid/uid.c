@@ -42,7 +42,7 @@ ilrd_uid_t UIDCreate(void)
 /*Compare 2 uids. If uids are same return: 1, else: 0 */
 int UIDIsSame(ilrd_uid_t uid1, ilrd_uid_t uid2)
 {
-	return (!!(	uid1.pid	 == uid2.pid && 
+	return ((	uid1.pid	 == uid2.pid && 
 				uid1.time	 == uid2.time && 
 				uid1.counter == uid2.counter));
 }

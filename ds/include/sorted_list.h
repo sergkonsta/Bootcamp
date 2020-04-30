@@ -1,23 +1,21 @@
-#ifndef __OL87_SORTED_LIST_H__
-#define __OL87_SORTED_LIST_H__
+#ifndef __OL87_SORTED_LIST__H__
+#define __OL87_SORTED_LIST__H__
 
-#include <stddef.h> /*size_t*/
 
-#include "dlist.h" /*dlist_t dlist_iter_t*/
+#include <stddef.h> /* size_t*/
+
+#include "dlist.h" /* dlist_t dlist_iter_t*/
 
 typedef struct sort_list sort_list_t;
-
 typedef struct sort_list_iter
 {
 	dlist_iter_t iter;
 
-	/* only in debug version*/
-	#ifndef NDEBUG
+/* only in debug version*/
+#ifndef NDEBUG
 	sort_list_t *list; 
-	#endif /* NDEBUG */
-	
+#endif /* NDEBUG */
 } sort_list_iter_t;
-
 
 /*is_before - return 1 when data1 before data2. return 0 when equal or after */
 
@@ -27,7 +25,7 @@ Create sorted list.
 return pointer to sorted_list or NULL if fails.
 */
 sort_list_t *SortListCreate
-	(int (*is_before)(const void *data1, const void *data2));	
+	(int (*cmp_func)(const void *data1, const void *data2));	
 
 	
 /*
@@ -113,19 +111,19 @@ void *SortListGetData(sort_list_iter_t iter);
 /* 
 O(1)
 Pop first value in list. 
-Return next iterrator. 
+Return data
 List must not be Empty 
 */
-sort_list_iter_t SortListPopFront(sort_list_t *list);
+void *SortListPopFront(sort_list_t *list);
 
 
 /* 
 O(1)
 Pop last valid value in list. 
-Return End. 
+Return data. 
 List must not be Empty 
 */
-sort_list_iter_t SortListPopBack(sort_list_t *list);
+void *SortListPopBack(sort_list_t *list);
 
 
 /*
@@ -142,12 +140,12 @@ sort_list_iter_t SortListFind(const sort_list_t *list, sort_list_iter_t from,
 /*
 O(n) 
 Search Range "from"-"to"(exclusive)
-Return first node found by is_equal.
+Return first node found by cmp_func.
 Return "to" if not found.
 "from" and "to" must be from same list. 
 */
 sort_list_iter_t SortListFindIf(sort_list_iter_t from, sort_list_iter_t to,
-	int (*is_equal)(const void *data, const void *param), const void *param);
+	int (*cmp_func)(const void *data, const void *param), const void *param);
 
 
 /*

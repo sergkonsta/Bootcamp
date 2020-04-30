@@ -3,39 +3,83 @@
 
 #include <stddef.h>
 
-typedef struct pqueue pqueue_t;
+typedef struct pq pq_t;
+
+/*
+change everywhere the is_before to: (in soretd list as well)
+
+typedef int (*is_before_func)(const void *data1, const void *data2,								 const void *param);
+*/
+
 
 /* 
-O(n)
+O(1)
 return NULL if fails 
 */
-pqueue_t *PQueueCreate((int)(*compare)(const void *data1, const void *data2));
+pq_t *PQCreate( int(*compare)(const void *data1, const void *data2) );
+ 
  
 /* 
 O(n) 
 */
-void PQueueDestroy(pqueue_t *pque); 
+void PQDestroy(pq_t *pq); 
+
 
 /* 
 O(n)
-add element according to compare function, add after all same priorities 
+add element according to compare function, 
+add after all same priorities in the end of the queue (end of list)
+returns 0 on success
+else on fail
 */
-int	PQueueEnq(pqueue_t *pque, void *data); 
-/* return data O(1) */
-void *PQueueDeq(queue_t *pque);	
-/*O(1)*/
-void *PQueuePeek(const pqueue_t *pque);	
+int	PQEnqueue(pq_t *pq, void *data); 
 
-/*O(n)*/
-size_t PQueueSize(const pqueue_t *pque);	
-/*O(1)*/
-int PQueueIsEmpty(const pqueue_t *pque);	
 
-/* O(n) */
-void PQueueClear(pqueue_t *pque); 
+/* 
+O(1)
+removes data rom the head of the queue (begin of list)
+return data on success
+fail: undefined
+*/
+void *PQDequeue(pq_t *pq);	
 
-/* return first data found, return NULL if data not found */
-void *PQueueErase(pqueue_t *pque, 
-		(int)(*is_match)(void *data, const void *param), const void *param);
+
+/*
+O(1)
+returns data in top element (in the begin of list)
+must not be empty
+*/
+void *PQPeek(const pq_t *pq);	
+
+
+/*
+O(n)
+returns size of queue
+*/
+size_t PQSize(const pq_t *pq);	
+
+
+/*
+O(1)
+return 1 for empty
+0 for non empty
+*/
+int PQIsEmpty(const pq_t *pq);	
+
+
+/* 
+O(n) 
+empties the queue - removes all
+*/
+void PQClear(pq_t *pq); 
+
+
+/* 
+erases a spcific data
+return first data found, 
+return NULL if data not found 
+*/
+void *PQErase(pq_t *pq, 
+		int(*is_match)(void *data, const void *param), const void *param);
 
 #endif /* Closing OL87 queue header file */

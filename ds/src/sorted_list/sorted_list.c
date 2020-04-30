@@ -17,7 +17,7 @@
 struct sort_list
 {
 	dlist_t *dlist;
-	int (*is_before)(const void *data1, const void *data2);
+	int (*cmp_func)(const void *data1, const void *data2);
 };
 
 sort_list_iter_t CreateIter(sort_list_t *list);
@@ -29,11 +29,11 @@ Create sorted list.
 return pointer to list or NULL if fails.
 */
 sort_list_t *SortListCreate	
-			(int (*is_before)(const void *data1, const void *data2))
+			(int (*cmp_func)(const void *data1, const void *data2))
 {
 	sort_list_t *list = NULL;
 	
-	assert(NULL != is_before);
+	assert(NULL != cmp_func);
 	
 	/*reserve space for  list struct*/
 	list = (sort_list_t *)malloc(sizeof(sort_list_t));
@@ -43,7 +43,7 @@ sort_list_t *SortListCreate
 	}
 	
 	/*assign the user's comparison func to the sorted list*/
-	list->is_before = is_before;
+	list->cmp_func = cmp_func;
 	
 	/*create dlist and if fails: free & put NULL in return value*/
 	list->dlist = DListCreate();
@@ -71,7 +71,7 @@ void SortListDestroy(sort_list_t *list)
 	DListDestroy(list->dlist);
 	list->dlist = NULL;
 	
-	list->is_before = NULL;
+	list->cmp_func = NULL;
 	
 	free(list);
 	
@@ -191,18 +191,12 @@ sort_list_iter_t SortListRemove(sort_list_iter_t iter)
 O(1)
 Returns the iterator of next node after pop. 
 */
-sort_list_iter_t SortListPopFront(sort_list_t *list)
+void *SortListPopFront(sort_list_t *list)
 {
-	sort_list_iter_t iter = {NULL}; 
-
 	assert(NULL != list);
 	assert(NULL != list->dlist);
-	
-	iter = CreateIter(list);
-	
-	iter.iter = DListPopFront(list->dlist);
-	
-	return (iter);
+
+	return (DListPopFront(list->dlist));
 }
 
 
@@ -211,18 +205,12 @@ sort_list_iter_t SortListPopFront(sort_list_t *list)
 O(1)
 Returns the iterator of new last element after pop. 
 */
-sort_list_iter_t SortListPopBack(sort_list_t *list)
+void *SortListPopBack(sort_list_t *list)
 {
-	sort_list_iter_t iter = {NULL}; 
-
 	assert(NULL != list);
 	assert(NULL != list->dlist);
-	
-	iter = CreateIter(list);
-	
-	iter.iter = DListPopBack(list->dlist);
-	
-	return (iter);
+
+	return (DListPopBack(list->dlist));
 }
 
 
@@ -280,9 +268,8 @@ void *SortListGetData(sort_list_iter_t iter)
 /*
 O(n) 	
 Search Range "from"-"to"(exclusive)
-Returns iter to first node found  according to is_before (places ind list struct),
-	that param should be before him.
-Return "to" if not found.
+Returns iter to the first node 'higher' in order than param (according to users)
+compare function.
 "from" and "to" must be from same list. 
 */
 sort_list_iter_t SortListFind(	const sort_list_t *list, sort_list_iter_t from, 
@@ -293,8 +280,10 @@ sort_list_iter_t SortListFind(	const sort_list_t *list, sort_list_iter_t from,
 	assert(from.list == to.list);
 	assert(NULL != list);
 	assert(NULL != list->dlist);
-		
-	while(	(0 == list->is_before(param, SortListGetData(from_temp))) && 
+	
+	/*iterate until you find node with data higher than 'param' 
+		(and while range didn't end)*/
+	while(	(0 <= list->cmp_func(param, SortListGetData(from_temp))) && 
 			(0 == SortListIsIterEqual(from_temp, to)))
 	{
 		from_temp = SortListNext(from_temp);
@@ -309,20 +298,20 @@ sort_list_iter_t SortListFind(	const sort_list_t *list, sort_list_iter_t from,
 /*
 O(n) 
 Search Range "from"-"to"(exclusive)
-Return first node found by is_equal.
+Return first node found by cmp_func.
 Return "to" if not found.
 "from" and "to" must be from same list. 
 */
 sort_list_iter_t SortListFindIf
 						(sort_list_iter_t from, 
 						sort_list_iter_t to,
-						int(*is_equal)(const void *data, const void *param), 
+						int(*cmp_func)(const void *data, const void *param), 
 						const void *param)
 {
 	assert(from.list == to.list);
-	assert(NULL != is_equal);
+	assert(NULL != cmp_func);
 	
-	to.iter = DListFind(from.iter, to.iter, is_equal, param);
+	to.iter = DListFind(from.iter, to.iter, cmp_func, param);
 	
 	return (to);
 }	
@@ -355,14 +344,27 @@ after merge source_list is empty(source list is not destroyed.)
 */
 sort_list_t *SortListMerge(sort_list_t *dest_list, sort_list_t *source_list)
 {
+	sort_list_iter_t src_iter = SortListBegin(source_list);
+	sort_list_iter_t dest_iter = SortListBegin(dest_list);
+	
 	assert(NULL != dest_list);
 	assert(NULL != source_list);
 	assert(NULL != source_list->dlist);
 	assert(NULL != dest_list->dlist);
 	
-	DListSplice( SortListBegin(source_list).iter, SortListEnd(source_list).iter, 			 
-				 SortListEnd(dest_list).iter);
 	
+	while(1 != SortListIsEmpty(source_list))
+	{
+		/*find (in dest) where to put first node (from src)*/
+		dest_iter = SortListFind(dest_list, dest_iter, 
+							 SortListEnd(dest_list), SortListGetData(src_iter));
+	
+		/*splice 1 node into before des_t iter*/
+		DListSplice(src_iter.iter, SortListNext(src_iter).iter, dest_iter.iter);
+
+		/*move to next node (new first node) in source*/
+		src_iter = SortListBegin(source_list);
+	}	
 	return (dest_list);
 }
 

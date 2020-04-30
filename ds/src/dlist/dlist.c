@@ -323,11 +323,15 @@ O(1)
 Returns the iterator of next node after pop. 
 */
 
-dlist_iter_t DListPopFront(dlist_t *dlist)
+void *DListPopFront(dlist_t *dlist)
 {
+	void *tmp = DListGetData(DListBegin(dlist));
+	
 	assert(NULL != dlist);
 	
-	return (DListRemove(DListBegin(dlist)));
+	DListRemove(DListBegin(dlist));
+	
+	return (tmp);
 }
 
 
@@ -338,11 +342,15 @@ O(1)
 Returns the iterator of new last element after pop. 
 */
 
-dlist_iter_t DListPopBack(dlist_t *dlist)
+void *DListPopBack(dlist_t *dlist)
 {
+	void *tmp = DListGetData(DListPrev( DListEnd(dlist) ));
+
 	assert(NULL != dlist);
 	
-	return (DListRemove(DListEnd(dlist)->prev));
+	DListRemove(DListPrev( DListEnd(dlist) ));
+	
+	return (tmp);
 }
 
 
@@ -413,17 +421,17 @@ If failed, returns to (the first element outside of the range).
 */
 
 dlist_iter_t DListFind(	dlist_iter_t from, dlist_iter_t to, 
-						int(*is_equal)(const void *data, const void *param), 
+						int(*is_match)(const void *data, const void *param), 
 						const void *param)
 {
 	dlist_iter_t temp_from = from;
 	
 	assert(NULL != from);
 	assert(NULL != to);
-	assert(NULL != is_equal);
+	assert(NULL != is_match);
 	
 	while(	0 == DListIsIterEqual(temp_from, to) && 
-			0 == is_equal(DListGetData(temp_from), param))
+			0 == is_match(DListGetData(temp_from), param))
 	{		
 		temp_from = DListNext(temp_from);
 	}
@@ -442,7 +450,7 @@ success: 0
 fail: else
 */
 int DListMultiFind(	dlist_iter_t from, dlist_iter_t to, 
-					int(*is_equal)(const void *data, const void *param), 
+					int(*is_match)(const void *data, const void *param), 
 					const void *param, dlist_t *outlist)
 {
 	dlist_iter_t status_iter = NULL;
@@ -450,14 +458,14 @@ int DListMultiFind(	dlist_iter_t from, dlist_iter_t to,
 	
 	assert(NULL != from);
 	assert(NULL != to);
-	assert(NULL != is_equal);
+	assert(NULL != is_match);
 	assert(NULL != outlist);
 	
 	/*global range loop && as long as insert doesnt fail*/
 	while(0 == DListIsIterEqual(temp_from, to) && status_iter != DListEnd(outlist))
 	{		
 		/*in case a match found*/
-		if(1 == is_equal(DListGetData(temp_from), param))
+		if(1 == is_match(DListGetData(temp_from), param))
 		{
 			/*store address to the param in outlist*/
 			status_iter = DListInsert(DListBegin(outlist), (void *)temp_from);

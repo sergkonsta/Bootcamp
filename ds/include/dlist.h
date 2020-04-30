@@ -83,14 +83,14 @@ dlist_iter_t DListPushBack(dlist_t *dlist, void *data);
 
 /*----------------------------------------------------------------------------*/
 /*O(1)
-Returns the iterator of next node after pop. */
-dlist_iter_t DListPopFront(dlist_t *dlist);
+returns data of element poped */
+void *DListPopFront(dlist_t *dlist);
 
 
 /*----------------------------------------------------------------------------*/
 /*O(1)
-Returns the iterator of new last element after pop. */
-dlist_iter_t DListPopBack(dlist_t *dlist);
+returns data of element poped */
+void *DListPopBack(dlist_t *dlist);
 
 
 					
@@ -141,7 +141,7 @@ If param is in the range (from (included), to(not included)), return
 iterator to the first found node. If failed, returns to (the first element 
 outside of the range).*/
 dlist_iter_t DListFind(	dlist_iter_t from, dlist_iter_t to, 
-						int(*is_equal)(const void *data, const void *param), 
+						int(*is_match)(const void *data, const void *param), 
 						const void *param);
 
 
@@ -156,7 +156,7 @@ fail: else..
 
 */
 int DListMultiFind(dlist_iter_t from, dlist_iter_t to, 
-							int(*is_equal)(const void *data, const void *param), 
+							int(*is_match)(const void *data, const void *param), 
 							const void *param, dlist_t *outlist);
 						
 					

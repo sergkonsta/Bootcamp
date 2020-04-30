@@ -10,7 +10,7 @@
 
 #define UNUSED(x) (void)(x)
 
-static int IsBefore(const void *data1, const void *data2);
+static int CmpFunc(const void *data1, const void *data2);
 static int IsEqual(const void *arg_1, const void *arg_2);
 
 /*from dlist.c*/
@@ -25,8 +25,8 @@ int main()
 	void *tmp = (void *)&num_of_nodes;
 	
 	
-	sort_list_t *list_1 = SortListCreate(IsBefore);
-	sort_list_t *list_2 = SortListCreate(IsBefore);
+	sort_list_t *list_1 = SortListCreate(CmpFunc);
+	sort_list_t *list_2 = SortListCreate(CmpFunc);
 	
 	sort_list_iter_t iter_1 = CreateIter(list_1);
 	sort_list_iter_t iter_2 = CreateIter(list_1);
@@ -146,9 +146,9 @@ int main()
 /*								HELPERS										  */
 /*----------------------------------------------------------------------------*/
 
-static int IsBefore(const void *data1, const void *data2)
+static int CmpFunc(const void *data1, const void *data2)
 {	
-	return (!!(data1 < data2));
+	return ((int)data1 - (int)data2);
 }
 
 
