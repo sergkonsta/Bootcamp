@@ -22,7 +22,7 @@ pq_t *PQCreate( int(*compare)(const void *data1, const void *data2) );
 /* 
 O(n) 
 */
-void PQDestroy(pq_t *pq); 
+void PQDestroy(pq_t *pque); 
 
 
 /* 
@@ -32,7 +32,7 @@ add after all same priorities in the end of the queue (end of list)
 returns 0 on success
 else on fail
 */
-int	PQEnqueue(pq_t *pq, void *data); 
+int	PQEnq(pq_t *pque, void *data); 
 
 
 /* 
@@ -41,7 +41,7 @@ removes data rom the head of the queue (begin of list)
 return data on success
 fail: undefined
 */
-void *PQDequeue(pq_t *pq);	
+void *PQDeq(pq_t *pque);	
 
 
 /*
@@ -49,14 +49,14 @@ O(1)
 returns data in top element (in the begin of list)
 must not be empty
 */
-void *PQPeek(const pq_t *pq);	
+void *PQPeek(const pq_t *pque);	
 
 
 /*
 O(n)
 returns size of queue
 */
-size_t PQSize(const pq_t *pq);	
+size_t PQSize(const pq_t *pque);	
 
 
 /*
@@ -64,14 +64,14 @@ O(1)
 return 1 for empty
 0 for non empty
 */
-int PQIsEmpty(const pq_t *pq);	
+int PQIsEmpty(const pq_t *pque);	
 
 
 /* 
 O(n) 
 empties the queue - removes all
 */
-void PQClear(pq_t *pq); 
+void PQClear(pq_t *pque); 
 
 
 /* 
@@ -79,7 +79,7 @@ erases a spcific data
 return first data found, 
 return NULL if data not found 
 */
-void *PQErase(pq_t *pq, 
-		int(*is_match)(void *data, const void *param), const void *param);
+void *PQErase(pq_t *pque, 
+		int(*is_match)(const void *data, const void *param), const void *param);
 
 #endif /* Closing OL87 queue header file */
