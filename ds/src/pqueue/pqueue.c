@@ -106,7 +106,7 @@ must not be empty
 void *PQPeek(const pq_t *pque)
 {
 	assert(NULL != pque);
-	assert(1 != QPIsEmpty(pque));
+	assert(1 != PQIsEmpty(pque));
 	
 	return (SortListGetData( SortListBegin(pque->pq) ));
 }
@@ -161,6 +161,7 @@ void PQClear(pq_t *pque)
 
 /*----------------------------------------------------------------------------*/
 /* 
+O(n)
 erases a spcific data
 return first data found, 
 return NULL if data not found 

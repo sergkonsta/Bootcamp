@@ -75,6 +75,7 @@ void PQClear(pq_t *pque);
 
 
 /* 
+O(n)
 erases a spcific data
 return first data found, 
 return NULL if data not found 
