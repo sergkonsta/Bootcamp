@@ -75,7 +75,7 @@ function: 	checks if task has the same UID as 'uid'
 success: 	1 - is a match / 0 - no match
 fail:		---
 */
-int TaskIsMatch(task_t *task, ilrd_uid_t uid);
+int TaskIsMatch(const void *task,const void *uid);
 
 
 #endif /* Closing OL87 task header file */

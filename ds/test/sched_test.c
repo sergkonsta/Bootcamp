@@ -1,79 +1,159 @@
 
+
+
+
+
+/*		tests from Yael 		*/
+
+
+
 #include <stdio.h>
 
-
 #include "sched.h"
+#include "task.h"
 
-typedef struct help help_struct_t;
+#define ERROR (printf("Error in line %d\n", __LINE__), ++errors)
 
-struct help
+typedef struct to_remove
 {
-	void *param_for_act_fun;
-	time_t start_time;
-	int is_repeat;
-};
+	ilrd_uid_t uid;
+	sched_t *sched;
+}to_remove_t;
 
-int PrintForActfunc(void *int_to_print);
+/* Action functions */
+static int AddNumOneToData(void *data);
+static int Size(void *data);
+static int RemoveTask(void *data);
+static int PrintLeftToRun(void *data);
+static int StopSched(void *data);
 
-int main()
+int main ()
 {
-	sched_t *sched = SchedCreate();	
+	/**********task***********/
+	task_t *task = NULL;
 	
-	/*init UIDs for logging tasks*/
-	ilrd_uid_t uid_1 = {0};
+	ilrd_uid_t uid = {0, 0, 0};
 	
-	/*initialize param */
-	help_struct_t param_to_send = {0};
+	int number = 3;
 	
-	printf("\n\n");
-	/*------------------------------------------------------------------------*/
-	if( 1 != SchedIsEmpty(sched) ) /*should be empty*/
+	/**********sched***********/
+	size_t errors = 0;
+	
+	int num1 = 5;
+	int num2 = 100;
+	
+	int left_to_run = 20;
+	
+	to_remove_t remove_data = {0};
+	
+	sched_t *sched = SchedCreate();
+	
+	ilrd_uid_t uid1 = {0};
+
+	/**********task tests***********/
+	task = TaskCreate(AddNumOneToData, &number, 1);
+
+	if(TaskGetNextRunTime(task) != time(NULL) + 1)
 	{
-		printf("\nproblem in line: %d",__LINE__);
+		ERROR;
+	}
+		
+	TaskRun(task);
+	
+	TaskUpdateNextRun(task);
+	
+	if(TaskGetNextRunTime(task) != time(NULL) + 1)
+	{
+		ERROR;
 	}
 
-	/*uid 	=	sched, act_func, (void *)param[struct], delta(t)-when to run*/
-	uid_1 = SchedAddTask(sched, PrintForActfunc, (void *)&param_to_send, 5);
-	
-	if( 1 == SchedIsEmpty(sched) ) /*should not be empty*/
+	uid = TaskGetId(task);
+
+	if (TaskIsMatch(task, &uid) != 1)
 	{
-		printf("\nproblem in line: %d",__LINE__);
+		ERROR;
 	}
 	
+	TaskDestroy(task);
 	
-	/*remove task using uid*/
-	SchedRemove(sched, uid_1);
-
-	uid_1 = SchedAddTask(sched, PrintForActfunc, (void *)&param_to_send, 5);
+	/**********sched tests***********/
+	if(!SchedIsEmpty(sched))
+	{
+		ERROR;
+	}
 	
-	SchedClear(sched);
+	SchedAddTask(sched, AddNumOneToData, &num1, 10);
+	SchedAddTask(sched, AddNumOneToData, &num2, 10);
+	
+	/*Size-task runs until StopSched acts*/
+	uid1 = SchedAddTask(sched, Size, sched, 5);
+	SchedAddTask(sched, PrintLeftToRun, &left_to_run, 5);
+	
+	SchedAddTask(sched, StopSched, sched, 20);
+	
+	remove_data.sched = sched;
+	remove_data.uid = uid1;
+	/*removing task (size)*/
+	SchedAddTask(sched, RemoveTask, &remove_data, 12);
+	
+	if(SchedSize(sched) != 6)
+	{
+		ERROR;
+	}
+	
+	SchedRun(sched);
+		
+	SchedDestroy(sched);
+	
+	return 0;
+}
 
 
+static int AddNumOneToData(void *data)
+{
+	printf("AddNumOneToData() start running...\n");
+	printf("Before: data = %d\n", *(int*)data);
+	*(int*)data += 1;
+	printf("After: data = %d\n", *(int*)data);
+	printf("-----------------------------\n");
+	
+	return 0;
+}
 
-
-
-
-
-
-	/*------------------------------------------------------------------------*/
-	printf("\n\n");
-	SchedDestroy(sched);	
+static int Size(void *data)
+{
+	printf("Size() start running...\n");
+	printf("%lu\n", SchedSize((sched_t*)data));
+	printf("-----------------------------\n");
+	
 	return 1;
 }
 
-int PrintForActfunc(void *int_to_print)
+static int RemoveTask(void *data)
 {
-	int x = (int)int_to_print;
+	to_remove_t *remove_data = (to_remove_t*)data;
+	printf("RemoveTask() start running...\n");
+	SchedRemove(remove_data->sched, remove_data->uid);
+	printf("-----------------------------\n");
 	
-	printf("\n%d,",x);
-	
-	return (1);
+	return 0;
 }
 
+static int PrintLeftToRun(void *data)
+{
+	*(int*)data -= 1;
+	printf("PrintLeftToRun() start running...\n");
+	printf("%d times left to run!\n", *(int*)data);
+	printf("-----------------------------\n");
+	
+	return (*(int*)data != 0);
+}
 
-
-
-
-
-
-
+static int StopSched(void *data)
+{
+	printf("StopSched() start running...\n");
+	SchedStop((sched_t*)data);
+	printf("-----------------------------\n");
+	
+	return 0;
+}

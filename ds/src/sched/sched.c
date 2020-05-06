@@ -2,24 +2,29 @@
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      03.05.2020               **
-**  Reviewer:  ???						**
-**  Status:    ?????					**
+**  Reviewer:  Alon						**
+**  Status:    Sent						**
 *****************************************/	
 #include <stdlib.h>		/*for malloc*/
 #include <assert.h>		/*for assert*/
 #include <time.h>		/*for time()*/
+#include <unistd.h>		/*for sleep()*/
+
+#ifndef NDEBUG
+#include <stdio.h>
+#endif /*NDEBUG*/
 
 #include "sched.h"
 #include "pqueue.h"
 #include "task.h"
 
-typedef struct help help_struct_t;
-
-struct help
+struct task
 {
-	void *param_for_act_fun;
-	time_t start_time;
-	int is_repeat;
+	ilrd_uid_t uid;
+	size_t time_to_run; /*my comment: shows next time to run*/
+	size_t interval_in_sec; /*first time to run and all after if repeat is on*/
+	int (*act_func)(void *param); /*returns repeat or not*/
+	void *param; /*(void *)param for act_fun*/					
 };
 
 struct sched
@@ -29,9 +34,7 @@ struct sched
 	task_t *current_task; 	/*is NULL if no task is running*/
 };
 
-int Compare(const void *data1, const void *data2);
-int IsMatchForRemove(const void *task, const void *uid);
-
+int Compare(const void *task_in_pq, const void *time_to_start);
 
 /*----------------------------------------------------------------------------*/
 /*
@@ -77,9 +80,12 @@ fail:		NULL
 void SchedDestroy(sched_t *sched)
 {
 	assert(NULL != sched);
+	assert(NULL != sched->pq);
 	
 	/*clears all tasks*/
 	SchedClear(sched);
+	
+	sched->current_task = NULL;
 	
 	PQDestroy(sched->pq);
 
@@ -102,6 +108,7 @@ fail:		---
 size_t SchedSize(const sched_t *sched)
 {	
 	assert(NULL != sched);
+	assert(NULL != sched->pq);
 	
 	/*adds 1 to size if there is a current task running*/
 	return (PQSize(sched->pq) + (size_t)(NULL != sched->current_task));
@@ -118,6 +125,7 @@ fail:		---
 int SchedIsEmpty(const sched_t *sched)
 {
 	assert(NULL != sched);
+	assert(NULL != sched->pq);
 	
 	return (PQIsEmpty(sched->pq) && (NULL == sched->current_task));
 }
@@ -133,10 +141,11 @@ fail:		---
 void SchedClear(sched_t *sched)
 {
 	assert(NULL != sched);
+	assert(NULL != sched->pq);
 	
-	while(1 != SchedIsEmpty(sched))
+	while (!SchedIsEmpty(sched))
 	{
-		SchedRemove(sched, TaskGetId( (task_t *)PQPeek( sched->pq) ));
+		TaskDestroy(PQDeq(sched->pq));
 	}
 	
 	return;
@@ -152,12 +161,10 @@ Success:	---
 fail:		---
 */
 void SchedRemove(sched_t *sched, ilrd_uid_t uid)
-{
-	const void *uid_to_remove = (const void *)&uid;
-	
+{	
 	assert(NULL != sched);
 		
-	free( PQErase(sched->pq, IsMatchForRemove, uid_to_remove) );
+	free( PQErase(sched->pq, TaskIsMatch, &uid ));
 	
 	return;
 }
@@ -180,9 +187,14 @@ ilrd_uid_t SchedAddTask(sched_t *sched,
 						void *param, 
 						size_t interval_in_sec)
 {
-	task_t *new_task = TaskCreate( 	act_func,
-									param, 
-									interval_in_sec );
+	task_t *new_task = NULL;
+	
+	assert(NULL != sched);
+	assert(NULL != sched->pq);
+	assert(NULL != act_func);
+	
+	new_task = TaskCreate( 	act_func, param, interval_in_sec );
+		
 	PQEnq(sched->pq, new_task);
 	
 	return ( TaskGetId(new_task) );
@@ -199,34 +211,61 @@ Success:	---
 fail:		---
 */
 int SchedRun(sched_t *sched)
-{
-	/*save run start time*/
-	time_t start_time = time(NULL);
-
-	int return_status = 0;
-		
+{		
+	size_t time_offset = 0;
+	
+	assert(NULL != sched);
+	assert(NULL != sched->pq);
+	
+	sched->to_stop = 0;
+	
 	/*event loop*/
 	while((1 != sched->to_stop) && (1 != SchedIsEmpty(sched)))
 	{		
-		/*begin first task*/
+		/*get first task*/
 		sched->current_task = (task_t *)PQDeq(sched->pq);	
-			
-		/*if its time to run*/
-		if (	(size_t)(time(NULL) - start_time) == 
-				TaskGetNextRunTime(sched->current_task) )
+
+		/*check when first task should occur*/
+		time_offset = TaskGetNextRunTime(sched->current_task) - time(NULL);
+		
+		/*wait and make sure sleep doesn't wake up early*/
+		while(time_offset > 0)
 		{
-			/*if task should repeat - put it back in queue*/
-			if (1 == TaskRun(sched->current_task) )
-			{
-				PQEnq(sched->pq, sched->current_task); /*with same time interval*/
-			}
+			sleep(time_offset);
+			time_offset = TaskGetNextRunTime(sched->current_task) - time(NULL);
+		}
+		
+		/*destroy non-repeating task after it occurs*/
+		if (0 == TaskRun(sched->current_task))
+		{
+			TaskDestroy(sched->current_task);
+		}
+		
+		/*repeating task: put it back in the scheduler*/
+		else
+		{
+			TaskUpdateNextRun(sched->current_task);
 			
-			/*task finished*/
-			sched->current_task = NULL;	
-		}		
+			/*if enq failed*/
+			if(0 != PQEnq(sched->pq, sched->current_task))
+			{
+				TaskDestroy(sched->current_task);
+				SchedStop(sched);
+				
+				return -1;
+			}
+		}	
+		
+		sched->current_task = NULL;					
 	}	
 	
-	return (return_status);
+	/*clear rest of tasks if exist*/
+	if(0 == SchedIsEmpty(sched))
+	{
+		SchedClear(sched);
+	}	
+	
+	return (0);
 }
 
 
@@ -241,7 +280,8 @@ fail:		---
 
 void SchedStop(sched_t *sched)
 {
-	assert (NULL != sched);
+	assert(NULL != sched);
+	assert(NULL != sched->pq);
 	
 	sched->to_stop = 1;
 	
@@ -252,21 +292,13 @@ void SchedStop(sched_t *sched)
 /*----------------------------------------------------------------------------*/
 /*								HELPERS FUNCS								  */
 /*----------------------------------------------------------------------------*/
-int Compare(const void *data1, const void *data2)
+
+/* returns 0 for equality*/
+int Compare(const void *task_in_pq, const void *time_to_start)
 {
-	/*need to compare [ input time + time interval ] in order to sort in pqueue*/
-	return (1);
+	return ( TaskGetNextRunTime((task_t*)task_in_pq) -
+			 TaskGetNextRunTime((task_t*)time_to_start));
 }
-
-
-int IsMatchForRemove(const void *task, const void *uid)
-{
-	task_t *task_to_check = (task_t *)task;
-	ilrd_uid_t *uid_to_remove = (ilrd_uid_t *)uid;	
-	
-	return ( TaskIsMatch(task_to_check, *uid_to_remove) );
-}
-
 
 
 

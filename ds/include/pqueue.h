@@ -15,6 +15,9 @@ typedef int (*is_before_func)(const void *data1, const void *data2,								 cons
 /* 
 O(1)
 return NULL if fails 
+
+data_1 is data inside the PQ
+data_2 is data recieved
 */
 pq_t *PQCreate( int(*compare)(const void *data1, const void *data2) );
  

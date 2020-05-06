@@ -1,29 +1,18 @@
 
 #include <assert.h>		/*for assert*/
 #include <stdlib.h>		/*for malloc*/
+#include <time.h>
 
 #include "task.h"
-
-typedef struct help help_struct_t;
-
-struct help
-{
-	void *param_for_act_fun;
-	time_t start_time;
-	int is_repeat;
-};
 
 struct task
 {
 	ilrd_uid_t uid;
-	size_t time_to_run; /*my comment: shows next time to run*/
-	size_t interval_in_sec; /*first time to run and all after if repeat is on*/
-	int (*act_func)(void *param); /*returns repeat or not*/
-	void *param; /*		1-	(void *)param for act_fun
-						2-	(size_t) time elapsed for TaskUpdateNextRun
-						3-	(int)is_repeat - need to repeat?*/
+	size_t time_to_run; 			/*my comment: shows next time to run*/
+	size_t interval_in_sec; 		/*first time to run and all after if repeat is on*/
+	int (*act_func)(void *param); 	/*returns repeat or not*/
+	void *param;					/*param for act_fun*/
 };
-
 
 /*----------------------------------------------------------------------------*/
 /*
@@ -36,9 +25,8 @@ task_t *TaskCreate(	int (*act_func)(void *param), void *param,
 					size_t interval_in_sec)
 {
 	task_t *new_task = {0};
-
-	assert(0 != interval_in_sec);
-	assert(NULL != param);
+	
+	assert(NULL != act_func);
 	
 	new_task = (task_t *)malloc( sizeof(task_t) );
 	if(NULL == new_task)
@@ -46,18 +34,11 @@ task_t *TaskCreate(	int (*act_func)(void *param), void *param,
 		return NULL;
 	}
 	
-	/*assign unique ID for task*/
 	new_task->uid = UIDCreate();
-	
-	/*set first time act_func will run*/
-	new_task->time_to_run = interval_in_sec; 
-	
-	/*set repeat interval*/
 	new_task->interval_in_sec = interval_in_sec;
-
-	/*assign action func pointer and param*/
 	new_task->act_func = act_func;
 	new_task->param = param;
+	new_task->time_to_run = time(NULL) + interval_in_sec;
 	
 	return (new_task);
 }
@@ -73,18 +54,10 @@ fail:		--- (can't fail - Tal said)
 */
 int TaskRun(task_t *task)
 {
-	help_struct_t *temp = (help_struct_t *)task->param;
-	
-	int is_repeat = temp->is_repeat;
-	
 	assert(NULL != task);
 	
-	task->act_func(temp->param_for_act_fun);	
-	
-	return (is_repeat);
+	return (task->act_func(task->param));
 }
-
-
 
 
 /*----------------------------------------------------------------------------*/
@@ -135,18 +108,16 @@ size_t TaskGetNextRunTime (const task_t *task)
 /*----------------------------------------------------------------------------*/
 /*
 O(1)
-function:	updates next run time according to interval and param
-			param in this func is  elapsed time from start of event loop (Run)
+function:	updates next run time according to interval
+			
 success: 	---
 fail:		---
 */
 void TaskUpdateNextRun(task_t *task)
 {
-	size_t time_elapsed = (time_t)task->param;
-	
 	assert(NULL != task);
 	
-	task->time_to_run += task->interval_in_sec + time_elapsed;
+	task->time_to_run = time(NULL) + task->interval_in_sec;
 }
 
 
@@ -157,11 +128,11 @@ function: 	checks if task has the same UID as 'uid'
 success: 	1 - is a match / 0 - no match
 fail:		---
 */
-int TaskIsMatch(task_t *task, ilrd_uid_t uid)
+int TaskIsMatch(const void *task,const void *uid)
 {
 	assert(NULL != task);
 	
-	return (UIDIsSame(task->uid,uid));
+	return UIDIsSame(TaskGetId(task), *(ilrd_uid_t *)uid);
 }
 
 
