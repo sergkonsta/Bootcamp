@@ -10,22 +10,9 @@
 #include <time.h>		/*for time()*/
 #include <unistd.h>		/*for sleep()*/
 
-#ifndef NDEBUG
-#include <stdio.h>
-#endif /*NDEBUG*/
-
 #include "sched.h"
 #include "pqueue.h"
 #include "task.h"
-
-struct task
-{
-	ilrd_uid_t uid;
-	size_t time_to_run; /*my comment: shows next time to run*/
-	size_t interval_in_sec; /*first time to run and all after if repeat is on*/
-	int (*act_func)(void *param); /*returns repeat or not*/
-	void *param; /*(void *)param for act_fun*/					
-};
 
 struct sched
 {

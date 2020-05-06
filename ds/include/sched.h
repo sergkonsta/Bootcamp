@@ -2,6 +2,7 @@
 #define __OL87_SCHEDULER_H__
 
 #include <stddef.h>
+
 #include "task.h"
 
 typedef struct sched sched_t;
