@@ -145,13 +145,17 @@ void SchedClear(sched_t *sched)
 O(n)
 function: 	removes a specific task, UID must be correct
 Success:	---
-fail:		---
+fail:		if PQErase return NULL, no operation is performed.
 */
 void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 {	
 	assert(NULL != sched);
-		
-	free( PQErase(sched->pq, TaskIsMatch, &uid ));
+	
+	/*self remove check*/
+	if(0 == TaskIsMatch(sched->current_task, &uid))
+	{
+		free( PQErase(sched->pq, TaskIsMatch, &uid ));
+	}
 	
 	return;
 }
@@ -181,8 +185,15 @@ ilrd_uid_t SchedAddTask(sched_t *sched,
 	assert(NULL != act_func);
 	
 	new_task = TaskCreate( 	act_func, param, interval_in_sec );
-		
-	PQEnq(sched->pq, new_task);
+	if(NULL == new_task)
+	{
+		return BAD_UID;
+	}		
+
+	if(0 !=	PQEnq(sched->pq, new_task))
+	{
+		return BAD_UID;
+	}
 	
 	return ( TaskGetId(new_task) );
 }
@@ -233,10 +244,10 @@ int SchedRun(sched_t *sched)
 		{
 			TaskUpdateNextRun(sched->current_task);
 			
-			/*if enq failed*/
+			/*if enq failed, 
+			  keep task in current task so the client can reEnq it*/
 			if(0 != PQEnq(sched->pq, sched->current_task))
 			{
-				TaskDestroy(sched->current_task);
 				SchedStop(sched);
 				
 				return -1;
@@ -245,12 +256,7 @@ int SchedRun(sched_t *sched)
 		
 		sched->current_task = NULL;					
 	}	
-	
-	/*clear rest of tasks if exist*/
-	if(0 == SchedIsEmpty(sched))
-	{
-		SchedClear(sched);
-	}	
+		
 	
 	return (0);
 }

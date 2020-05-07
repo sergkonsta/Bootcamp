@@ -24,7 +24,7 @@ fail:		NULL
 task_t *TaskCreate(	int (*act_func)(void *param), void *param, 
 					size_t interval_in_sec)
 {
-	task_t *new_task = {0};
+	task_t *new_task = NULL;
 	
 	assert(NULL != act_func);
 	
