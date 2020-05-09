@@ -151,10 +151,18 @@ void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 {	
 	assert(NULL != sched);
 	
-	/*self remove check*/
-	if(0 == TaskIsMatch(sched->current_task, &uid))
+	/*self remove check - current_task might be null*/
+	switch (sched->current_task):
 	{
-		free( PQErase(sched->pq, TaskIsMatch, &uid ));
+		case(NULL):
+			free( PQErase(sched->pq, TaskIsMatch, &uid ));				
+			break; 
+					
+		default:
+			if(0 == TaskIsMatch(sched->current_task, &uid))
+				{
+					free( PQErase(sched->pq, TaskIsMatch, &uid ));
+				}			
 	}
 	
 	return;

@@ -6,12 +6,14 @@ DS_OBJ=ds/obj/
 DS_SRC=ds/src/
 DS_TEST=ds/test/
 
-SYSP_INCLUDE=-iquote ds/include/
-SYSP_OBJ=ds/obj/
-SYSP_SRC=ds/src/
-SYSP_TEST=ds/test/
+SYSP_INCLUDE=-iquote system_programming/include/
+SYSP_OBJ=system_programming/obj/
+SYSP_SRC=system_programming/src/
+SYSP_TEST=system_programming/test/
 
+#------------------------------------------------------------------------------#	
 #-------------------------------DATA STRUCTURES--------------------------------#
+#------------------------------------------------------------------------------#	
 slist: 
 	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)slist_test.c $(DS_SRC)slist/slist.c
 
@@ -36,18 +38,34 @@ pqueue:
 sched:
 	$(CC) $(CFLAGS) $(DS_INCLUDE) -o $(DS_OBJ)a.out $(DS_TEST)sched_test.c $(DS_SRC)sched/sched.c $(DS_SRC)task/task.c $(DS_SRC)uid/uid.c $(DS_SRC)pqueue/pqueue.c $(DS_SRC)sorted_list/sorted_list.c $(DS_SRC)dlist/dlist.c
 	
+#-----------------------------#
 	
-#-------------------------------SYSTEM PROGRAMMING-----------------------------#
-fsa: 
-	$(CC) $(CFLAGS) $(SYSP_INCLUDE) -o $(SYSP_OBJ)a.out $(SYSP_TEST)slist_test.c $(SYSP_SRC)slist/slist.c
-	
-	
-#-------------------------------GLOBALS----------------------------------------#
 cgdb_ds:
 	cgdb $(DS_OBJ)a.out
 
 vlg_ds:
 	valgrind --leak-check=yes --track-origins=yes ./$(DS_OBJ)a.out
+	
+	
+#------------------------------------------------------------------------------#	
+#-------------------------------SYSTEM PROGRAMMING-----------------------------#
+#------------------------------------------------------------------------------#	
+fsa: 
+	$(CC) $(CFLAGS) $(SYSP_INCLUDE) -o $(SYSP_OBJ)a.out $(SYSP_TEST)fsa_test.c $(SYSP_SRC)fsa/fsa.c
+	
+#-----------------------------#
+	
+cgdb_sysp:
+	cgdb $(SYSP_OBJ)a.out
+
+vlg_sysp:
+	valgrind --leak-check=yes --track-origins=yes ./$(SYSP_OBJ)a.out
+
+
+	
+#------------------------------------------------------------------------------#			
+#-------------------------------GLOBALS----------------------------------------#
+#------------------------------------------------------------------------------#	
 
 #update git repository
 gitp:

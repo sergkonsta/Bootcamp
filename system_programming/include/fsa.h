@@ -9,7 +9,7 @@ typedef struct fsa fsa_t;
 O(1) 
 return minimal size in bytes for all block allocations 
 */
-size_t SuggestSize(size_t block_number, size_t block_size);
+size_t FSASuggestSize(size_t block_number, size_t block_size);
 
 /* 
 O(1) 
@@ -19,23 +19,23 @@ size - size of segment
 block_size
 return pool struct 
 */
-fsa_t *Init(void *mem_segment, size_t size, size_t block_size);
+fsa_t *FSAInit(void *mem_segment, size_t size, size_t block_size);
 
 /*
 O(1) 
 allocate 1 block_size 
 */
-void *Alloc(fsa_t *pool);
+void *FSAAlloc(fsa_t *pool);
 
 /*
 O(1) free block
 */
-void Free(void *block);
+void FSAFree(void *block);
 
 /*
 O(n) 
 Return number of free blocks in mem_pool 
 */
-size_t CountFree(fsa_t *pool);
+size_t FSACountFree(fsa_t *pool);
 
-#endif /* Closing OL87 fsa header file */
+#endif /* Closing OL87 FIXED SIZE ALLOCATION header file */
