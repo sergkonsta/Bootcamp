@@ -9,19 +9,24 @@
 
 #include "fsa.h"
 
+#define WORD 8		/* length of machine word */
+
 struct fsa
 {
-	size_t next_free; 	/* offset of next available block's data */
+	size_t next_free; 	/* offset of next available block from fsa */
 	size_t block_size;	/* size of each block*/
 	size_t num_blocks; 	/* total number of blocks in pool*/
 };
 
-typedef struct block block_t;
-struct block
+typedef struct block
 {
-	size_t offset;/*offset from head when block is allocated & from next_free data when free */
-	size_t data; 		/*data*/
-};
+	size_t offset;	/*offset from pool when block is allocated & from next_free when free */
+	#ifdef DEBUG 
+	fsa_t *pool;	/* points to memory pool that blk belongs */
+	#endif	/* DEBUG */
+}block_t;	
+
+static void Swap(size_t *data_1, size_t *data_2);
 
 /*----------------------------------------------------------------------------*/
 /* 
@@ -37,7 +42,9 @@ size_t FSASuggestSize(size_t block_number, size_t block_size)
 	assert (block_number > 0);	
 	assert (block_size > 0);
 	
-	return ( sizeof(fsa_t) + ((sizeof(size_t) * block_size) * block_number) );
+	return ( sizeof(fsa_t) + 
+			 block_number * ((block_size - 1)/WORD + 1) * WORD + 
+		  	 block_number * (sizeof(block_t)));	
 }
 
 
@@ -77,40 +84,34 @@ return pool struct
 fsa_t *FSAInit(void *mem_segment, size_t size, size_t block_size)
 {	
 	/*define pool struct at begining of mem_segment*/
-	fsa_t *head = (fsa_t *)mem_segment;
+	fsa_t *pool = (fsa_t *)mem_segment;
 	
-	size_t block_amount = size / block_size;
-	void *iter = mem_segment;
 	block_t *blk = NULL;
+	size_t offset_iter = 0;
 	
-	/*next_free points to next block's data*/
-	head->next_free = sizeof(fsa_t) + sizeof(blk->offset);
-	head->block_size = block_size;
-	head->num_blocks = size / block_size;
+	assert(NULL != mem_segment);
+			
+	/*next_free points to next block wihle alligned*/
+	pool->next_free = sizeof(fsa_t);
+	pool->block_size = sizeof(block_t) + (((block_size - 1)/WORD + 1) * WORD);	;
+	pool->num_blocks = (size - sizeof(fsa_t))/ pool->block_size;		
 		
-	/*move iter to first meta-data*/
-	iter =  (void *)( (size_t)iter + sizeof(fsa_t) );
-	
-	while(0 < block_amount)
-	{
-		/*typecast iter to represent the block*/
-		blk = (block_t *)iter;
-		
-		/*place offset from next block's data*/	
-		blk->offset = (2 * sizeof(blk->offset) + block_size);
-		
-		/*update free block amount*/	
-		--block_amount;	
-		
-		/*move iter to next block's meta-data*/
-		iter = 
-		(void *)( (size_t)iter + sizeof(blk->offset) + block_size);		
-	}	
+	for(offset_iter = pool->next_free; 
+		offset_iter < size; 
+		offset_iter += pool->block_size)
+	{		
+		blk = (block_t *)((char *)pool + offset_iter);
+
+		blk->offset = offset_iter + pool->block_size;
+		#ifdef DEBUG
+		blk->pool = pool;
+		#endif
+	}
 
 	/*change lasts blocks offset to 0*/
 	blk->offset = 0;
 	
-	return (head);
+	return (pool);
 }
 
 
@@ -118,31 +119,30 @@ fsa_t *FSAInit(void *mem_segment, size_t size, size_t block_size)
 /*
 O(1) 
 allocate 1 block_size 
-return: pointer to allocated block
+return: pointer to allocated block or NULL if all no memory left
 */
 void *FSAAlloc(fsa_t *pool)
 {
-	/*typecast first free block from head*/
-	block_t *blk = (block_t *)(	(size_t)pool + 
-								pool->next_free - 
-								sizeof(blk->offset));
-		
-	/*point head to next free & if last free put in pool 0*/
-	if(0 == blk->offset)
-	{
-		pool->next_free = 0;
-	}
+	block_t *blk = NULL;
 	
-	else
-	{
-		pool->next_free = blk->offset + ((size_t)blk - (size_t)pool);
-	}
-	
-	/*put offset from allocated block to head - into blocks meta-data*/
-	blk->offset = (size_t)blk - (size_t)pool;
+	assert(NULL != pool);
 		
-	return (&blk->data);
+	/* if all blocks are full */
+	if (0 == pool->next_free)
+	{
+		return (NULL);
+	}	
+	
+	/* points to next free block */
+	blk = (void *)((char *)pool + pool->next_free);
+
+	/* switch offset of fsa control unit with allocated blocks offset */
+	Swap(&(pool->next_free), &(blk->offset));
+
+	return ((char *)blk + sizeof(block_t));
 }
+
+
 /*----------------------------------------------------------------------------*/
 /*
 O(1) 
@@ -151,22 +151,30 @@ recieving from user poiter to blocks data
 */
 void FSAFree(void *block)
 {
-	/*typecast block*/
-	block_t *blk = (block_t *)((size_t)block - sizeof(blk->offset));
-	
-	/*typecast head*/
-	fsa_t *pool = (fsa_t *)((size_t)block - blk->offset);
-		
-	/*in block put offset from next free (adjusting the offset)*/	
-	blk->offset = pool->next_free - ((size_t)block - (size_t)pool);
-	
-	/*pool->next_free recieves offset from freshly freed blocks data*/
-	pool->next_free = (size_t)blk->data - (size_t)pool;
+	block_t *blk = NULL;
+	fsa_t *pool = NULL;
+
+	assert(NULL != block);
+
+	/* get address of block to free */
+	blk = (block_t *)((char *)block - sizeof(block_t));
+
+	/* get address of pool */
+	pool = (fsa_t *)((char *)blk - blk->offset);
+
+	/* check if block was created in this pool */
+	#ifdef DEBUG
+	if (blk->pool != pool)
+	{
+		return;
+	}
+	#endif
+
+	/* update offsets */
+	Swap(&blk->offset, &pool->next_free);
 
 	return;
 }
-
-
 
 
 /*----------------------------------------------------------------------------*/
@@ -176,27 +184,47 @@ Return number of free blocks in mem_pool
 */
 size_t FSACountFree(fsa_t *pool)
 {
+	block_t *blk = NULL;
+	size_t loop_iter = 0;
 	size_t free_blocks = 0;
-	
-	/*typecast the first free block*/
-	block_t *blk = 
-	(block_t *)((size_t)pool + pool->next_free - sizeof(blk->offset));
-	
-	while(0 != blk->offset && 		/*until you reach last free block*/
-		  0 != pool->next_free)		/*if all blocks are full*/
+
+	assert(NULL != pool);
+
+	/* initialize variables for a loop */
+	loop_iter = pool->next_free;
+	blk = (block_t *)((char *)pool + pool->next_free);
+
+	/* run all block (check if their offset != 0) */
+	while (0 != loop_iter)
 	{
-		/*typecast each block passed for 'while loop' tests*/
-		blk = (block_t *)((size_t)blk + blk->offset - sizeof(blk->offset));
-		
-		++free_blocks;
+		/* check if block is empty (doesn't point to itself:
+		(current pointer-offset doesn't equal to pool) */
+		if ((char *)pool != ((char *)blk - blk->offset))
+		{
+			++free_blocks;
+		}
+
+		blk = (block_t *)((char *)pool + loop_iter);
+
+		loop_iter = blk->offset;
 	}
 	
 	return (free_blocks);	
 }
 
+/*----------------------------------------------------------------------------*/
+/*								HELPERS										  */
+/*----------------------------------------------------------------------------*/
 
+/*swapper*/
+static void Swap(size_t *data_1, size_t *data_2)
+{
+	size_t temp = *data_1;
+	*data_1 = *data_2;
+	*data_2 = temp;
 
-
+	return;	
+}
 
 
 

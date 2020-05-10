@@ -1,5 +1,3 @@
-/*tests developer : Roy Ruach		*/
-
 
 #include <stdio.h>
 #include <assert.h>

@@ -52,6 +52,9 @@ vlg_ds:
 #------------------------------------------------------------------------------#	
 fsa: 
 	$(CC) $(CFLAGS) $(SYSP_INCLUDE) -o $(SYSP_OBJ)a.out $(SYSP_TEST)fsa_test.c $(SYSP_SRC)fsa/fsa.c
+
+vsa: 
+	$(CC) $(CFLAGS) $(SYSP_INCLUDE) -o $(SYSP_OBJ)a.out $(SYSP_TEST)vsa_test.c $(SYSP_SRC)vsa/vsa.c
 	
 #-----------------------------#
 	

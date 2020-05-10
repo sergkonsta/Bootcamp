@@ -24,6 +24,7 @@ fsa_t *FSAInit(void *mem_segment, size_t size, size_t block_size);
 /*
 O(1) 
 allocate 1 block_size 
+return: pointer to allocated block or NULL if all no memory left
 */
 void *FSAAlloc(fsa_t *pool);
 
