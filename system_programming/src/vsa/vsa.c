@@ -2,8 +2,8 @@
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      10.05.2020               **
-**  Reviewer:  Amir David				**
-**  Status:    in progress				**
+**  Reviewer:  Eliran					**
+**  Status:    Approved					**
 *****************************************/	
 
 #include <stddef.h>		/*for size_t*/
@@ -18,7 +18,7 @@
 
 #define FREE (-1)
 
-#define NEXT_BLOCK(x) ((vsa_t *)((size_t)x + META_SIZE + (size_t)ABS(x->size)))
+#define NEXT_BLOCK(x) ((vsa_t *)((char *)x + META_SIZE + (size_t)ABS(x->size)))
 
 
 
@@ -33,23 +33,23 @@ struct vsa
 static void MergeAdjacentFree(vsa_t *header);
 
 /*					
-	each offset holds the size of its block (positive for allocated, 
+	each size holds the size of its block (positive for allocated, 
 											 negative for free) 
 											 					
 	vsa_t *------->	 ______________________
-					|_____size__1__________|_____<-- offset / size
+					|_____size__1__________|_____<-- size
 					|					   |
 					|					   |
 					|		block 1		   |
 					|					   |
 					|______________________|_____
-					|_____size__2__________|_____<-- offset / size
+					|_____size__2__________|_____<-- size
 					|					   |
 					|					   |
 					|		block 2		   |
 					|					   |
 					|______________________|_____
-					|_____size__3__________|_____<-- offset / size
+					|_____size__3__________|_____<-- size
 					|					   |
 					|		block 3		   |
 								.
@@ -60,11 +60,10 @@ static void MergeAdjacentFree(vsa_t *header);
 								
 */
 /*----------------------------------------------------------------------------*/
-/* 
+/*
 O(1) 
-init memory pool. 
-return pointer to pool begin
-or null if not enough size.
+Function: 	initializes memory pool
+Return: 	pointer to initialized memory pool / NULL if not enough memory
 */
 vsa_t *VSAInit(void *mem_segment, size_t size)
 {
@@ -89,7 +88,7 @@ vsa_t *VSAInit(void *mem_segment, size_t size)
 	/*define the footer*/ 
 	block = NEXT_BLOCK(block);
 	block->size = 0;
-	
+		
 	return ((vsa_t *)mem_segment);
 }
 
@@ -97,11 +96,9 @@ vsa_t *VSAInit(void *mem_segment, size_t size)
 /*----------------------------------------------------------------------------*/
 /*
 O(n) 
-allocate memory block 
-
-* combines adjacent free blocks
-
-returns null if no space found
+Function: 	allocates memory
+			combines additional free blocks
+Return: 	pointer to allocated memory / NULL if no memory space was found
 */
 void *VSAAlloc(vsa_t *pool, size_t size_to_alloc)
 {
@@ -119,13 +116,13 @@ void *VSAAlloc(vsa_t *pool, size_t size_to_alloc)
 		MergeAdjacentFree(block);
 
 		/* if chunk of asked size */
-		if((long)(size_to_alloc + META_SIZE) <= ABS(block->size))	
+		if((long)(size_to_alloc + META_SIZE) < ABS(block->size))	
 		{
 			/* holds original size of free chunk - negative value*/
 			free_block_size = block->size;
 			
 			/*hold return value - pointer to allocated space*/
-			ret = (void *)((size_t)block + META_SIZE);
+			ret = (void *)((char *)block + META_SIZE);
 
 			/*initialize meta-data*/
 			block->size = (long)size_to_alloc;
@@ -136,25 +133,33 @@ void *VSAAlloc(vsa_t *pool, size_t size_to_alloc)
 			/*update block after allocation*/
 			block = NEXT_BLOCK(block);		
 			block->size = 
-			free_block_size + (long)size_to_alloc + (long)META_SIZE;
-			
-			return ret;
+			free_block_size + (long)size_to_alloc + (long)META_SIZE;			
+			break;
 		}
 		
-		/* advance to next chunk, current can't be allocated (small/occupied) */
+		/*case of last block available, no room left for another meta-data*/
+		else if ((long)(size_to_alloc) <= ABS(block->size) &&
+				 (long)(size_to_alloc + META_SIZE) >= ABS(block->size) )
+		{
+			block->size *= FREE;
+			ret =  ( (void *)((char *)block + META_SIZE) );
+			break;
+		}
+		
+		/*advance to next chunk, current can't be allocated (small/occupied)*/
 		block = NEXT_BLOCK(block);	
 	}
 
-
-	/* if chunk with suitable size wasn't found */
-	return NULL;
+	/*if chunk with suitable size wasn't found*/
+	return (ret);
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*
 O(1) 
-free block
+Function: 	frees block
+Return: 	---
 */
 void VSAFree(void *chunk)
 {
@@ -163,7 +168,7 @@ void VSAFree(void *chunk)
 	assert(chunk);
 
 	/* get pointer to header */
-	block = (vsa_t *)((size_t)chunk - META_SIZE);
+	block = (vsa_t *)((char *)chunk - META_SIZE);
 
 	assert(block->tag == 0xDEADBEEF);
 	assert(block->size > 0);
@@ -178,17 +183,16 @@ void VSAFree(void *chunk)
 /*----------------------------------------------------------------------------*/
 /*
 O(n) 
-Return the largest chunk 
-* combines adjacent free blocks
+Function: 	finds largest free chunk of memory
+		  	merges adjacent free blocks
 
-alg:
-iter through pool until pool->size == 0
-
-if size is negative and bigger than saved size - increase it
+Return: 	size_t of largest block found
+			0 if none were found
 */
+
 size_t VSALargestChunkAvailable(vsa_t *pool)
 {
-	size_t result = 0;
+	long result = 0;
 	vsa_t *block = pool;
 	
 	assert (NULL != pool);	
@@ -196,21 +200,20 @@ size_t VSALargestChunkAvailable(vsa_t *pool)
 	/*while end of pool isn't reached*/
 	while(0 != block->size)
 	{
-		/*check for adjacent free blocks and merge */
+		/*check for adjacent free blocks and merge*/
 		MergeAdjacentFree(block);			
 		
-
-		/*save bigger chunk if found*/
-		if(result < (size_t)(block->size))
+		/*update if space is free and larger*/
+		if(result > block->size)
 		{
-			result = ABS(block->size);
+			result = block->size;
 		}
 		
-		/* advance to next heder */
+		/* advance to next block */
 		block = NEXT_BLOCK(block);	
 	}
 	
-	return (result);		
+	return ( ABS(result) );		
 }
 
 
@@ -219,7 +222,8 @@ size_t VSALargestChunkAvailable(vsa_t *pool)
 /*----------------------------------------------------------------------------*/
 /* 
 O(n)
-merges adjacent free chunks. 
+Function: merges adjacent free chunks.
+Return: ---
 */
 static void MergeAdjacentFree(vsa_t *block)
 {
@@ -227,10 +231,9 @@ static void MergeAdjacentFree(vsa_t *block)
 	
 	assert(block);
 
-	while(block_iter->size < 0 && NEXT_BLOCK(block_iter)->size < 0)
+	while(block->size < 0 && NEXT_BLOCK(block_iter)->size < 0)
 	{
-		block->size = block_iter->size - (long)META_SIZE + block_iter->size;
-		block_iter = NEXT_BLOCK(block_iter);
+		block->size += NEXT_BLOCK(block_iter)->size + (FREE * (long)META_SIZE);
 	}
 	
 	return;

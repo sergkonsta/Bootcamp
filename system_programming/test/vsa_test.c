@@ -3,55 +3,88 @@
 
 #include "vsa.h"
 
-
 #define ERROR (printf("error in line %d\n", __LINE__));
 
 int main()
-{
+{	
+	void *segment = malloc(sizeof(char) * 17122);
+	vsa_t *pool = VSAInit(segment, 17122);
 	
-	void *segment = malloc(sizeof(char) * 200);
-	vsa_t *pool = VSAInit(segment, 200);
-
 	void *chunk1 = NULL;
 	void *chunk2 = NULL;
+	void *chunk3 = NULL;	
+	void *chunk4 = NULL;		
+
+	if(17088 != VSALargestChunkAvailable(pool))
+	{
+		printf("%ld\n", VSALargestChunkAvailable(pool));
+		ERROR
+	}
+		
+	chunk1 = VSAAlloc(pool, 88);
+		
+	if(16984 != VSALargestChunkAvailable(pool))
+	{
+		printf("%ld\n", VSALargestChunkAvailable(pool));
+		ERROR
+	}
+		
+	chunk2 = VSAAlloc(pool, 1500);
 	
-	size_t test = 0;
-/*-------------------------------------------------------------------------*/
-	if(168 != VSALargestChunkAvailable(pool))
+	if(15464 != VSALargestChunkAvailable(pool))
 	{
 		printf("%ld\n", VSALargestChunkAvailable(pool));
 		ERROR
 	}
-/*-------------------------------------------------------------------------*/
-	chunk1 = VSAAlloc(pool, 17);
-	chunk2 = VSAAlloc(pool, 30);
 
-	if(80 != VSALargestChunkAvailable(pool))
+	chunk3 = VSAAlloc(pool, 3246); /*12200 space left*/
+	
+	if(12200 != VSALargestChunkAvailable(pool))
+	{
+		printf("%ld\n", VSALargestChunkAvailable(pool));
+		ERROR
+	}	
+	
+	/*too big size test*/
+	if(NULL != VSAAlloc(pool, 12201))
 	{
 		printf("%ld\n", VSALargestChunkAvailable(pool));
 		ERROR
 	}
-/*-------------------------------------------------------------------------*/
-	VSAFree(chunk1);
-
-	if(80 != VSALargestChunkAvailable(pool))
+	
+	chunk4 = VSAAlloc(pool, 12170);	
+	
+	if(8 != VSALargestChunkAvailable(pool))
 	{
 		printf("%ld\n", VSALargestChunkAvailable(pool));
 		ERROR
-	}
-/*-------------------------------------------------------------------------*/
+	}	
+	
 	VSAFree(chunk2);
 	
-	test = VSALargestChunkAvailable(pool);
-	if(168 != test)
+	if(1504 != VSALargestChunkAvailable(pool))
 	{
-		printf("%ld\n", test);
+		printf("%ld\n", VSALargestChunkAvailable(pool));
 		ERROR
 	}
-
-/*-------------------------------------------------------------------------*/
-	free(segment);
-
-
-return 0;
+	
+	VSAFree(chunk3);
+	
+	if(4768 != VSALargestChunkAvailable(pool))
+	{
+		printf("%ld\n", VSALargestChunkAvailable(pool));
+		ERROR
+	}
+	
+	VSAFree(chunk4);
+	VSAFree(chunk1);
+	
+	if(17088 != VSALargestChunkAvailable(pool))
+	{
+		printf("%ld\n", VSALargestChunkAvailable(pool));
+		ERROR
+	}
+	
+	free(segment);	
+	return 0;
 }

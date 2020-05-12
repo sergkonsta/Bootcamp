@@ -130,7 +130,8 @@ void SchedClear(sched_t *sched)
 	assert(NULL != sched);
 	assert(NULL != sched->pq);
 	
-	while (!SchedIsEmpty(sched))
+	/*PQIsEmpty and not SchedIsEmpty - to make sure loop won't be infinite*/
+	while (!PQIsEmpty(sched))
 	{
 		TaskDestroy(PQDeq(sched->pq));
 	}
@@ -162,7 +163,11 @@ void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 			if(0 == TaskIsMatch(sched->current_task, &uid))
 				{
 					free( PQErase(sched->pq, TaskIsMatch, &uid ));
-				}			
+				}	
+				
+			/*else for self remove check missing*/	
+			
+			/*destroy task missing*/	
 	}
 	
 	return;
@@ -200,6 +205,7 @@ ilrd_uid_t SchedAddTask(sched_t *sched,
 
 	if(0 !=	PQEnq(sched->pq, new_task))
 	{
+		/*missing: destroy task if PQ fails*/
 		return BAD_UID;
 	}
 	
@@ -229,7 +235,8 @@ int SchedRun(sched_t *sched)
 	while((1 != sched->to_stop) && (1 != SchedIsEmpty(sched)))
 	{		
 		/*get first task*/
-		sched->current_task = (task_t *)PQDeq(sched->pq);	
+		sched->current_task = (task_t *)PQDeq(sched->pq);
+			/*missing: check that current task is really empty*/	
 
 		/*check when first task should occur*/
 		time_offset = TaskGetNextRunTime(sched->current_task) - time(NULL);
@@ -266,7 +273,7 @@ int SchedRun(sched_t *sched)
 	}	
 		
 	
-	return (0);
+	return (sched->to_stop);
 }
 
 

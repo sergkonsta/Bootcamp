@@ -35,6 +35,8 @@ task_t *TaskCreate(	int (*act_func)(void *param), void *param,
 	}
 	
 	new_task->uid = UIDCreate();
+	/*forgot to check returned UID not to be BAD_UID*/
+	
 	new_task->interval_in_sec = interval_in_sec;
 	new_task->act_func = act_func;
 	new_task->param = param;
@@ -50,11 +52,12 @@ task_t *TaskCreate(	int (*act_func)(void *param), void *param,
 O(1)
 function:	runs act_func
 success:	1 for repeat / 0 for don't repeat
-fail:		--- (can't fail - Tal said)
+fail:		--- 
 */
 int TaskRun(task_t *task)
 {
 	assert(NULL != task);
+	/*assert all members of task!!!!!*/
 	
 	return (task->act_func(task->param));
 }
@@ -128,7 +131,7 @@ function: 	checks if task has the same UID as 'uid'
 success: 	1 - is a match / 0 - no match
 fail:		---
 */
-int TaskIsMatch(const void *task,const void *uid)
+int TaskIsMatch(const void *task, const void *uid)
 {
 	assert(NULL != task);
 	

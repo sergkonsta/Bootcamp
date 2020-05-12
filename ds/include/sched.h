@@ -20,8 +20,8 @@ sched_t *SchedCreate(void);
 /*
 O(n)
 function: 	destroys
-Success:	pointer to sched
-fail:		NULL
+Success:	---
+fail:		---
 */
 void SchedDestroy(sched_t *sched);
 
@@ -93,7 +93,11 @@ ilrd_uid_t SchedAddTask(sched_t *sched, int (*act_func)(void *param),
 /*stop running (should be sent to the sched via task)*/
 void SchedStop(sched_t *sched);
 
-/*returns status*/
+/*returns status
+
+return:
+
+-1 means task failed to reEnq. put it in sched again.*/
 int SchedRun(sched_t *sched);
 
 
