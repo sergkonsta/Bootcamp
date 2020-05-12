@@ -8,7 +8,9 @@ typedef struct vsa vsa_t;
 
 /* 
 O(1) 
-init memory pool. return pointer to pool begin
+init memory pool. 
+return pointer to pool begin
+or null if not enough size.
 */
 vsa_t *VSAInit(void *mem_segment, size_t size);
 

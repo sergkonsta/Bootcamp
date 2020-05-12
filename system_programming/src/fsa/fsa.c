@@ -91,9 +91,9 @@ fsa_t *FSAInit(void *mem_segment, size_t size, size_t block_size)
 	
 	assert(NULL != mem_segment);
 			
-	/*next_free points to next block wihle alligned*/
+	/*next_free points to next block while alligned*/
 	pool->next_free = sizeof(fsa_t);
-	pool->block_size = sizeof(block_t) + (((block_size - 1)/WORD + 1) * WORD);	;
+	pool->block_size = sizeof(block_t) + (((block_size - 1)/WORD + 1) * WORD);
 	pool->num_blocks = (size - sizeof(fsa_t))/ pool->block_size;		
 		
 	for(offset_iter = pool->next_free; 
