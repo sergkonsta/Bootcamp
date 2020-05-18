@@ -1,6 +1,6 @@
 #############################################################################
 #																			#
-#							makefile for dlist								#
+#							makefile for UID								#
 #																			#
 #############################################################################
 
@@ -9,7 +9,7 @@ CC = gcc
 CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I ../../include
 LDFLAGS = -shared
 
-NAME = dlist
+NAME = uid
 
 OBJ = ../../obj/
 TEST = ../../test/

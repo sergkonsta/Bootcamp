@@ -1,6 +1,6 @@
 #############################################################################
 #																			#
-#							makefile for dlist								#
+#							makefile for sched								#
 #																			#
 #############################################################################
 
@@ -9,7 +9,7 @@ CC = gcc
 CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I ../../include
 LDFLAGS = -shared
 
-NAME = dlist
+NAME = sched
 
 OBJ = ../../obj/
 TEST = ../../test/
