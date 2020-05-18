@@ -1,31 +1,43 @@
 #############################################################################
 #																			#
-#							makefile for sched								#
+#							makefile for SCHED								#
 #																			#
 #############################################################################
+#
+#	includes dlist obj inside of sorted_list's shared library
+#
+
+NAME = sched
+SUB_NAME = pq
+SUB_NAME_2 = task
+
+#
+#			DON'T CHANGE FROM HERE!!!
+#
 
 CC = gcc
-
 CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I ../../include
 LDFLAGS = -shared
 
-NAME = sched
+OBJ_PATH = ../../obj/
+TEST_PATH = ../../test/
+LIB_PATH = ../../lib/
 
-OBJ = ../../obj/
-TEST = ../../test/
-LIB = ../../lib/
+$(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c	
+	$(CC) $(CFLAGS) -L$(LIB_PATH) -Wl,-rpath=$(LIB_PATH) \
+	-o $@ $^ \
+	-l$(NAME) #assumes all library files start with "lib" end with ".so"
 
-$(NAME).out : $(LIB)lib$(NAME).so $(TEST)$(NAME)_test.c	
-	$(CC) $(CFLAGS) -L$(LIB) -Wl,-rpath=$(LIB) \
-	-o $(NAME).out $(TEST)$(NAME)_test.c \
-	-l$(NAME)		#assumes all library files start with "lib" end with ".so"
-
-$(LIB)lib$(NAME).so: $(OBJ)$(NAME).o
-	$(CC) $(LDFLAGS) -o $(LIB)lib$(NAME).so $^
+#target is shared library compiled of this projects obj and encapsulated obj
+$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME).o
+	$(CC) $(LDFLAGS) -o $@ $^
 	
-$(OBJ)$(NAME).o: $(NAME).c
+$(OBJ_PATH)$(NAME).o: $(NAME).c
 	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
 
+#if sub-obj file doesn't exist - go to sub-Make and create it
+$(OBJ_PATH)$(SUB_NAME).o: 
+	$(MAKE) -C ../$(SUB_NAME)
 
 
 
@@ -36,7 +48,8 @@ $(OBJ)$(NAME).o: $(NAME).c
 
 .PHONY: clean
 clean : 
-	rm $(OBJ)$(NAME).o $(LIB)lib$(NAME).so $(NAME).out
+	rm $(OBJ_PATH)$(NAME).o $(LIB_PATH)lib$(NAME).so $(NAME).out; \
+	$(MAKE) clean -C ../$(SUB_NAME) 
 
 .PHONY: cgdb	
 cgdb:
@@ -45,3 +58,8 @@ cgdb:
 .PHONY: vlg
 vlg:
 	valgrind --leak-check=yes --track-origins=yes ./$(NAME).out
+	
+#update git repository - ABSOLUTE PATH
+.PHONY: gitp
+gitp:
+	cd ~/sergey-konstantinovsky/; git add .; git commit -ma; git push -u; 

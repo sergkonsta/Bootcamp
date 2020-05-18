@@ -1,14 +1,14 @@
 #############################################################################
 #																			#
-#							makefile for SORTED_LIST						#
+#							makefile for pqueue								#
 #																			#
 #############################################################################
 #
 #	includes dlist obj inside of sorted_list's shared library
 #
 
-NAME = sorted_list
-SUB_NAME = dlist
+NAME = pqueue
+SUB_NAME = sorted_list
 
 #
 #			DON'T CHANGE FROM HERE!!!
@@ -28,7 +28,7 @@ $(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c
 	-l$(NAME) #assumes all library files start with "lib" end with ".so"
 
 #target is shared library compiled of this projects obj and encapsulated obj
-$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME).o
+$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME).o 
 	$(CC) $(LDFLAGS) -o $@ $^
 	
 $(OBJ_PATH)$(NAME).o: $(NAME).c 
@@ -36,7 +36,7 @@ $(OBJ_PATH)$(NAME).o: $(NAME).c
 
 #if sub-obj file doesn't exist - go to sub-Make and create it
 $(OBJ_PATH)$(SUB_NAME).o: 
-	$(MAKE) -C ../$(SUB_NAME)
+	$(MAKE) $@ -C ../$(SUB_NAME)
 
 
 
