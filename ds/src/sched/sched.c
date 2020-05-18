@@ -14,6 +14,8 @@
 #include "pqueue.h"
 #include "task.h"
 
+ilrd_uid_t BAD_UID = {0,0,0};
+
 struct sched
 {
 	pq_t *pq;
@@ -131,7 +133,7 @@ void SchedClear(sched_t *sched)
 	assert(NULL != sched->pq);
 	
 	/*PQIsEmpty and not SchedIsEmpty - to make sure loop won't be infinite*/
-	while (!PQIsEmpty(sched))
+	while (!PQIsEmpty(sched->pq))
 	{
 		TaskDestroy(PQDeq(sched->pq));
 	}
@@ -153,23 +155,20 @@ void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 	assert(NULL != sched);
 	
 	/*self remove check - current_task might be null*/
-	switch (sched->current_task):
+	if(NULL == sched->current_task)
 	{
-		case(NULL):
-			free( PQErase(sched->pq, TaskIsMatch, &uid ));				
-			break; 
-					
-		default:
-			if(0 == TaskIsMatch(sched->current_task, &uid))
+		free( PQErase(sched->pq, TaskIsMatch, &uid ));
+	}
+	else
+	{
+		if(0 == TaskIsMatch(sched->current_task, &uid))
 				{
 					free( PQErase(sched->pq, TaskIsMatch, &uid ));
 				}	
-				
+	}					
 			/*else for self remove check missing*/	
 			
-			/*destroy task missing*/	
-	}
-	
+			/*destroy task missing*/		
 	return;
 }
 

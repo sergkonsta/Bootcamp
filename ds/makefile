@@ -1,49 +1,46 @@
 #############################################################################
 #																			#
-#							makefile for SORTED_LIST						#
+#							makefile for all DS								#
 #																			#
 #############################################################################
 #
 #	includes dlist obj inside of sorted_list's shared library
 #
 
-NAME = sorted_list
-SUB_NAME = dlist
-
-#
-#			DON'T CHANGE FROM HERE!!!
-#
-
 CC = gcc
 CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I ../../include
 LDFLAGS = -shared
 
-OBJ_PATH = ../../obj/
-TEST_PATH = ../../test/
-LIB_PATH = ../../lib/
+#where to search for targets and prerequisites
+VPATH = src:include:obj:test:lib
 
+INC_PATH = include/
+OBJ_PATH = obj/
+TEST_PATH = test/
+LIB_PATH = lib/
 
 #get a list of all DS obj files
-ALL_OBJS := $(patsubst %.h,%.o,$(wildcard *.h))
+ALL_OBJS = $(patsubst %.h,%.o,$(wildcard include/*.h))
+#ALL_OBJS = include/(wildcard *.h:.h=.o)
 
-default:
-	echo $(ALL_OBJS)
-
-$(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c	
+%.out : lib%.so %_test.c	
 	$(CC) $(CFLAGS) -L$(LIB_PATH) -Wl,-rpath=$(LIB_PATH) \
 	-o $@ $^ \
-	-l$(NAME) #assumes all library files start with "lib" end with ".so"
+	-l% #assumes all library files start with "lib" end with ".so"
 
 #target is shared library compiled of this projects obj and encapsulated obj
-$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME).o
+$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(ALL_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
-	
-$(OBJ_PATH)$(NAME).o: $(NAME).c 
-	$(CC) $(CFLAGS) -c -fPIC -o $@ $<
+
+#general rule for any obj inside ALL_OBJS ?????????????
+%.o: %.c
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
 
 #if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME).o: 
-	$(MAKE) -C ../$(SUB_NAME)
+$%.o: 
+	$(MAKE) -C src/$@
+
+
 
 
 
@@ -55,7 +52,7 @@ $(OBJ_PATH)$(SUB_NAME).o:
 .PHONY: clean
 clean : 
 	rm $(OBJ_PATH)$(NAME).o $(LIB_PATH)lib$(NAME).so $(NAME).out; \
-	$(MAKE) clean -C ../$(SUB_NAME) 
+	$(MAKE) clean -C ../$(SUB_NAME_1) 
 
 .PHONY: cgdb	
 cgdb:

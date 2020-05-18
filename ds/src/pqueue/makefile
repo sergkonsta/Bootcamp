@@ -8,7 +8,8 @@
 #
 
 NAME = pqueue
-SUB_NAME = sorted_list
+SUB_NAME_1 = sorted_list
+SUB_NAME_2 = dlist
 
 #
 #			DON'T CHANGE FROM HERE!!!
@@ -28,17 +29,19 @@ $(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c
 	-l$(NAME) #assumes all library files start with "lib" end with ".so"
 
 #target is shared library compiled of this projects obj and encapsulated obj
-$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME).o 
+$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME_1).o $(OBJ_PATH)$(SUB_NAME_2).o
 	$(CC) $(LDFLAGS) -o $@ $^
 	
 $(OBJ_PATH)$(NAME).o: $(NAME).c 
 	$(CC) $(CFLAGS) -c -fPIC -o $@ $<
 
 #if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME).o: 
-	$(MAKE) $@ -C ../$(SUB_NAME)
+$(OBJ_PATH)$(SUB_NAME_1).o: 
+	$(MAKE) $@ -C ../$(SUB_NAME_1)
 
-
+#if sub-obj file doesn't exist - go to sub-Make and create it
+$(OBJ_PATH)$(SUB_NAME_2).o: 
+	$(MAKE) $@ -C ../$(SUB_NAME_2)
 
 #############################################################################
 #									PHONYS									#
@@ -48,7 +51,7 @@ $(OBJ_PATH)$(SUB_NAME).o:
 .PHONY: clean
 clean : 
 	rm $(OBJ_PATH)$(NAME).o $(LIB_PATH)lib$(NAME).so $(NAME).out; \
-	$(MAKE) clean -C ../$(SUB_NAME) 
+	$(MAKE) clean -C ../$(SUB_NAME_1) 
 
 .PHONY: cgdb	
 cgdb:
