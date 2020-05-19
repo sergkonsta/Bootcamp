@@ -11,37 +11,27 @@ CC = gcc
 CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I ../../include
 LDFLAGS = -shared
 
-#where to search for targets and prerequisites
-VPATH = src:include:obj:test:lib
-
 INC_PATH = include/
 OBJ_PATH = obj/
 TEST_PATH = test/
 LIB_PATH = lib/
 
-#get a list of all DS obj files
-ALL_OBJS = $(patsubst %.h,%.o,$(wildcard include/*.h))
-#ALL_OBJS = include/(wildcard *.h:.h=.o)
+#get a list of all DS obj files:  var = [ filter ir(.h files changed to .o) ]
+ALL_OBJS = $(notdir $(patsubst %.h,%.o,$(wildcard include/*.h)) )
 
-%.out : lib%.so %_test.c	
-	$(CC) $(CFLAGS) -L$(LIB_PATH) -Wl,-rpath=$(LIB_PATH) \
-	-o $@ $^ \
-	-l% #assumes all library files start with "lib" end with ".so"
 
-#target is shared library compiled of this projects obj and encapsulated obj
-$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(ALL_OBJS)
+ALL_SRCS = $(basename $(notdir $(patsubst %.h,%.o,$(wildcard include/*.h)) ) )
+	
+#target is shared library compiled of all ds objs 
+$(LIB_PATH)libDS.so: $(ALL_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
 
-#general rule for any obj inside ALL_OBJS ?????????????
-%.o: %.c
-	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
+$(ALL_OBJS): 
+	for target in "$(ALL_SRCS)"; do $(MAKE) -C $$target; done
 
-#if sub-obj file doesn't exist - go to sub-Make and create it
-$%.o: 
-	$(MAKE) -C src/$@
-
-
-
+# rule to generate a dep file by using the C preprocessor
+%.d: %.c
+	@$(CC) $(CFLAGS) $< -MM -MT $(ALL_OBJS) >$@
 
 
 #############################################################################

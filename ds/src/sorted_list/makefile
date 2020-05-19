@@ -22,12 +22,10 @@ OBJ_PATH = ../../obj/
 TEST_PATH = ../../test/
 LIB_PATH = ../../lib/
 
-
 #get a list of all DS obj files
-ALL_OBJS := $(patsubst %.h,%.o,$(wildcard *.h))
+ALL_OBJS = $(notdir $(patsubst %.h,%.o,$(wildcard ../../include/*.h)) )
 
-default:
-	echo $(ALL_OBJS)
+
 
 $(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c	
 	$(CC) $(CFLAGS) -L$(LIB_PATH) -Wl,-rpath=$(LIB_PATH) \
