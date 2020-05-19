@@ -1,8 +1,27 @@
 
 #include <stddef.h>
 
-void BubbleSort(int *arr, size_t arr_length);
+/*-----------------------------------------------------------------------------
+O(n^2)
+functionality:
+return: ---
+*/
+void BubbleSort(int *arr, const size_t arr_length);
 
-void SelectionSort(int *arr, size_t arr_length);
 
-void InsertionSort(int *arr, size_t arr_length);
+
+/*-----------------------------------------------------------------------------
+O( )
+functionality:
+return: ---
+*/
+void SelectionSort(int *arr, const size_t arr_length);
+
+
+
+/*-----------------------------------------------------------------------------
+O( )
+functionality:
+return: ---
+*/
+void InsertionSort(int *arr, const size_t arr_length);
