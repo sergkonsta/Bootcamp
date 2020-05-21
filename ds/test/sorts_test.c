@@ -1,44 +1,138 @@
 
-#include <stdlib.h>	/*for rand*/
+#include <stdlib.h>	/*for rand & malloc*/
 #include <stdio.h>	/*for printf*/
+#include <string.h>	/*for memcpy*/
+#include <time.h>	/*for clock*/
 
 #include "sorts.h"
 
 #define TEST_ARR_SIZE (5000)
 
+#define MIN_RANGE (1)
+#define MAX_RANGE (100)
+
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define RESET "\x1B[0m"
+
+
 static int ArrayIsSorted(int arr[], size_t size);
 static void FillArray(int arr[], size_t size);
+static void PrintTestResult(int test_result, char *test_name);
+static void FillArrayLow(int arr[], size_t size);
 
 int main()
-{
-	int arr[TEST_ARR_SIZE] = {0};
-	
-	/*----------------  fill arr with random ints, sort and check ------------*/
+{	
+	int *arr = (int *)calloc(TEST_ARR_SIZE, sizeof(int));
+	int *dup_arr = (int *)calloc(TEST_ARR_SIZE, sizeof(int));
+	int *sorted_arr = (int *)calloc(TEST_ARR_SIZE, sizeof(int));
+
+	clock_t time_tag = 0;
+	clock_t time_tag_q = 0;
+
+	/*------------------------------------------------------------------------*/
+	/*							 BUBBLE SORT TEST						      */
+	/*------------------------------------------------------------------------*/
 	FillArray(arr, TEST_ARR_SIZE);	
+	memcpy((void *)dup_arr, (const void *)arr, (sizeof(int) * TEST_ARR_SIZE));
 	
-	BubbleSort(arr, TEST_ARR_SIZE);	
+	time_tag = clock();
+	BubbleSort(arr, TEST_ARR_SIZE);		
+	PrintTestResult( ArrayIsSorted(arr,TEST_ARR_SIZE), "bubble sort" );
+	time_tag = clock() - time_tag;
 	
-	if(0 == ArrayIsSorted(arr,TEST_ARR_SIZE))
-	{
-		printf("\n\nError in Bubble sort.\n\n");
-	}
+	time_tag_q = clock();
+	QuickSort(dup_arr, 0, TEST_ARR_SIZE - 1);
+	PrintTestResult( ArrayIsSorted(dup_arr,TEST_ARR_SIZE), "quick sort" );	
+	time_tag_q = clock() - time_tag_q;	
+	
+	printf("\nTime difference (Bubble sort time - Q-Sort time) is: ");
+	printf("\n(%fs - %fs) = %fs\n",	(float)time_tag/CLOCKS_PER_SEC,
+								(float)time_tag_q/CLOCKS_PER_SEC,
+								(float)(time_tag - time_tag_q)/CLOCKS_PER_SEC);
 	
 	
+	/*------------------------------------------------------------------------*/
+	/*							 SELECTION SORT TEST						  */
+	/*------------------------------------------------------------------------*/	
+	FillArray(arr, TEST_ARR_SIZE);	
+	memcpy((void *)dup_arr, (const void *)arr, (sizeof(int) * TEST_ARR_SIZE));
+	
+	time_tag = clock();
+	SelectionSort(arr, TEST_ARR_SIZE);		
+	PrintTestResult( ArrayIsSorted(arr,TEST_ARR_SIZE), "selection sort" );
+	time_tag = clock() - time_tag;
+	
+	time_tag_q = clock();
+	QuickSort(dup_arr, 0, TEST_ARR_SIZE - 1);
+	PrintTestResult( ArrayIsSorted(dup_arr,TEST_ARR_SIZE), "quick sort" );	
+	time_tag_q = clock() - time_tag_q;	
+	
+	printf("\nTime difference (selection sort time - Q-Sort time) is: ");
+	printf("\n(%fs - %fs) = %fs\n",(float)time_tag/CLOCKS_PER_SEC,
+								 (float)time_tag_q/CLOCKS_PER_SEC,
+								 (float)(time_tag - time_tag_q)/CLOCKS_PER_SEC);
+
+	/*------------------------------------------------------------------------*/
+	/*							 INSERTION SORT TEST						  */
+	/*------------------------------------------------------------------------*/
+	FillArray(arr, TEST_ARR_SIZE);	
+	memcpy((void *)dup_arr, (const void *)arr, (sizeof(int) * TEST_ARR_SIZE));
+	
+	time_tag = clock();
+	InsertionSort(arr, TEST_ARR_SIZE);		
+	PrintTestResult( ArrayIsSorted(arr,TEST_ARR_SIZE), "insertion sort" );
+	time_tag = clock() - time_tag;
+	
+	time_tag_q = clock();
+	QuickSort(dup_arr, 0, TEST_ARR_SIZE - 1);
+	PrintTestResult( ArrayIsSorted(dup_arr,TEST_ARR_SIZE), "quick sort" );	
+	time_tag_q = clock() - time_tag_q;	
+	
+	printf("\nTime difference (insertion sort time - Q-Sort time) is: ");
+	printf("\n(%fs - %fs) = %fs\n",(float)time_tag/CLOCKS_PER_SEC,
+							 	 (float)time_tag_q/CLOCKS_PER_SEC,
+								 (float)(time_tag - time_tag_q)/CLOCKS_PER_SEC);
 	
 	
+	/*------------------------------------------------------------------------*/
+	/*							 COUNTING SORT TEST							  */
+	/*------------------------------------------------------------------------*/
 	
+	FillArrayLow(arr, TEST_ARR_SIZE);	
+	memcpy((void *)dup_arr, (const void *)arr, (sizeof(int) * TEST_ARR_SIZE));
 	
+	time_tag = clock();
+	CountingSort(arr, TEST_ARR_SIZE, MIN_RANGE, MAX_RANGE, sorted_arr);		
+	PrintTestResult( ArrayIsSorted(sorted_arr,TEST_ARR_SIZE), "counting sort" );
+	time_tag = clock() - time_tag;
 	
-	printf("\n\nIF NO ERRORS WERE PRINTED ---> ALL GOOD!\n\n");
+	time_tag_q = clock();
+	QuickSort(dup_arr, 0, TEST_ARR_SIZE - 1);
+	PrintTestResult( ArrayIsSorted(dup_arr,TEST_ARR_SIZE), "quick sort" );	
+	time_tag_q = clock() - time_tag_q;	
+	
+	printf("\nTime difference (counting sort time - Q-Sort time) is: ");
+	printf("\n(%fs - %fs) = %fs\n",(float)time_tag/CLOCKS_PER_SEC,
+								   (float)time_tag_q/CLOCKS_PER_SEC,
+								 (float)(time_tag - time_tag_q)/CLOCKS_PER_SEC);
+
+
+
+
+	
+	printf(GRN"\n\nIF NO ERRORS WERE PRINTED ---> ALL GOOD!\n\n"RESET);	
+	
+	free(sorted_arr);
+	free(dup_arr);
+	free(arr);
 	
 	return 0;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*--------------------------------HELPERS-------------------------------------*/
 /*----------------------------------------------------------------------------*/
-
 
 static int ArrayIsSorted(int arr[], size_t size)
 {
@@ -71,3 +165,40 @@ static void FillArray(int arr[], size_t size)
 	
 	return;
 }
+
+/*fill array with number in the range 1 to 100*/
+static void FillArrayLow(int arr[], size_t size)
+{
+	size_t iter = 0;
+	
+	while(iter < size)
+	{
+		arr[iter] = ((rand() % 99) + 1);
+		++iter;
+	}
+	
+	return;
+}
+
+static void PrintTestResult(int test_result, char *test_name)
+{
+	
+	if(1 != test_result)
+	{
+		printf(RED"\n\nError in %s, line: %d.\n\n"RESET,test_name,__LINE__);	
+	}
+	
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
