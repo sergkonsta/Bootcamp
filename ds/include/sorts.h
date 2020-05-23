@@ -26,21 +26,11 @@ return: ---
 */
 void InsertionSort(int *arr, const size_t arr_length);
 
-
-/*-----------------------------------------------------------------------------
-O( )
-functionality:
-return: ---
-*/
-void QuickSort(int *arr, int low, int high);
-
-
 /* positive intgers*/
 /* sort arr of 5000 number val range 0 - 9,999,999*/ 
 int RadixSort(int *arr, const size_t arr_size);
 
 
-/*static void CountingSortDigit(int *input_arr, size_t arr_size, int *sorted_arr);*/
 /* test range val 1-100, 5000 numbers */
 int CountingSort(int *input_arr, const size_t arr_size, int min_val,
 				 int max_val, int *sorted_arr);

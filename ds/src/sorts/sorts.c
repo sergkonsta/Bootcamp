@@ -7,11 +7,17 @@
 *****************************************/		
 #include <assert.h>	/*for assert*/
 #include <stdlib.h>	/*for calloc*/
+#include <string.h>	/*for memcpy*/
 
 #include "sorts.h"
 
+#define MIN_VAL_RADIX (0)
+#define MAX_VAL_RADIX (9999999)
+#define RADIX_SORT_VAL (10)
+
 static void Swap(int *a, int *b);
-static int QSPartition (int arr[], int low, int high);
+static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor);
+static int RadixGetMaxDevFactor(int *arr, size_t arr_size);
 
 /*-----------------------------------------------------------------------------
 O(n^2)
@@ -126,8 +132,8 @@ void InsertionSort(int *arr, const size_t arr_length)
 
 
 /*-----------------------------------------------------------------------------
-O(n^2)
-functionality: Insertion sort in ascending order on ints.
+O(n)
+functionality: counting sort.
 				min max val is needed in order not to waste space on hist array.
 return: ---
 */
@@ -187,6 +193,142 @@ int CountingSort(int *input_arr, const size_t arr_size, int min_val,
 	return (0);
 }
 
+/*-----------------------------------------------------------------------------
+O(n)
+functionality: radix sort, based on counting sort.
+return: ---
+*/
+int RadixSort(int *arr, size_t arr_size)
+{
+
+	/* Get max dev_factor for sort */
+	int curr_dev_factor = 1;
+	int max_dev_factor = RadixGetMaxDevFactor(arr, arr_size);
+	int status = 0;
+		
+	assert(arr);
+	assert(arr_size > 0);
+	
+	/* sort from list significant digit to most */
+	while ((curr_dev_factor < max_dev_factor) && (1 != status))
+	{
+		RadixCountingSort(arr, arr_size, curr_dev_factor);
+		curr_dev_factor *= RADIX_SORT_VAL;
+	}
+
+	return status;
+}
+
+/*----------------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------------*/
+
+/* perform counting sort according to dev_factor
+	work only with positive numbers */
+static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor)
+{
+	int *hist = NULL;
+	int *sorted_arr = NULL;	
+	int tmp = 0;
+	
+	size_t iter = 0;
+	
+	assert(arr);
+	assert(arr_size > 0);
+	
+	/*malloc for hist*/
+	hist = (int *)calloc(RADIX_SORT_VAL,sizeof(int));
+	if (NULL == hist)
+	{
+		return 1;
+	}
+
+	/*malloc for sorted arr*/
+	sorted_arr = (int *)malloc(sizeof(int)*arr_size);
+	if (NULL == sorted_arr)
+	{
+		free(hist);
+		return 1;
+	}
+
+	/*create histogram*/
+	iter = 0;
+	while(iter < arr_size)
+	{
+		++hist[ (arr[iter]/dev_factor) % RADIX_SORT_VAL ];
+		++iter;
+	}
+
+	/*makes prefix sum from the histogram array*/
+	iter = 1;
+	while(iter < RADIX_SORT_VAL)
+	{
+		hist[iter] += hist[iter - 1];
+		++iter;
+	}
+	
+	/* 	shift hist right and insert 0 in first element*/
+	tmp = hist[0];
+	hist[0] = 0;
+
+	iter = 1;
+	while(iter < RADIX_SORT_VAL)
+	{
+		Swap(&tmp, &hist[iter]);
+		++iter;
+	}
+
+	/*placing the integer from the input arr, in its correct place 
+	  inside the sorted array, according to the histogram*/
+	iter = 0;
+	while(iter < arr_size)
+	{
+		sorted_arr[ hist[ (arr[iter] / dev_factor) % RADIX_SORT_VAL ] ] = arr[iter];
+		
+		++hist[ (arr[iter] / dev_factor) % RADIX_SORT_VAL ];
+		
+		++iter;
+	}
+
+	/* copy sorted to original arr */
+	memcpy((void *)sorted_arr, (const void *)arr, (sizeof(int) * arr_size));
+	
+	free(hist);
+	free(sorted_arr);
+
+	return 0;	
+}
+
+/*----------------------------------------------------------------------------*/
+
+/* return max dev factor for  RadixCountingSort*/
+static int RadixGetMaxDevFactor(int *arr, size_t arr_size)
+{
+	int max_dev_factor = RADIX_SORT_VAL;
+	int max_num = 0;
+	size_t iter = 0;
+
+	/*find highest number*/
+	while(iter < arr_size)
+	{
+		if (arr[iter] > max_num)
+		{
+			max_num = arr[iter];
+		}
+		
+		++iter;
+	}
+
+	/*get dev factor according to number of digits in max_num*/
+	while(0 != max_num / max_dev_factor)
+	{
+		max_dev_factor *= RADIX_SORT_VAL;
+	}
+	
+	return (max_dev_factor);
+}
+ 
   
 /*----------------------------------------------------------------------------*/
 /*--------------------------------HELPERS-------------------------------------*/
@@ -204,44 +346,4 @@ static void Swap(int *a, int *b)
 	*a = *b; 
 	*b = temp_swap; 
 } 
-  
 
-/*----------------------------------------------------------------------------*/
-/*GEEKS qsort - here for time comparison testing*/
-
-static int QSPartition (int *arr, int low, int high) 
-{ 
-	int pivot = arr[high];    
-	int i = (low - 1);  
-	int j = low;
-	
-	assert(NULL != arr);
-	
-	for(j = low; j <= high- 1; j++) 
-	{ 
-		if (arr[j] < pivot) 
-		{ 
-			i++;   
-			Swap(&arr[i], &arr[j]); 
-		} 
-	} 
-
-	Swap(&arr[i + 1], &arr[high]); 
-
-	return (i + 1); 
-} 
-
-void QuickSort(int *arr, int low, int high) 
-{ 	
-	assert(NULL != arr);
-	
-	if(low < high) 
-	{ 
-		int pi = QSPartition(arr, low, high); 
-
-		QuickSort(arr, low, pi - 1); 
-		QuickSort(arr, pi + 1, high); 
-	} 
-	
-	return;
-} 
