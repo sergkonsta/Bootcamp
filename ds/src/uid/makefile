@@ -15,9 +15,9 @@ OBJ = ../../obj/
 TEST = ../../test/
 LIB = ../../lib/
 
-$(NAME).out : $(LIB)lib$(NAME).so $(TEST)$(NAME)_test.c	
-	$(CC) $(CFLAGS) -L$(LIB) -Wl,-rpath=$(LIB) \
-	-o $(NAME).out $(TEST)$(NAME)_test.c \
+$(NAME).out : $(LIB)lib$(NAME).so
+	$(CC) $(CFLAGS) -L$(LIB) -Wl,-rpath=$(LIB)\
+	-o $(NAME).out\
 	-l$(NAME)		#assumes all library files start with "lib" end with ".so"
 
 $(LIB)lib$(NAME).so: $(OBJ)$(NAME).o

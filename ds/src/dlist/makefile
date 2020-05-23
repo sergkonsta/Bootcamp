@@ -36,7 +36,7 @@ $(OBJ)$(NAME).o: $(NAME).c
 
 .PHONY: clean
 clean : 
-	rm $(OBJ)$(NAME).o $(LIB)lib$(NAME).so $(NAME).out
+	rm $(OBJ)$(NAME).o $(LIB)lib$(NAME).so *.out
 
 .PHONY: cgdb	
 cgdb:

@@ -1,49 +1,72 @@
 #############################################################################
 #																			#
-#							makefile for all DS								#
+#							Author: Sergey Konsta					   		# #							makefile for all DS								#
+#							outputs global DS library and 					#
+#							exes for every test								#
 #																			#
 #############################################################################
-#
-#	includes dlist obj inside of sorted_list's shared library
-#
 
 CC = gcc
-CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I ../../include
+CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -iquote include/
 LDFLAGS = -shared
 
 INC_PATH = include/
 OBJ_PATH = obj/
 TEST_PATH = test/
 LIB_PATH = lib/
+SRC_PATH = src/
 
-#get a list of all DS obj files:  var = [ filter ir(.h files changed to .o) ]
 ALL_OBJS = $(notdir $(patsubst %.h,%.o,$(wildcard include/*.h)) )
-
-
+ALL_OBJS_AND_PATH = $(patsubst include/%.h,obj/%.o,$(wildcard include/*.h))
 ALL_SRCS = $(basename $(notdir $(patsubst %.h,%.o,$(wildcard include/*.h)) ) )
-	
-#target is shared library compiled of all ds objs 
+ALL_EXES = $(notdir $(patsubst %.c,%.out,$(wildcard test/*.c)) )
+ALL_TESTS = $(basename $(notdir $(wildcard test/*.c) ) )
+
+################################################################################
+.PHONY: test
+test: $(LIB_PATH)libDS.so
+	for i in $(ALL_TESTS); \
+	do $(CC) $(CFLAGS) -L$(LIB_PATH) -Wl,-rpath=$(LIB_PATH) \
+	$^ $(TEST_PATH)$$i.c \
+	-o $$i.out \
+	-lDS; \
+	done; clear; echo "all tests compiled and ready to run, for warnings look up.";
+
+#target is shared library compiled of all Data-Structures objs 
 $(LIB_PATH)libDS.so: $(ALL_OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $(ALL_OBJS_AND_PATH); clear;
 
 $(ALL_OBJS): 
-	for target in "$(ALL_SRCS)"; do $(MAKE) -C $$target; done
-
-# rule to generate a dep file by using the C preprocessor
-%.d: %.c
-	@$(CC) $(CFLAGS) $< -MM -MT $(ALL_OBJS) >$@
-
+	for i in $(ALL_SRCS); \
+	do $(MAKE) ../../$(OBJ_PATH)$$i.o -C $(SRC_PATH)$$i; \
+	done
 
 #############################################################################
 #									PHONYS									#
 #############################################################################
+.PHONY: release
+release: $(ALL_OBJS)
+	$(CC) $(LDFLAGS) -O3 -DNDEBUG -o $(LIB_PATH)libDSRelease.so $(ALL_OBJS_AND_PATH); \
+	clear; echo "RELEASE version SO compiled.";
 
+.PHONY: debug
+debug: $(ALL_OBJS)
+	$(CC) $(LDFLAGS) -o $(LIB_PATH)libDS.so $(ALL_OBJS_AND_PATH); \
+	clear; echo "DEBUG version SO compiled.";
+
+.PHONY: all
+all: $(ALL_OBJS)
+	$(CC) $(LDFLAGS) -O3 -DNDEBUG -o $(LIB_PATH)libDSRelease.so $(ALL_OBJS_AND_PATH); \
+	$(CC) $(LDFLAGS) -o $(LIB_PATH)libDS.so $(ALL_OBJS_AND_PATH); \
+	clear; echo "DEBUG and RELEASE versions SO compiled";
+
+.PHONY: test
+test:
 
 .PHONY: clean
 clean : 
-	rm $(OBJ_PATH)$(NAME).o $(LIB_PATH)lib$(NAME).so $(NAME).out; \
-	$(MAKE) clean -C ../$(SUB_NAME_1) 
-
+	rm $(LIB_PATH)lib*.so *.out $(OBJ_PATH)*.o;
+	
 .PHONY: cgdb	
 cgdb:
 	cgdb $(NAME).out
