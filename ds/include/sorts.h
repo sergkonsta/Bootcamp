@@ -6,7 +6,7 @@ O(n^2)
 functionality: applies a bubble sort in ascending order on ints.
 return: ---
 */
-void BubbleSort(int *arr, const size_t arr_length);
+void BubbleSort(int *arr, size_t arr_length);
 
 
 

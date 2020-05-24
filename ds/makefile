@@ -34,7 +34,7 @@ test: $(LIB_PATH)libDS.so
 
 #target is shared library compiled of all Data-Structures objs 
 $(LIB_PATH)libDS.so: $(ALL_OBJS)
-	$(CC) $(LDFLAGS) -o $@ $(ALL_OBJS_AND_PATH); clear;
+	$(CC) $(LDFLAGS) -o $@ $(ALL_OBJS_AND_PATH); 
 
 $(ALL_OBJS): 
 	for i in $(ALL_SRCS); \
@@ -66,15 +66,7 @@ test:
 .PHONY: clean
 clean : 
 	rm $(LIB_PATH)lib*.so *.out $(OBJ_PATH)*.o;
-	
-.PHONY: cgdb	
-cgdb:
-	cgdb $(NAME).out
 
-.PHONY: vlg
-vlg:
-	valgrind --leak-check=yes --track-origins=yes ./$(NAME).out
-	
 #update git repository - ABSOLUTE PATH
 .PHONY: gitp
 gitp:

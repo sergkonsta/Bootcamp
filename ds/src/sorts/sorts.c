@@ -3,7 +3,7 @@
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      19.05.2020               **
 **  Reviewer:  Eliran Abrevaya			**
-**  Status:    ???						**
+**  Status:    sent						**
 *****************************************/		
 #include <assert.h>	/*for assert*/
 #include <stdlib.h>	/*for calloc*/
@@ -24,13 +24,13 @@ O(n^2)
 functionality: applies a bubble sort in ascending order on ints.
 return: ---
 */
-void BubbleSort(int *arr, const size_t arr_length)
+void BubbleSort(int *arr, size_t arr_length)
 {
 	int swap_flag = 1;
 	size_t iter = 0;
 	
 	assert(NULL != arr);
-	assert(arr_length > 1);
+	assert(arr_length > 0);
 	
 	/*until array is sorted*/
 	while(0 != swap_flag)
@@ -50,6 +50,10 @@ void BubbleSort(int *arr, const size_t arr_length)
 			
 			++iter;
 		}
+		
+		/*adjust loop range 
+		(with every loop the last element is always the biggest)*/
+		--arr_length;
 	}
 	
 	return;
@@ -67,7 +71,7 @@ void SelectionSort(int *arr, const size_t arr_length)
 	size_t iter_place = 0;
 	
 	assert(NULL != arr);
-	assert(arr_length > 1);
+	assert(arr_length > 0);
 	
 	/*outer loop*/
 	while(iter_place < arr_length - 1)
@@ -109,7 +113,7 @@ void InsertionSort(int *arr, const size_t arr_length)
     size_t iter_place = 1;
    
    	assert(NULL != arr);
-	assert(arr_length > 1);
+	assert(arr_length > 0);
     
     while(iter_place < arr_length) 
     { 
@@ -150,16 +154,18 @@ int CountingSort(int *input_arr, const size_t arr_size, int min_val,
 	size_t iter = 0;
 	size_t range = ((size_t)(max_val - min_val) + 1);
 	
+	int *hist = NULL;
+	
+	assert(NULL != input_arr);
+	assert(NULL != sorted_arr);
+	assert(0 < arr_size);
+	
 	/*alloc memory for histogram*/
-	int *hist = (int *)calloc(range, sizeof(int));
+	hist = (int *)calloc(range, sizeof(int));
 	if(NULL == hist)
 	{
 		return (1);
 	}
-	
-	assert(NULL != input_arr);
-	assert(NULL != sorted_arr);
-	assert(2 < arr_size);
 	
 	/*create histogram*/
 	while(iter < arr_size)
@@ -169,23 +175,18 @@ int CountingSort(int *input_arr, const size_t arr_size, int min_val,
 	}
 	
 	/*makes prefix sum from the histogram array*/
-	iter = 0;
-	while(iter < range - 1)
+	for(iter = 0; iter < range - 1; iter++)
 	{
 		hist[iter + 1] += hist[iter];
-		++iter;
 	}
 	
 	/*placing the integer from the input arr, in its correct place 
 	  inside the sorted array, according to the histogram*/
-	iter = 0;
-	while(iter < arr_size)
+	for(iter = 0; iter < arr_size; iter++)
 	{		
 		sorted_arr[ hist[ input_arr[iter] - 1 ] -1 ] = input_arr[iter];
 		
 		--hist[ input_arr[iter] - 1 ];
-		
-		++iter;
 	}	
 	
 	free(hist);
@@ -212,7 +213,7 @@ int RadixSort(int *arr, size_t arr_size)
 	/* sort from list significant digit to most */
 	while ((curr_dev_factor < max_dev_factor) && (1 != status))
 	{
-		RadixCountingSort(arr, arr_size, curr_dev_factor);
+		status = RadixCountingSort(arr, arr_size, curr_dev_factor);
 		curr_dev_factor *= RADIX_SORT_VAL;
 	}
 
@@ -261,38 +262,31 @@ static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor)
 	}
 
 	/*makes prefix sum from the histogram array*/
-	iter = 1;
-	while(iter < RADIX_SORT_VAL)
+	for(iter = 1; iter < RADIX_SORT_VAL; iter++)
 	{
 		hist[iter] += hist[iter - 1];
-		++iter;
 	}
 	
 	/* 	shift hist right and insert 0 in first element*/
 	tmp = hist[0];
 	hist[0] = 0;
 
-	iter = 1;
-	while(iter < RADIX_SORT_VAL)
+	for(iter = 1; iter < RADIX_SORT_VAL; iter++)
 	{
 		Swap(&tmp, &hist[iter]);
-		++iter;
 	}
 
 	/*placing the integer from the input arr, in its correct place 
 	  inside the sorted array, according to the histogram*/
-	iter = 0;
-	while(iter < arr_size)
+	for(iter = 0; iter < arr_size; iter++)
 	{
 		sorted_arr[ hist[ (arr[iter] / dev_factor) % RADIX_SORT_VAL ] ] = arr[iter];
 		
 		++hist[ (arr[iter] / dev_factor) % RADIX_SORT_VAL ];
-		
-		++iter;
 	}
 
 	/* copy sorted to original arr */
-	memcpy((void *)sorted_arr, (const void *)arr, (sizeof(int) * arr_size));
+	memcpy((void *)arr, (const void *)sorted_arr, (sizeof(int) * arr_size));
 	
 	free(hist);
 	free(sorted_arr);

@@ -32,10 +32,16 @@ int main()
 	clock_t time_tag = 0;
 	clock_t time_tag_q = 0;
 
-	/*radix simpletest case:*/
+	/*
+	size_t i = 0;
 	int a[8] = {170,45,75,90,802,24,2,66};
 	RadixSort(a, 8);
-
+	for(i = 0; i < 8; i++)
+	{
+		printf("\n%d",a[i]);
+	}
+	PrintTestResult( ArrayIsSorted(a,TEST_ARR_SIZE), "radix sort" );*/
+	
 	/*------------------------------------------------------------------------*/
 	/*							 BUBBLE SORT TEST						      */
 	/*------------------------------------------------------------------------*/
@@ -134,7 +140,7 @@ int main()
 	
 	time_tag = clock();
 	RadixSort(arr, TEST_ARR_SIZE);		
-	PrintTestResult( ArrayIsSorted(sorted_arr,TEST_ARR_SIZE), "radix sort" );
+	PrintTestResult( ArrayIsSorted(arr,TEST_ARR_SIZE), "radix sort" );
 	time_tag = clock() - time_tag;
 	
 	time_tag_q = clock();
