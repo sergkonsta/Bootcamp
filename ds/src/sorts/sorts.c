@@ -38,7 +38,7 @@ void BubbleSort(int *arr, size_t arr_length)
 		swap_flag = 0;
 		iter = 0;
 		
-		/*until a full pass on the array is done*/
+		/*iterates through unsorted part of arr*/
 		while((iter + 1) < arr_length)
 		{
 			/*swap numbers if not in order*/
@@ -229,7 +229,7 @@ int RadixSort(int *arr, size_t arr_size)
 	work only with positive numbers */
 static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor)
 {
-	int *hist = NULL;
+	int hist[10] = {0};
 	int *sorted_arr = NULL;	
 	int tmp = 0;
 	
@@ -238,27 +238,17 @@ static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor)
 	assert(arr);
 	assert(arr_size > 0);
 	
-	/*malloc for hist*/
-	hist = (int *)calloc(RADIX_SORT_VAL,sizeof(int));
-	if (NULL == hist)
-	{
-		return 1;
-	}
-
 	/*malloc for sorted arr*/
-	sorted_arr = (int *)malloc(sizeof(int)*arr_size);
+	sorted_arr = (int *)malloc(sizeof(int) * arr_size);
 	if (NULL == sorted_arr)
 	{
-		free(hist);
 		return 1;
 	}
-
+	
 	/*create histogram*/
-	iter = 0;
-	while(iter < arr_size)
+	for(iter = 0; iter < arr_size; iter++)
 	{
 		++hist[ (arr[iter]/dev_factor) % RADIX_SORT_VAL ];
-		++iter;
 	}
 
 	/*makes prefix sum from the histogram array*/
@@ -288,7 +278,6 @@ static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor)
 	/* copy sorted to original arr */
 	memcpy((void *)arr, (const void *)sorted_arr, (sizeof(int) * arr_size));
 	
-	free(hist);
 	free(sorted_arr);
 
 	return 0;	

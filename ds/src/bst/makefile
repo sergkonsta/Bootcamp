@@ -1,18 +1,10 @@
 #############################################################################
 #																			#
-#							makefile for bst								#
+#				makefile for single file project							#
 #																			#
 #############################################################################
-#
-#	includes dlist obj inside of sorted_list's shared library
-#
 
 NAME = $(basename $(notdir $(wildcard *.c)))
-
-
-#
-#			DON'T CHANGE FROM HERE!!!
-#
 
 CC = gcc
 CFLAGS = -ansi -pedantic-errors -Wall -Wextra -g -I ../../include

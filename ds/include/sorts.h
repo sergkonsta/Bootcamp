@@ -31,7 +31,7 @@ void InsertionSort(int *arr, const size_t arr_length);
 int RadixSort(int *arr, const size_t arr_size);
 
 
-/* test range val 1-100, 5000 numbers */
+/* test range val 1-100, 5000 numbers - other range is undefined output*/
 int CountingSort(int *input_arr, const size_t arr_size, int min_val,
 				 int max_val, int *sorted_arr);
 
