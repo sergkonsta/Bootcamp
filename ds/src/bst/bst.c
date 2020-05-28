@@ -344,7 +344,7 @@ bst_iter_t BSTNext(bst_iter_t iter)
 	if(NULL != iter->children[RIGHT])
 	{
 		next = FindMin( iter->children[RIGHT] );
-	}
+	}	
 	
 	/*iter has no right children & iter is left child*/
 	else if(LEFT == child_side)
