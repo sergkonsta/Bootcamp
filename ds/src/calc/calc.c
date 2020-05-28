@@ -141,10 +141,11 @@ static status_t StoreNum(char **equation, calc_t *equation_elems)
 	assert(NULL != equation);
 
 	/*push to stack*/
+	StackPush();
+	
+	/*get next num*/
 
-/*get next num*/
-
-/*return status*/
+	/*return status*/
 }
 
 /*store op func, return next char/s */
