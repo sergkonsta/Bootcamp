@@ -15,6 +15,8 @@
 #define NUM_OF_EVENTS 256
 #define NUM_OF_STATES 2
 
+#define UNUSED(X) (void)(X)
+
 struct calc
 {
 	stack_t *stk_nums;
@@ -30,8 +32,12 @@ typedef struct lut_elem
 static lut_elem_t lut[NUM_OF_STATES][NUM_OF_EVENTS];
 
 static status_t CalcInit(calc_t *calc, size_t stack_capacity);
-
 static void DefineLUT(void);
+static status_t StoreNum(char **equation, calc_t *equation_elems);
+static status_t StoreOp(char **equation, calc_t *equation_elems);
+static status_t CalcEquation(char **equation, calc_t *equation_elems);
+static status_t SyntaxError(char **equation, calc_t *equation_elems);
+
 /*----------------------------------------------------------------------------*/
 
 status_t Calc(const char *equation, double *result)
@@ -80,8 +86,14 @@ static status_t CalcInit(calc_t *calc, size_t stack_capacity)
 	
 	DefineLUT();
 
+	/*
 
 
+	BUISINESS LOGIC
+
+
+	*/
+	
 	return (SUCCESS);
 }
 
@@ -89,42 +101,71 @@ static status_t CalcInit(calc_t *calc, size_t stack_capacity)
 static void DefineLUT(void)
 {
 	/*LUT definition - for now only for: 4 + 5 and '\0', space*/
-	lut[WAIT_4_OP][0].next_state = WAIT_4_NUM;	/*next state is calc*/
-	lut[WAIT_4_OP][0].act_func = NULL	/*act_func to calc stored equation*/;
-	lut[WAIT_4_NUM][0].next_state = ERROR; 
-	lut[WAIT_4_NUM][0].act_func = NULL	/*act_func for syntax error*/;
+	
+	/* '\0' case */
+	lut[WAIT_4_OP][0].next_state = 	CALC;
+	lut[WAIT_4_OP][0].act_func = 	CalcEquation;
+	lut[WAIT_4_NUM][0].next_state = ERROR;
+	lut[WAIT_4_NUM][0].act_func = 	SyntaxError;
 
 	/*space case*/
-	lut[WAIT_4_OP][32].next_state = WAIT_4_OP	/*next state is calc*/; 
-	lut[WAIT_4_OP][32].act_func = NULL	/*act_func to ignore space*/;
-	lut[WAIT_4_NUM][32].next_state = WAIT_4_NUM; 
-	lut[WAIT_4_NUM][32].act_func = NULL	/*act_func to ignore space*/;
+	lut[WAIT_4_OP][32].next_state = 	WAIT_4_OP;
+	lut[WAIT_4_OP][32].act_func = 		NULL		/*act_func to ignore space*/;
+	lut[WAIT_4_NUM][32].next_state = 	WAIT_4_NUM; 
+	lut[WAIT_4_NUM][32].act_func = 		NULL		/*act_func to ignore space*/;
 
-	lut[WAIT_4_OP]['+'].next_state = WAIT_4_NUM	/*next state is calc*/; 
-	lut[WAIT_4_OP]['+'].act_func = NULL			/*save op 2 stack_of_ops and read next input*/;
-	lut[WAIT_4_NUM]['+'].next_state = ERROR; 
-	lut[WAIT_4_NUM]['+'].act_func = NULL		/*act_func for syntax error*/;
-
-	lut[WAIT_4_OP]['4'].next_state = ERROR	/*next state is calc*/; 
-	lut[WAIT_4_OP]['4'].act_func = NULL		/*act_func for syntax error*/;
-	lut[WAIT_4_NUM]['4'].next_state = WAIT_4_OP; 
-	lut[WAIT_4_NUM]['4'].act_func = NULL;/*save number 2 stack_of_numbers and read next input*/
-
-	lut[WAIT_4_OP]['5'].next_state = ERROR	/*next state is calc*/; 
-	lut[WAIT_4_OP]['5'].act_func = NULL		/*act_func for syntax error*/;
-	lut[WAIT_4_NUM]['5'].next_state = WAIT_4_OP; 
-	lut[WAIT_4_NUM]['5'].act_func = NULL; /*save number 2 stack_of_numbers and read next input*/
+	/* + case */
+	lut[WAIT_4_OP]['+'].next_state = 	WAIT_4_NUM	/*next state is calc*/; 
+	lut[WAIT_4_OP]['+'].act_func = 		StoreOp;
+	lut[WAIT_4_NUM]['+'].next_state = 	ERROR; 
+	lut[WAIT_4_NUM]['+'].act_func =		SyntaxError;
+	
+	/* number 4 case */
+	lut[WAIT_4_OP]['4'].next_state = 	ERROR		/*next state is calc*/; 
+	lut[WAIT_4_OP]['4'].act_func = 		SyntaxError;
+	lut[WAIT_4_NUM]['4'].next_state = 	WAIT_4_OP; 
+	lut[WAIT_4_NUM]['4'].act_func = 	StoreNum;
+	
+ 	/* number 5 case */
+	lut[WAIT_4_OP]['5'].next_state = 	ERROR		/*next state is calc*/; 
+	lut[WAIT_4_OP]['5'].act_func = 		SyntaxError;
+	lut[WAIT_4_NUM]['5'].next_state = 	WAIT_4_OP; 
+	lut[WAIT_4_NUM]['5'].act_func = 	StoreNum;
 
 }
 
-/*store num func*/
-/*store op func*/
-/*read next num func*/
+/*store num func, return next char/s */
+static status_t StoreNum(char **equation, calc_t *equation_elems)
+{
+	assert(NULL != equation_elems);
+	assert(NULL != equation);
+/*push into stack*/
+
+/*get next num*/
+
+/*return status*/
+}
+
+/*store op func, return next char/s */
+static status_t StoreOp(char **equation, calc_t *equation_elems)
+{
+
+}
+
 /*calculate equation func*/
+static status_t CalcEquation(char **equation, calc_t *equation_elems)
+{
 
+}
 
-
-
+/*read next num func*/
+static status_t SyntaxError(char **equation, calc_t *equation_elems)
+{
+	UNUSED(equation);
+	UNUSED(equation_elems);
+	
+	return (SYNTAX_ERR);
+}
 
 
 

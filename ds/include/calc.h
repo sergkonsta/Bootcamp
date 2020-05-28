@@ -13,7 +13,8 @@ typedef enum state
 {
 	WAIT_4_NUM,
 	WAIT_4_OP,
-	ERROR
+	ERROR,
+	CALC
 } state_t;
 
 typedef struct calc calc_t;
