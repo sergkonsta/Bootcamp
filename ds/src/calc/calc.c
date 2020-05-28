@@ -90,7 +90,7 @@ static status_t CalcInit(calc_t *calc, size_t stack_capacity)
 
 
 	BUISINESS LOGIC
-
+	/*gets first char and goes to table - inside act_func the rest of the char is recieved with strtod*/
 
 	*/
 	
@@ -139,7 +139,8 @@ static status_t StoreNum(char **equation, calc_t *equation_elems)
 {
 	assert(NULL != equation_elems);
 	assert(NULL != equation);
-/*push into stack*/
+
+	/*push to stack*/
 
 /*get next num*/
 
