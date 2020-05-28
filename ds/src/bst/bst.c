@@ -97,8 +97,8 @@ void BSTDestroy(bst_t *bst)
 O(?)
 
 function: 				Inserts new node in to tree, in-order algorithm
-
-returns on success: 	iter to inserted node / NULL if node exists
+						data nust not exist already in tree
+returns on success: 	iter to inserted node
 		on failure:		stub
 */
 bst_iter_t BSTInsert(bst_t *bst, void *input)
@@ -143,8 +143,8 @@ O(?)
 
 function: 				removes node from tree
 
-returns on success: 	iter to inserted node / NULL if node already exists
-		on failure:		stub
+returns on success: 	removed data
+		on failure:		
 */
 void *BSTRemove(bst_iter_t iter)
 {
@@ -166,7 +166,7 @@ void *BSTRemove(bst_iter_t iter)
 		node_2_reconnect = NULL;		
 	}
 	
-	/**/
+	/*node has only right child & possible sub-tree*/
 	if(NULL == iter->children[LEFT] && NULL != iter->children[RIGHT])
 	{
 		node_2_remove = FindMin(iter->children[RIGHT]);
@@ -174,6 +174,7 @@ void *BSTRemove(bst_iter_t iter)
 		node_2_reconnect = node_2_remove->children[RIGHT];
 	}
 	
+	/*node has only left child & possible sub-tree*/
 	if(NULL != iter->children[LEFT] && NULL == iter->children[RIGHT])
 	{
 		node_2_remove = FindMax(iter->children[LEFT]);
@@ -181,13 +182,13 @@ void *BSTRemove(bst_iter_t iter)
 		node_2_reconnect = node_2_remove->children[LEFT];
 	}
 	
+	/*got 2 children & possible sub-trees*/
 	if(NULL != iter->children[LEFT] && NULL != iter->children[RIGHT])
 	{
 		node_2_remove = FindMax(iter->children[LEFT]);
 		iter->data = node_2_remove->data;
 		node_2_reconnect = node_2_remove->children[LEFT];
 	}	
-{
 	
 	/*check what child is the node 2 remove*/
 	child_side = BSTIsIterEqual(node_2_remove, node_2_remove->parent->children[RIGHT]);
@@ -221,7 +222,7 @@ returns on success: 	iter to found node / stub if node doesn't exists
 		on failure:		---
 */
 bst_iter_t BSTFind(bst_t *bst, void *data)
-{	
+{
 	bst_iter_t node = NULL;
 	
 	assert(NULL != bst);
@@ -329,18 +330,18 @@ bst_iter_t BSTNext(bst_iter_t iter)
 	int child_side = 0;
 	
 	assert(NULL != iter);
+		
+	/*if iter is stub*/
+	if(NULL == iter->parent)
+	{
+		return (iter);
+	}
 	
 	/*check what child is the iter*/
 	child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
 	
-	/*if iter is stub*/
-	if(NULL == iter->parent)
-	{
-		next = iter;
-	}
-	
 	/*iter has right children*/
-	else if(NULL != iter->children[RIGHT])
+	if(NULL != iter->children[RIGHT])
 	{
 		next = FindMin( iter->children[RIGHT] );
 	}
@@ -384,6 +385,12 @@ bst_iter_t BSTPrev(bst_iter_t iter)
 	
 	assert(NULL != iter);
 	
+	/*if iter is stub*/
+	if(NULL == iter->parent)
+	{
+		return ( FindMax(iter->children[LEFT]) );
+	}
+	
 	/*check what child is the iter*/
 	child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
 	
@@ -400,12 +407,19 @@ bst_iter_t BSTPrev(bst_iter_t iter)
 	}
 	
 	/*iter has no left child & iter is left child*/
-	else if(RIGHT == child_side)
+	else if(LEFT == child_side)
 	{				
 		/*goes up the tree until iter becomes right child and didn't reach stub*/
-		while(RIGHT != child_side && NULL != iter->parent)
+		while(RIGHT != child_side)
 		{
 			iter = iter->parent;
+			
+			/*iter is stub*/
+			if(NULL == iter->parent)
+			{
+				return (iter);
+			}
+			
 			child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
 		}
 		
@@ -470,7 +484,7 @@ int BSTForEach(	bst_iter_t from, bst_iter_t to,
 		from = BSTNext(from);
 	}
 
-	return (result);
+	return (!!result);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -479,8 +493,7 @@ O(?)
 
 function: 				Finds parent of data while applying cmp_func at each node
 
-returns on success: 	-> iter to closest node with 'data' (including stub)
-						->NULL in case data already exists				
+returns on success: 	-> iter to closest node with 'data' (including stub)					
 */
 static bst_iter_t FindParent(bst_t *bst, void *data)
 {
@@ -510,7 +523,7 @@ static bst_iter_t FindParent(bst_t *bst, void *data)
 		node = node->children[side];
 	}
 	
-	return (NULL);
+	return (node->parent);
 }
 
 /*----------------------------------------------------------------------------*/

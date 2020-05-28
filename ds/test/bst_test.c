@@ -13,7 +13,9 @@ static int ForEach(	bst_iter_t from, bst_iter_t to,
 				int(*action_func)(void *data, void *arg), void *param);
 static size_t TestSize(bst_t *bst);				
 static void TestForEach(bst_t *tree);
-				
+static void NextTest(bst_t *tree);
+static void PrevTest(bst_t *tree);
+		
 int main()
 {
 	bst_t *tree = BSTCreate(Cmp);
@@ -22,16 +24,19 @@ int main()
 	
 	TestForEach(tree);
 	
+	NextTest(tree);
+	
+	PrevTest(tree);
 	
 	
 	
 	
 	
-	
-	
-	
-	
-	
+	BSTRemove( BSTFind(tree, (void *)37) );
+	BSTRemove( BSTFind(tree, (void *)30) );
+	BSTRemove( BSTFind(tree, (void *)35) );
+	BSTRemove( BSTFind(tree, (void *)10) );
+		
 	BSTDestroy(tree);
 	return (0);
 }
@@ -94,6 +99,67 @@ static void BuildTreeNTestSize(bst_t *tree)
 	}
 }
 
+static void NextTest(bst_t *tree)
+{
+	if((void *)NULL != BSTGetData( BSTNext( BSTEnd(tree) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)33 != BSTGetData( BSTNext( BSTFind(tree, (void *)30) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)10 != BSTGetData( BSTNext( BSTFind(tree, (void *)1) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)60 != BSTGetData( BSTNext( BSTFind(tree, (void *)37) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if(NULL != BSTGetData( BSTNext( BSTFind(tree, (void *)70) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+}
+
+static void PrevTest(bst_t *tree)
+{
+
+	if((void *)70 != BSTGetData( BSTPrev( BSTEnd(tree) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)33 != BSTGetData( BSTPrev( BSTFind(tree, (void *)35) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)37 != BSTGetData( BSTPrev( BSTFind(tree, (void *)60) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)25 != BSTGetData( BSTPrev( BSTFind(tree, (void *)30) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)NULL != BSTGetData( BSTPrev( BSTFind(tree, (void *)1) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+	
+	if((void *)30 != BSTGetData( BSTPrev( BSTFind(tree, (void *)33) ) ))
+	{
+		printf("\nproblem on line: %d",__LINE__);
+	}
+}
 
 static void TestForEach(bst_t *tree)
 {
@@ -101,11 +167,7 @@ static void TestForEach(bst_t *tree)
 	TestSize(tree);
 }
 
-
-
-
-
-
+/*----------------------------------------------------------------------------*/
 
 static int IncrementSizetByOne(void *arg, void *num)
 {

@@ -5,7 +5,7 @@
 
 typedef struct bst bst_t;
 
-typedef struct bst_node* bst_iter_t;
+typedef struct bst_node *bst_iter_t;
 
 bst_t *BSTCreate(int (*cmp_func)(const void *data1, const void *data2));
 
