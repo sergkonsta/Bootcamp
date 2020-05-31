@@ -55,9 +55,11 @@ void StackDestroy(stack_t *s_ptr)
 	assert(NULL != s_ptr);
 	
 	free(s_ptr->base_element);
-	free(s_ptr);
 	
 	s_ptr->base_element = NULL;
+	
+	free(s_ptr);
+	
 	s_ptr = NULL;
 	
 	return;	

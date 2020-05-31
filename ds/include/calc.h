@@ -19,7 +19,7 @@ typedef enum state
 
 typedef struct calc calc_t;
 
-status_t Calc(const char *equation, double *result);
+status_t Calc(char *equation, double *result);
 
 #endif
 
