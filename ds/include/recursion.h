@@ -11,6 +11,7 @@ struct slist_node
   struct slist_node *next;
 };
 
+int FibNotTailRec(int elem_index);
 int FibonacciRecursive(int elem_index);
 int FibonacciIterative(int elem_index);
 

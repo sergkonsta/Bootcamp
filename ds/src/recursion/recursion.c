@@ -59,6 +59,23 @@ static int FibTailRec(int elem_index, int a, int b)
 	return ( FibTailRec(elem_index - 1, b, a + b) );
 }
 
+ int FibNotTailRec(int element_index)
+{
+	assert(element_index >= 0);
+	
+	if (0 == element_index)
+	{
+		return (0);	
+	}
+	
+	else if (1 == element_index)
+	{
+		return (1);
+	}
+
+	return (FibNotTailRec(element_index - 1) +
+		FibNotTailRec(element_index -2));
+}
 
 int FibonacciIterative(int elem_index)
 {		
