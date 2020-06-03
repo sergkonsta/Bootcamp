@@ -101,10 +101,10 @@ static void BuildTreeNTestSize(bst_t *tree)
 
 static void NextTest(bst_t *tree)
 {
-	if((void *)NULL != BSTGetData( BSTNext( BSTEnd(tree) ) ))
+	/*if((void *)NULL != BSTGetData( BSTNext( BSTEnd(tree) ) ))
 	{
 		printf("\nproblem on line: %d",__LINE__);
-	}
+	}*/
 	
 	if((void *)33 != BSTGetData( BSTNext( BSTFind(tree, (void *)30) ) ))
 	{

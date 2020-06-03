@@ -1,6 +1,6 @@
 #############################################################################
 #																			#
-#				makefile for single file project & stack subproj			#
+#	makefile for single file project & stack, s-list subprojs				#
 #																			#
 #############################################################################
 
@@ -17,17 +17,20 @@ LIB_PATH = ../../lib/
 $(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c	
 	$(CC) $(CFLAGS) -L$(LIB_PATH) -Wl,-rpath=$(LIB_PATH) \
 	-o $@ $^ \
-	-l$(NAME) #assumes all library files start with "lib" end with ".so"
+	-l$(NAME)
 
 #target is shared library compiled of this projects obj and encapsulated obj
-$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)stack.o
-	$(CC) $(LDFLAGS) -o $@ $^
+$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)stack.o $(OBJ_PATH)slist.o
+	$(CC) $(LDFLAGS) -o $@ $^ 
 
 $(OBJ_PATH)$(NAME).o: $(NAME).c
-	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^ 
 
 $(OBJ_PATH)stack.o:
 	$(CC) $(CFLAGS) -c -fPIC -o $@ ../../src/stack/stack.c
+	
+$(OBJ_PATH)slist.o:
+	$(CC) $(CFLAGS) -c -fPIC -o $@ ../../src/slist/slist.c
 #############################################################################
 #									PHONYS									#
 #############################################################################

@@ -325,49 +325,32 @@ returns on success: 	-> next node in order, returns stub if reached the end
 */
 bst_iter_t BSTNext(bst_iter_t iter)
 {
-	bst_iter_t next = NULL;
-	
 	int child_side = 0;
+
+	assert(iter);
+	assert(iter->parent);
 	
-	assert(NULL != iter);
-		
-	/*if iter is stub*/
-	if(NULL == iter->parent)
+	/*iter has right child*/
+	if(NULL != iter->children[RIGHT])
 	{
-		return (iter);
+		return FindMin( iter->children[RIGHT] );
 	}
 	
 	/*check what child is the iter*/
 	child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
 	
-	/*iter has right children*/
-	if(NULL != iter->children[RIGHT])
+	/*node isn't left child*/
+	while(LEFT != child_side)
 	{
-		next = FindMin( iter->children[RIGHT] );
-	}	
-	
-	/*iter has no right children & iter is left child*/
-	else if(LEFT == child_side)
-	{
-		next = iter->parent;
+		iter = iter->parent;
+		child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
 	}
 	
-	/*iter has no right child & iter is right child*/
-	else if(RIGHT == child_side)
-	{				
-		/*goes up the tree until iter becomes left child*/
-		while(LEFT != child_side)
-		{
-			iter = iter->parent;
-			child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
-		}
-		
-		next = (iter->parent);
-	}	
-	
-	return (next);
-
+	return iter->parent;
 }
+
+
+
 
 
 /*----------------------------------------------------------------------------*/
@@ -378,56 +361,28 @@ function: 				trasverses to the prev node in order.
 
 returns on success: 	-> prev node in order, returns null after the first elem
 */
+
 bst_iter_t BSTPrev(bst_iter_t iter)
 {
-	bst_iter_t prev = NULL;
-	
 	int child_side = 0;
+
+	assert(iter);
 	
-	assert(NULL != iter);
-	
-	/*if iter is stub*/
-	if(NULL == iter->parent)
-	{
-		return ( FindMax(iter->children[LEFT]) );
+	if(NULL != iter->children[LEFT])
+	{	
+		return FindMax( iter->children[LEFT] );
 	}
 	
 	/*check what child is the iter*/
 	child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
 	
-	/*iter has left child*/
-	if(NULL != iter->children[LEFT])
+	while(LEFT == child_side && NULL != iter->parent->parent)
 	{
-		prev = FindMax( iter->children[LEFT] );
+		iter = iter->parent;
+		child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
 	}
 	
-	/*iter has no left children & iter is right child*/
-	else if(RIGHT == child_side)
-	{
-		prev = iter->parent;
-	}
-	
-	/*iter has no left child & iter is left child*/
-	else if(LEFT == child_side)
-	{				
-		/*goes up the tree until iter becomes right child and didn't reach stub*/
-		while(RIGHT != child_side)
-		{
-			iter = iter->parent;
-			
-			/*iter is stub*/
-			if(NULL == iter->parent)
-			{
-				return (iter);
-			}
-			
-			child_side = BSTIsIterEqual(iter, iter->parent->children[RIGHT]);
-		}
-		
-		prev = (iter->parent);
-	}	
-	
-	return (prev);
+	return iter->parent;
 }
 
 
