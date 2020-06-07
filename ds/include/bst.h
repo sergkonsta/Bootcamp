@@ -21,10 +21,10 @@ void *BSTRemove(bst_iter_t iter);
 bst_iter_t BSTFind(bst_t *bst, void *data);
 
 /*returns amount of elements in the tree*/
-size_t BSTSize(bst_t *bst);
+size_t BSTSize(const bst_t *bst);
 
 /* returns 1 if bst is empty */
-int BSTIsEmpty(bst_t *bst);
+int BSTIsEmpty(const bst_t *bst);
 
 /* returns minimal element*/
 bst_iter_t BSTBegin(bst_t *bst);

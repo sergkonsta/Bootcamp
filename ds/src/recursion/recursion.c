@@ -11,13 +11,7 @@
 #include <string.h>	/*for strlen*/
 #include <stdlib.h>	/*for calloc*/
 
-
 #include "recursion.h"
-
-
-
-
-
 
 /*fibonacci funcs*/
 static int FibTailRec(int elem_index, int a, int b);
@@ -46,6 +40,7 @@ int FibonacciRecursive(int elem_index)
 
 static int FibTailRec(int elem_index, int a, int b)
 {
+
 	if(0 == elem_index)
 	{
 		return (a);
@@ -59,7 +54,7 @@ static int FibTailRec(int elem_index, int a, int b)
 	return ( FibTailRec(elem_index - 1, b, a + b) );
 }
 
- int FibNotTailRec(int element_index)
+int FibNotTailRec(int element_index)
 {
 	assert(element_index >= 0);
 	
@@ -74,7 +69,7 @@ static int FibTailRec(int elem_index, int a, int b)
 	}
 
 	return (FibNotTailRec(element_index - 1) +
-		FibNotTailRec(element_index -2));
+			FibNotTailRec(element_index - 2) );
 }
 
 int FibonacciIterative(int elem_index)
