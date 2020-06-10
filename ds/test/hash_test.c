@@ -8,7 +8,7 @@
 
 #define DICT_PATH ("/usr/share/dict/american-english")
 #define LONGEST_WORD_SIZE 30
-#define HASH_TABLE_SIZE (26) /* a - z */
+#define HASH_TABLE_SIZE (1000) 
 
 #define UNUSED(X) (void)(X)
 
@@ -24,11 +24,61 @@ void SimpleTests(hash_t *table);
 
 int main()
 {
-	hash_t *table = HashTableCreate(HashSimple, CmpString, HASH_TABLE_SIZE);	
+	hash_t *table = HashTableCreate(HashDJB2, CmpString, HASH_TABLE_SIZE);	
+	size_t size = 0;
 	
-	SimpleTests(table);
+	char *str1 = "apple";
+	char *str2 = "zero";
+	char *str3 = "serg";
+	char *str4 = "sun";
+	char *str5 = "georgia";
 	
-	DictTest(table);
+	if(0 != HashTableSize(table))
+	{
+		ERROR;
+	}
+	
+	if(1 != HashTableIsEmpty(table))
+	{
+		ERROR;
+	}
+		
+	HashTableInsert(table, (void *)str1);
+	HashTableInsert(table, (void *)str2);
+	HashTableInsert(table, (void *)str3);
+	HashTableInsert(table, (void *)str4);
+	HashTableInsert(table, (void *)str5);
+		
+	if(NULL == HashTableFind(table, (void *)str1))
+	{
+		ERROR;
+	}
+	
+	HashTableRemove(table, (void *)str1);
+	
+	if(NULL != HashTableFind(table, (void *)str1))
+	{
+		ERROR;
+	}	
+	
+	if(0 != HashTableIsEmpty(table))
+	{
+		ERROR;
+	}
+	
+	HashTableForEach(table, IncrementSizetByOne, &size);
+	if(size != HashTableSize(table))
+	{
+		ERROR;
+	}
+	
+	
+	
+	
+	
+	
+	
+	/*DictTest(table);*/
 
 	HashTableDestroy(table);
 	return (0);
@@ -71,48 +121,8 @@ int DictTest(hash_t *table)
 	return 0;
 }
 
-void SimpleTests(hash_t *table)
-{
-	size_t size = 0;
-		
-	if(0 != HashTableSize(table))
-	{
-		ERROR;
-	}
 	
-	if(1 != HashTableIsEmpty(table))
-	{
-		ERROR;
-	}
-	
-	HashTableInsert(table, (void *)("apple"));
-	HashTableInsert(table, (void *)("zero"));
-	HashTableInsert(table, (void *)("wand"));	
-	HashTableInsert(table, (void *)("serg"));	
-		
-	if(NULL == HashTableFind(table, (void *)("zero")))
-	{
-		ERROR;
-	}
-	
-	HashTableRemove(table, (void *)("zero"));
-	
-	if(NULL != HashTableFind(table, (void *)("zero")))
-	{
-		ERROR;
-	}	
-	
-	if(0 != HashTableIsEmpty(table))
-	{
-		ERROR;
-	}
-	
-	HashTableForEach(table, IncrementSizetByOne, &size);
-	if(size != HashTableSize(table))
-	{
-		ERROR;
-	}
-}
+
 
 
 
@@ -140,10 +150,8 @@ size_t HashDJB2(const void *data_2_insert)
 	
 	while((c = *str++))
 	{
-		hash = ((hash << 5) + hash) + c;
+		hash = (((hash << 5) + hash) + c) % HASH_TABLE_SIZE;
 	}
-	
-	printf("\nindex for: %s is: %ld\n",str,hash);
 	
 	return hash;
 }

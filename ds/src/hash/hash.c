@@ -20,13 +20,7 @@ struct hash
 };
 
 static int InitTableCellsImp(dlist_t **arr, size_t table_size);
-static int HashTableDestroyImp(dlist_t **table_cell, size_t table_size);
-static size_t HashTableSizeImp(const dlist_t **table_cell, size_t table_size, size_t size);
-static size_t HashTableIsEmptyImp(const dlist_t **table_cell, size_t table_size);
-static int HashTableForEachImp(const dlist_t **table_cell, size_t table_size, 
-								  act_func_t act_func, void *act_func_param);
-static void *HashTableFindImp(const dlist_t **table_cell, size_t table_size, 
-							  cmp_func_t cmp_func, const void *data_2_find, void *found);
+
 /*----------------------------------------------------------------------------*/
 /*
 O(1)
@@ -37,6 +31,8 @@ udefined behavior: cmp_func (or) hash_func == NULL, table_size == 0
 */
 hash_t *HashTableCreate(hash_func_t hash_func, cmp_func_t cmp_func, size_t table_size)
 {
+	size_t i = 0;
+
 	/*inits hash struct*/
 	hash_t *table = NULL;
 	
@@ -55,48 +51,18 @@ hash_t *HashTableCreate(hash_func_t hash_func, cmp_func_t cmp_func, size_t table
 	table->hash_func = hash_func;
 	table->cmp_func = cmp_func;
 	table->table_size = table_size;	
-	table->arr[0] = NULL;
 	
 	/*inits dlists in every hash-table index*/
-	if(1 == InitTableCellsImp(table->arr, table->table_size))
+	for(; i < table->table_size; i++)
 	{
-		free(table);
-		return NULL;
-	}	
+		table->arr[i] = DListCreate();
+		if(NULL == table->arr[i])
+		{
+			HashTableDestroy(table);
+		}
+	}
 	
 	return table;
-}
-
-
-
-/*	function:	recursively initializes hash table cells
-	returns:	0 for success; 1 for failure						*/
-static int InitTableCellsImp(dlist_t **table_cell, size_t table_size)
-{
-	/*stop - end of hash table*/
-	if(0 == table_size)
-	{
-		return 0;
-	}
-	
-	/*create dlist*/
-	*table_cell = DListCreate();
-	if(NULL == *table_cell)
-	{
-		return 1;
-	}
-		
-	/*going down recursion: calls next table cell
-	  going back up:		destroys everything if dlist creation failed*/
-	if( 0 == InitTableCellsImp( 
-		(dlist_t **)((char *)table_cell + sizeof(*table_cell)), table_size - 1))
-	{
-		return 0;
-	}	
-
-	DListDestroy(*table_cell);
-	
-	return 1;	
 }
 
 
@@ -111,38 +77,21 @@ udefined behavior: hash_func == NULL, size == 0
 */
 void HashTableDestroy(hash_t *table)
 {
+	size_t i = 0;
+	
 	assert(NULL != table);
 	
-	HashTableDestroyImp(table->arr, table->table_size);
+	/*iterate table cells*/
+	for(; i < table->table_size; i++)
+	{
+		if(NULL != table->arr[i])
+		{
+			DListDestroy(table->arr[i]);
+		}
+	}
 
-	/*destroys hash table struct*/
-	table->hash_func = NULL;
-	table->cmp_func = NULL;
-	table->table_size = 0;
-	
 	free(table);
 }
-
-
-/*	function:	tail rec - recursively destroys hash table cells
-	returns:	---										*/
-static int HashTableDestroyImp(dlist_t **table_cell, size_t table_size)
-{
-	/*stop - end of hash table*/
-	if(0 == table_size)
-	{
-		return 0;
-	}
-	
-	/*destroys one dlist*/
-	DListDestroy(*table_cell);
-		
-	/*going down recursion: calls next table cell*/
-	return(HashTableDestroyImp(
-	(dlist_t **)((char *)table_cell + sizeof(*table_cell)), table_size - 1));	
-}
-
-
 
 
 /*----------------------------------------------------------------------------*/
@@ -163,11 +112,13 @@ int HashTableInsert(hash_t *table, void *data)
 	/*recieve index of container where to insert data*/
 	hash_index = table->hash_func(data);
 	
+	assert(hash_index < table->table_size);
+	
 	/*get address of said container*/	
-	table_cell = table->arr[hash_index];
-
+	table_cell = table->arr[hash_index];	
+	
 	/*inserts data and checks if insertion successful*/
-	if(DListEnd(table_cell) == DListInsert(DListBegin(table_cell), data))
+	if(1 != DListIsIterEqual(DListEnd(table_cell), DListInsert(DListBegin(table_cell), data)))
 	{
 		return 1;
 	}
@@ -214,38 +165,23 @@ udefined behavior: table == NULL
 */
 void *HashTableFind(const hash_t *table, const void *data)
 {
-	void *found = NULL;
+	size_t hash_index = 0;
+	dlist_t *table_cell = NULL;
 		
 	assert(NULL != table);
 	
-	return (HashTableFindImp((const dlist_t **)table->arr, table->table_size, 
-							 table->cmp_func, data, found));
+	/*recieve index of container where to insert data*/
+	hash_index = table->hash_func(data);
+	
+	assert(hash_index < table->table_size);
+	
+	/*get address of said container*/	
+	table_cell = table->arr[hash_index];
+		
+	return (DListFind(DListBegin(table_cell), DListEnd(table_cell), 
+					  table->cmp_func, data));
 }
 
-/*	function:	tail rec - recursively ???
-	returns:	????							*/
-static void *HashTableFindImp(const dlist_t **table_cell, size_t table_size, 
-							  cmp_func_t cmp_func, const void *data_2_find, void *found)
-{	
-	/*stop - end of hash table*/
-	if(0 == table_size)
-	{
-		return NULL;
-	}
-	
-	found = DListFind(DListBegin(*table_cell), DListEnd(*table_cell), 
-					  cmp_func, data_2_find); /*DListFind might return 1 after tail!!!!! need to fix*/
-					  
-	if(DListGetData(found) == data_2_find)
-	{
-		return found;
-	}
-		
-	/*going down recursion: calls next table cell*/
-	return HashTableFindImp(
-	(const dlist_t **)((char *)table_cell + sizeof(*table_cell)), 
-	table_size - 1, cmp_func, data_2_find, found);	
-}
 
 
 
@@ -259,30 +195,19 @@ udefined behavior: table == NULL
 */
 size_t HashTableSize(const hash_t *table)
 {
-	assert(NULL != table);	
+	size_t i = 0;
+	size_t size = 0;
 	
-	return HashTableSizeImp((const dlist_t **)table->arr, table->table_size, 0);
-}
+	assert(NULL != table);
 
-
-/*	function:	tail rec - recursively counts data in all hash table cells
-	returns:	amount of data values in table										*/
-static size_t HashTableSizeImp(const dlist_t **table_cell, size_t table_size, size_t size)
-{
-	/*stop - end of hash table*/
-	if(0 == table_size)
+	/*iterate hash table and count datas in every bucket*/
+	for(; i< table->table_size; i++)
 	{
-		return size;
+		size += DListCount(table->arr[i]);
 	}
-	
-	/*checks size one dlist*/
-	size += DListCount(*table_cell);
 		
-	/*going down recursion: calls next table cell*/
-	return HashTableSizeImp(
-	(const dlist_t **)((char *)table_cell + sizeof(*table_cell)), table_size - 1, size);	
+	return size;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*
@@ -296,31 +221,20 @@ udefined behavior: table == NULL
 */
 int HashTableIsEmpty(const hash_t *table)
 {
+	size_t i = 0;
+	
 	assert(NULL != table);
-	
-	return HashTableIsEmptyImp((const dlist_t **)table->arr, table->table_size);
-}
 
-/*	function:	tail rec - recursively checks all hash table cells are empty
-	returns:	1 for empty, 0 for not empty, 
-				returns at first unempty cell							*/
-static size_t HashTableIsEmptyImp(const dlist_t **table_cell, size_t table_size)
-{
-	/*stop - end of hash table*/
-	if(0 == table_size)
+	/*iterate hash table and check if every bucket is empty*/
+	for(; i< table->table_size; i++)
 	{
-		return 1;
-	}
-	
-	/*checks if one container is empty*/
-	if(1 != DListIsEmpty(*table_cell))
-	{
-		return 0;
+		if(0 == DListIsEmpty(table->arr[i]))
+		{
+			return 0;
+		}
 	}
 		
-	/*going down recursion: calls next table cell*/
-	return HashTableIsEmptyImp(
-	(const dlist_t **)((char *)table_cell + sizeof(*table_cell)), table_size - 1);	
+	return 1;
 }
 
 
@@ -334,37 +248,22 @@ udefined behavior: table == NULL, must not change hash key
 */
 int HashTableForEach(hash_t *table, act_func_t act_func, void *act_func_param)
 {
+	size_t i = 0;
+
 	assert(NULL != table);
 	assert(NULL != act_func);
 	
-	return HashTableForEachImp((const dlist_t **)table->arr, table->table_size, 
-								act_func, act_func_param);
-}
-
-
-/*	function:	tail rec - recursively applies DlistForEach on each hash table cell
-	returns:	0 for successful applications, 1 for failure 
-				returns at first failed action func							*/
-static int HashTableForEachImp(const dlist_t **table_cell, size_t table_size, 
-								  act_func_t act_func, void *act_func_param)
-{
-	/*stop - end of hash table*/
-	if(0 == table_size)
+	/*iterate hash table and perform for each on every data in every bucket*/
+	for(; i< table->table_size; i++)
 	{
-		return 1;
-	}
-	
-	/*checks if action func failed*/
-	if(1 == DListForEach(DListBegin(*table_cell), DListEnd(*table_cell), 
-						 act_func, act_func_param))
-	{
-		return 1;
+		if(0 != DListForEach(DListBegin(table->arr[i]), DListEnd(table->arr[i]), 
+							 act_func, act_func_param))
+		{
+			return 1;
+		}
 	}
 		
-	/*going down recursion: calls next table cell*/
-	return HashTableForEachImp(
-	(const dlist_t **)((char *)table_cell + sizeof(*table_cell)), 
-	table_size - 1, act_func, act_func_param);	
+	return 0;
 }
 
 
