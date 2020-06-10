@@ -79,7 +79,7 @@ void DListDestroy(dlist_t *dlist)
 {
 	assert(NULL != dlist);
 		
-	while(DListBegin(dlist) != DListEnd(dlist))
+	while(1 != DListIsEmpty(dlist))
 	{
 		DListRemove(dlist->head.next);
 	}

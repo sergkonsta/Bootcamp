@@ -11,12 +11,6 @@ typedef int (*action_func_t)(void *key, void *act_func_arg);
 
 typedef struct avl avl_t;
 
-/*yarins remarks:*/
-/*static helper funcs - add IMP in end of func name*/
-/*undefined behaviour of funcs?*/
-/*use for loops when needed instead of while*/
-/*init iter-like vars with global INIT_VALUE*/
-/*code reuse - at the pseudo code stage!!!*/
 
 /*
 O(1)
@@ -105,6 +99,7 @@ udefined behaviour: user must apply only linear transformations
 					action_func == NULL
 */ 
 int AVLForEach(avl_t *avl, action_func_t action_func, void *act_func_arg); 
+
 
 #endif
 

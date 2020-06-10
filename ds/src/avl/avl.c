@@ -3,17 +3,21 @@
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      03.06.2020               **
 **  Reviewer:  Jenia Edelshtein			**
-**  Status:    In Progress				**
+**  Status:   Sent						**
 *****************************************/
 #include <assert.h>
 #include <stdlib.h>	/*for malloc*/
 
 #include "avl.h"
 
-
 /*----------------------------------------------------------------------------*/
 
-typedef enum child {LEFT, RIGHT, NUM_OF_CHILDREN};
+typedef enum child 
+{
+	LEFT, 
+	RIGHT, 
+	NUM_OF_CHILDREN
+};
 
 typedef struct avl_node
 {
@@ -28,15 +32,13 @@ struct avl
 	cmp_func_t cmp_func;	
 };
 
-/*static avl_node_t root = {NULL, 0, {NULL, NULL}};*/
-
 /*----------------------------------------------------------------------------*/
 
 static void PostOrderDestroyImp(avl_node_t *node);
 
 static int NodeInsertImp(avl_node_t *node, cmp_func_t cmp_func, void *input_key);
 static avl_node_t *CreateNodeImp(void *input_key);
-void *RemoveImp(avl_t *avl, avl_node_t *node, const void *key_to_remove);
+static int UpdateHeightImp(avl_node_t *node);
 
 size_t SizePreOrderImp(avl_node_t *node);
 
@@ -45,15 +47,22 @@ avl_node_t *FindParentImp(const avl_t *avl, avl_node_t *node, const void *key);
 
 int ForEachImp(avl_node_t *node, action_func_t action_func, void *act_func_arg);
 
+static enum child WhatChildImp(avl_node_t *father, avl_node_t *node);
 static int IsLeaf(avl_node_t *node);
 static int HasLeft(avl_node_t *node);
 static int HasRight(avl_node_t *node);
 static void RemoveLeaf(avl_node_t *node);
-enum child UseCmpImp(avl_node_t *node, cmp_func_t cmp_func, const void *input_key);
+enum child WhereToGoImp(avl_node_t *node, cmp_func_t cmp_func, const void *input_key);
 static avl_node_t *FindMaxImp(avl_node_t *node);
-static avl_node_t *FindMinImp(avl_node_t *node);
 static int GetHeightImp(avl_node_t *node);
 
+static void SetRotationImp(avl_node_t *node);
+static int GetBalanceImp(avl_node_t *node);
+static void RRotationImp(avl_node_t *node);
+static void LRotationImp(avl_node_t *node);
+
+static int Max(int a, int b);
+static void SwapImp(avl_node_t *a, avl_node_t *b);
 
 /*------------------------------------------------------------------------------
 O(1)
@@ -79,6 +88,7 @@ avl_t *AVLCreate(cmp_func_t cmp_func)
 	
 	return (avl);
 }
+
 
 
 
@@ -120,16 +130,16 @@ static void PostOrderDestroyImp(avl_node_t *node)
 	free(node);
 }
 
+
+
+
 /*------------------------------------------------------------------------------ 
 O(log n)
 inserts new node with input data 
 on success: returns 0
 on fail: returns non zero
 udefined behaviour: avl == NULL, input key already exists in the tree
-*/
-
-/*not balancing at first stage*/
-    
+*/    
 int AVLInsert(avl_t *avl, void *input_key)
 {
 	assert(NULL != avl);
@@ -142,13 +152,11 @@ int AVLInsert(avl_t *avl, void *input_key)
 	}
 	
 	/*create and insert child*/
-	else if(1 == NodeInsertImp(avl->root, avl->cmp_func, input_key) )
+	else if(1 == NodeInsertImp(avl->root, avl->cmp_func, input_key))
 	{
 		return (1);
 	}
-	
-	/*call Balance()*/
-	
+		
 	return (0);
 }
 
@@ -157,7 +165,7 @@ int AVLInsert(avl_t *avl, void *input_key)
 static int NodeInsertImp(avl_node_t *node, cmp_func_t cmp_func, void *input_key)
 {
 	/*check to what branch input_key should go to*/
-	enum child where_2_go = UseCmpImp(node, cmp_func, input_key);
+	enum child where_2_go = WhereToGoImp(node, cmp_func, input_key);
 	
 	/*if no child there - create one*/
 	if(NULL == node->children[where_2_go])
@@ -167,16 +175,25 @@ static int NodeInsertImp(avl_node_t *node, cmp_func_t cmp_func, void *input_key)
 		{
 			return (1);
 		}
+		
+		UpdateHeightImp(node);
 	}
 	
 	else
 	{
-		NodeInsertImp(node->children[where_2_go], cmp_func, input_key);	
+		if(1 == NodeInsertImp(node->children[where_2_go], cmp_func, input_key))
+		{
+			return (1);
+		}
+		
+		UpdateHeightImp(node);
+		SetRotationImp(node);
 	}
 	
 	return (0);
 }
 	
+
 
 /*
 creates new node:
@@ -191,12 +208,54 @@ static avl_node_t *CreateNodeImp(void *input_key)
 	}
 
 	node->key = input_key;
-	node->node_height = 1; 
+	node->node_height = 0; 
 	node->children[LEFT] = NULL;
 	node->children[RIGHT] = NULL;
 	
 	return (node);
 }
+
+/*recursively update all nodes height*/
+void UpdateAllHeightImp(avl_node_t *node)
+{	
+	if (NULL == node)
+	{
+		return;
+	}
+
+	UpdateAllHeightImp(node->children[LEFT]);
+			
+	UpdateAllHeightImp(node->children[RIGHT]);
+	
+	UpdateHeightImp(node);
+
+	return;
+}
+
+/*updates height of node according to its children height*/
+static int UpdateHeightImp(avl_node_t *node)
+{
+	int right = -1;
+	int left = -1;
+
+	if(1 == HasRight(node))
+	{
+		left = GetHeightImp(node->children[LEFT]);
+		
+	} 
+
+	if(1 == HasLeft(node))
+	{
+		right = GetHeightImp(node->children[RIGHT]);
+	} 
+
+	node->node_height = Max(left, right) + 1; 
+
+	return node->node_height;
+}
+
+
+
 
 /*------------------------------------------------------------------------------ 
 O(log n)
@@ -204,18 +263,10 @@ on success: returns key for succesfull removal, NULL if key not found
 on fail: ---
 udefined behaviour: avl == NULL
 */
-
-/*not balancing at first stage*/
-
 void *AVLRemove(avl_t *avl, const void *key_to_remove)
 {
-	assert(NULL != avl);
+	void *ret = NULL;
 	
-	return RemoveImp(avl, avl->root, key_to_remove);
-}
-
-void *RemoveImp(avl_t *avl, avl_node_t *node, const void *key_to_remove)
-{
 	avl_node_t *replacement = NULL;
 	avl_node_t *parent = NULL;
 	
@@ -226,17 +277,25 @@ void *RemoveImp(avl_t *avl, avl_node_t *node, const void *key_to_remove)
 		return (NULL);
 	}
 	
+	/*save key for return*/
+	ret = node_2_remove->key;
+	
+	/*replacement in case node_2_remove is leaf*/
+	replacement = node_2_remove;
+	
 	/*node has only right child & possible sub-tree*/
 	if(0 == HasLeft(node_2_remove) && 1 == HasRight(node_2_remove))
 	{
-		replacement = FindMinImp(node_2_remove->children[RIGHT]);
+		replacement = node_2_remove->children[RIGHT];
+		parent = FindParentImp(avl, avl->root, replacement->key);						
 		node_2_remove->key = replacement->key;
 	}	
 	
 	/*node has only left child & possible sub-tree*/
 	else if(1 == HasLeft(node_2_remove) && 0 == HasRight(node_2_remove))
 	{
-		replacement = FindMaxImp(node_2_remove->children[LEFT]);
+		replacement = node_2_remove->children[LEFT];
+		parent = FindParentImp(avl, avl->root, replacement->key);							
 		node_2_remove->key = replacement->key;
 	}
 	
@@ -244,10 +303,11 @@ void *RemoveImp(avl_t *avl, avl_node_t *node, const void *key_to_remove)
 	else if(1 == HasLeft(node_2_remove) && 1 == HasRight(node_2_remove))
 	{
 		replacement = FindMaxImp(node_2_remove->children[LEFT]);
+		parent = FindParentImp(avl, avl->root, replacement->key);							
 		node_2_remove->key = replacement->key;
 	}
 
-	/*reconnect rest of tree (make the replacement a leaf)*/
+	/*if not leaf - reconnect rest of tree (make the replacement a leaf)*/
 	if(0 == IsLeaf(replacement))
 	{
 		if(HasRight(replacement))
@@ -265,16 +325,20 @@ void *RemoveImp(avl_t *avl, avl_node_t *node, const void *key_to_remove)
 	else
 	{
 		/*nullify parents child*/
-		parent = FindParentImp(avl, node_2_remove, replacement->key);
-		
-		parent->children[0] = NULL;	
+		parent->children[WhatChildImp(parent, replacement)] = NULL;	
 	}
 				
 	/*remove node*/
-	RemoveLeaf(replacement);	
-		
-	/*Balance*/			
+	RemoveLeaf(replacement);
+			
+	UpdateAllHeightImp(avl->root);
+	
+	/*balance tree*/
+	SetRotationImp(avl->root);
+	
+	return (ret);		
 }
+
 
 
 /*------------------------------------------------------------------------------
@@ -291,6 +355,7 @@ size_t AVLHeight(const avl_t *avl)
 }
 
 
+
 /*------------------------------------------------------------------------------
 O(n)
 on success: return size of tree (amount of nodes) (pre-order)
@@ -305,12 +370,9 @@ size_t AVLSize(const avl_t *avl)
 	size_t result = 0;
 	
 	assert(NULL != avl);
-	
-	if(0 == AVLIsEmpty(avl))
-	{
-		result = SizePreOrderImp(avl->root);		
-	}
-	
+		
+	result = SizePreOrderImp(avl->root);		
+		
 	return (result);
 }
 
@@ -327,6 +389,7 @@ size_t SizePreOrderImp(avl_node_t *node)
 }
 		
 
+
 /*------------------------------------------------------------------------------ 
 O(1)
 on success: 1 if tree is empty, 0 if tree not empty
@@ -339,6 +402,7 @@ int AVLIsEmpty(const avl_t *avl)
 	
 	return (NULL == avl->root);
 }
+
 
 
 /*------------------------------------------------------------------------------ 
@@ -357,60 +421,50 @@ void *AVLFind(const avl_t *avl, const void *key)
 	
 	node_found = FindImp(avl, avl->root, key);
 	
-	if(NULL != node_found)
+	if(NULL == node_found)
 	{
-		return (node_found->key);
+		return (NULL);
 	}
 	
-	else 
-	{
-		return(NULL);
-	}
+	return (node_found->key);
 }
 
-
+/*recursively finds specific node in tree, returns adress of that node*/
 avl_node_t *FindImp(const avl_t *avl, avl_node_t *node, const void *key)
 {
 	enum child where_2_go = 0;
 	
-	if(key == node->key)
+	/*stop case*/
+	if(NULL == node || key == node->key)
 	{
 		return (node);
 	}
 	
-	where_2_go = UseCmpImp(node, avl->cmp_func, key);
+	/*check what branch to go to*/
+	where_2_go = WhereToGoImp(node, avl->cmp_func, key);
 	
-	if(NULL != node->children[where_2_go])
-	{
-		return (FindImp(avl, node->children[where_2_go], key));
-	}
-	
-	else
-	{
-		return (NULL);
-	}	
+	return (FindImp(avl, node->children[where_2_go], key));	
 }	
 
-avl_node_t *FindParentImp(const avl_t *avl, avl_node_t *node, const void *key)
+/*finds parent of node with specified key, return parents address*/
+avl_node_t *FindParentImp(const avl_t *avl, avl_node_t *root, const void *key)
 {
 	enum child where_2_go = 0;
-		
-	if(node->children[LEFT]->key == key || node->children[LEFT]->key == key )
-	{
-		return (node);
-	}
 	
-	where_2_go = UseCmpImp(node, avl->cmp_func, key);
-			
-	if(NULL != node->children[where_2_go])
-	{
-		return (FindImp(avl, node->children[where_2_go], key));
-	}
-	
-	else
+	if(NULL == root)
 	{
 		return (NULL);
-	}	
+	}
+		
+	if( 0 == avl->cmp_func(root->children[RIGHT]->key, key) || 
+		0 == avl->cmp_func(root->children[LEFT]->key, key) )
+	{
+		return (root);
+	}
+	
+	where_2_go = WhereToGoImp(root, avl->cmp_func, key);
+			
+	return (FindParentImp(avl, root->children[where_2_go], key));	
 }		
 	
 /*------------------------------------------------------------------------------
@@ -436,16 +490,15 @@ int AVLForEach(avl_t *avl, action_func_t action_func, void *act_func_arg)
 }
 
 	
-
 int ForEachImp(avl_node_t *node, action_func_t action_func, void *act_func_arg)
 {	
-	int status = 1;
+	int status = 0;
 	
 	if (NULL == node)
 	{
 		return 0;
-	}
-
+	}	
+	
 	if(	(ForEachImp(node->children[LEFT],action_func, act_func_arg)) || 
 		(status = action_func(node->key, act_func_arg)) || 
 		(ForEachImp(node->children[RIGHT],action_func, act_func_arg)) )
@@ -461,28 +514,40 @@ int ForEachImp(avl_node_t *node, action_func_t action_func, void *act_func_arg)
 /*----------------------------------------------------------------------------*/
 /*----------------------		    HELPERS  			----------------------*/
 /*----------------------------------------------------------------------------*/
-
+/*check wether node is leaf*/
 static int IsLeaf(avl_node_t *node)
 {
-	assert(NULL != node);
+	if(NULL == node)
+	{
+		return (-1);
+	}
 	
 	return(0 == HasRight(node) && 0 == HasLeft(node));
 }
 
+/*checks wether node has left child*/
 static int HasLeft(avl_node_t *node)
 {
-	assert(NULL != node);
+	if(NULL == node)
+	{
+		return (-1);
+	}
 	
 	return(NULL != node->children[LEFT]);
 }
 
+/*checks wether node has right child*/
 static int HasRight(avl_node_t *node)
 {
-	assert(NULL != node);
+	if(NULL == node)
+	{
+		return (-1);
+	}
 	
 	return(NULL != node->children[RIGHT]);
 }
 
+/*removes leaf*/
 static void RemoveLeaf(avl_node_t *node)
 {
 	assert(NULL != node);
@@ -497,7 +562,8 @@ static void RemoveLeaf(avl_node_t *node)
 	return;
 }
 
-enum child UseCmpImp(avl_node_t *node, cmp_func_t cmp_func, const void *input_key)
+/*uses cmp func and returns where to go according to cmp_func*/
+enum child WhereToGoImp(avl_node_t *node, cmp_func_t cmp_func, const void *input_key)
 {
 	if(0 > cmp_func(input_key, node->key))
 	{
@@ -507,9 +573,13 @@ enum child UseCmpImp(avl_node_t *node, cmp_func_t cmp_func, const void *input_ke
 	return (RIGHT);	
 }
 
+/*recursively finds max key in branch of node*/
 static avl_node_t *FindMaxImp(avl_node_t *node)
 {
-	assert(NULL != node);
+	if(NULL == node)
+	{
+		return (NULL);
+	}
 	
 	if(1 == HasRight(node))
 	{
@@ -519,19 +589,7 @@ static avl_node_t *FindMaxImp(avl_node_t *node)
 	return (node);
 }
 
-
-static avl_node_t *FindMinImp(avl_node_t *node)
-{
-	assert(NULL != node);
-	
-	if(1 == HasLeft(node))
-	{
-		return(FindMinImp(node->children[LEFT]));
-	}
-		
-	return (node);
-}
-
+/*gets nodes height*/
 static int GetHeightImp(avl_node_t *node) 
 {
 	if(NULL == node)
@@ -541,6 +599,114 @@ static int GetHeightImp(avl_node_t *node)
 	
 	return (node->node_height);
 }
+
+/*returns max of 2 ints*/
+static int Max(int a, int b)
+{
+	if(a > b)
+	{
+		return a;
+	}
+	
+	return b;
+}
+
+static void SetRotationImp(avl_node_t *node)
+{
+	switch(GetBalanceImp(node))
+	{
+		case 2: 
+			switch(GetBalanceImp(node->children[LEFT]))
+			{
+				case -1: RRotationImp(node->children[LEFT]);
+				break;
+				
+			}
+			
+			LRotationImp(node);
+			break; 
+		
+		case -2: 
+				switch(GetBalanceImp(node->children[RIGHT]))
+			{
+				case 1: LRotationImp(node->children[RIGHT]);
+				break;
+			}
+			
+			RRotationImp(node);
+			break;
+	}
+}
+
+static int GetBalanceImp(avl_node_t *node)
+{
+	int right = -1, left = -1;
+
+	if(NULL == node)
+	{
+		return 0;
+	}
+	
+	1 == HasLeft(node) ? left = GetHeightImp(node->children[LEFT]) : left;
+	1 == HasRight(node) ? right = GetHeightImp(node->children[RIGHT]) : right;
+	
+	return (left - right);
+}
+
+static void RRotationImp(avl_node_t *node)
+{
+	avl_node_t *right_child = node->children[RIGHT];
+
+	SwapImp(node,right_child);
+	
+	node->children[RIGHT] = right_child->children[RIGHT];
+	
+	right_child->children[RIGHT] = right_child->children[LEFT];
+	right_child->children[LEFT] = node->children[LEFT];
+	
+	node->children[LEFT] = right_child;
+	
+	UpdateHeightImp(right_child);
+	UpdateHeightImp(node);
+}
+
+static void LRotationImp(avl_node_t *node)
+{	
+	avl_node_t *left_child = node->children[LEFT];
+
+	SwapImp(node,left_child);
+	
+	node->children[LEFT] = left_child->children[LEFT];
+	
+	left_child->children[LEFT] = left_child->children[RIGHT];
+	left_child->children[RIGHT] = node->children[RIGHT];
+	
+	node->children[RIGHT] = left_child;
+	
+	UpdateHeightImp(left_child);
+	UpdateHeightImp(node);
+
+}
+
+/*swaps keys of 2 nodes in tree*/
+static void SwapImp(avl_node_t *a, avl_node_t *b)
+{
+	void *temp = a->key;
+	a->key = b->key;
+	b->key = temp;
+}
+
+/*returns the side of child*/
+static enum child WhatChildImp(avl_node_t *father, avl_node_t *node)
+{
+	if(node == father->children[LEFT])
+	{
+		return LEFT;
+	}	
+
+	return RIGHT;
+}
+
 
 
 
