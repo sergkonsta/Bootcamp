@@ -7,6 +7,7 @@
 *****************************************/
 #include <stdlib.h>	/*for malloc*/
 #include <assert.h>	/*for assert*/
+#include <math.h>	/*for math*/
 
 #include "hash.h"
 #include "dlist.h"
@@ -19,8 +20,7 @@ struct hash
 	dlist_t *arr[1]; 	/*flex array*/
 };
 
-static int InitTableCellsImp(dlist_t **arr, size_t table_size);
-
+dlist_iter_t HashTableFindIterImp(const hash_t *table, const void *data);
 /*----------------------------------------------------------------------------*/
 /*
 O(1)
@@ -53,7 +53,7 @@ hash_t *HashTableCreate(hash_func_t hash_func, cmp_func_t cmp_func, size_t table
 	table->table_size = table_size;	
 	
 	/*inits dlists in every hash-table index*/
-	for(; i < table->table_size; i++)
+	for(; i < table_size; i++)
 	{
 		table->arr[i] = DListCreate();
 		if(NULL == table->arr[i])
@@ -108,17 +108,16 @@ int HashTableInsert(hash_t *table, void *data)
 	dlist_t *table_cell = NULL;
 	
 	assert(NULL != table);
+	assert(NULL != table->arr);
 		
 	/*recieve index of container where to insert data*/
 	hash_index = table->hash_func(data);
-	
-	assert(hash_index < table->table_size);
-	
+		
 	/*get address of said container*/	
-	table_cell = table->arr[hash_index];	
+	table_cell = table->arr[hash_index % table->table_size];	
 	
 	/*inserts data and checks if insertion successful*/
-	if(1 != DListIsIterEqual(DListEnd(table_cell), DListInsert(DListBegin(table_cell), data)))
+	if(DListIsIterEqual(DListEnd(table_cell), DListInsert(DListBegin(table_cell), data)))
 	{
 		return 1;
 	}
@@ -138,19 +137,25 @@ udefined behavior: table == NULL
 */
 void HashTableRemove(hash_t *table, const void *data)
 {
-	void *data_address = NULL;
-	
+	size_t hash_index = 0;
+	dlist_t *table_cell = NULL;
+	void *to_remove = NULL;
+		
 	assert(NULL != table);
 	
-	/*get datas address using hashfind, return if not found*/
-	data_address = HashTableFind(table, data);
-	if(NULL == data_address)
+	hash_index = table->hash_func(data);	
+	
+	table_cell = table->arr[hash_index % table->table_size];	
+		
+	to_remove = DListFind(DListBegin(table_cell), DListEnd(table_cell), table->cmp_func, data);
+	if(DListIsIterEqual(to_remove, DListEnd(table_cell)))
 	{
 		return;
 	}
+		
+	DListRemove(to_remove);
 	
-	/*remove using dlist remove*/
-	DListRemove(data_address);
+	return;
 }
 
 
@@ -167,22 +172,30 @@ void *HashTableFind(const hash_t *table, const void *data)
 {
 	size_t hash_index = 0;
 	dlist_t *table_cell = NULL;
+	void *iter_found = NULL;
+	void *ret_data = NULL;
 		
 	assert(NULL != table);
 	
-	/*recieve index of container where to insert data*/
-	hash_index = table->hash_func(data);
+	hash_index = table->hash_func(data);	
 	
-	assert(hash_index < table->table_size);
-	
-	/*get address of said container*/	
-	table_cell = table->arr[hash_index];
+	table_cell = table->arr[hash_index % table->table_size];
 		
-	return (DListFind(DListBegin(table_cell), DListEnd(table_cell), 
-					  table->cmp_func, data));
+	iter_found = DListFind(DListBegin(table_cell), DListEnd(table_cell), 
+					  table->cmp_func, data);
+	
+	if (DListIsIterEqual(iter_found, DListEnd(table_cell)))
+	{
+		return NULL;
+	}
+	
+	ret_data = DListGetData(iter_found);
+	
+	DListRemove(iter_found);
+	DListPushFront(table_cell, ret_data);
+	
+	return ret_data;
 }
-
-
 
 
 /*----------------------------------------------------------------------------*/
@@ -275,8 +288,23 @@ on success:
 on fail: 
 udefined behavior: table == NULL
 */
-double HashTableSD(const hash_t *table);
+/*double HashTableSD(const hash_t *table)
+{
+	double avg = 0;
+	double sum_of_deviation = 0;
+	size_t i = 0;
 
+	assert(NULL != table);
+
+	avg = HashTableLoad(table);
+
+	for (i = 0; i < table->table_size; ++i)
+	{
+		sum_of_deviation += pow(DListCount(table->arr[i]) - avg, 2);
+	}	
+
+	return pow(sum_of_deviation, 0.5);
+}*/
 
 
 /*------------------------------ADVANCE---------------------------------------*/
@@ -287,6 +315,11 @@ on success:
 on fail: 
 udefined behavior: table == NULL
 */
-double HashTableLoad(const hash_t *table);
+double HashTableLoad(const hash_t *table)
+{
+	assert(NULL != table);
+
+	return ((HashTableSize(table) / table->table_size));
+}
 
 

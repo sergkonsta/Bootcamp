@@ -1,5 +1,5 @@
 
-
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>	/*for tolower*/
 #include <string.h>	/*for strcmp*/
@@ -7,11 +7,9 @@
 #include "hash.h"
 
 #define DICT_PATH ("/usr/share/dict/american-english")
-#define LONGEST_WORD_SIZE 30
-#define HASH_TABLE_SIZE (1000) 
-
 #define UNUSED(X) (void)(X)
-
+#define DICTIONARY_SIZE 102306
+#define NUM_LETTERS_IN_ABC 26
 #define ERROR (printf("\nError in line: %d",__LINE__))
 
 size_t HashSimple(const void *key);
@@ -21,110 +19,77 @@ int Act(void *arg, void *act_func_param);
 int IncrementSizetByOne(void *arg, void *num);
 int DictTest(hash_t *table);
 void SimpleTests(hash_t *table);
+static hash_t *InitHashTable();
+static int FreeData(void *data, void *arg);
+
+
 
 int main()
 {
-	hash_t *table = HashTableCreate(HashDJB2, CmpString, HASH_TABLE_SIZE);	
-	size_t size = 0;
+	int i = 0;
+	int param = 0;
 	
-	char *str1 = "apple";
-	char *str2 = "zero";
-	char *str3 = "serg";
-	char *str4 = "sun";
-	char *str5 = "georgia";
+	char buffer[30];
 	
-	if(0 != HashTableSize(table))
+	hash_t *table = InitHashTable();
+	
+	if(HashTableSize(table) != DICTIONARY_SIZE)
 	{
 		ERROR;
 	}
 	
-	if(1 != HashTableIsEmpty(table))
+	while(i < 5)
 	{
-		ERROR;
-	}
+		printf("Enter a word...\n");
+		fgets(buffer, 30, stdin);
 		
-	HashTableInsert(table, (void *)str1);
-	HashTableInsert(table, (void *)str2);
-	HashTableInsert(table, (void *)str3);
-	HashTableInsert(table, (void *)str4);
-	HashTableInsert(table, (void *)str5);
-		
-	if(NULL == HashTableFind(table, (void *)str1))
-	{
-		ERROR;
-	}
-	
-	HashTableRemove(table, (void *)str1);
-	
-	if(NULL != HashTableFind(table, (void *)str1))
-	{
-		ERROR;
-	}	
-	
-	if(0 != HashTableIsEmpty(table))
-	{
-		ERROR;
-	}
-	
-	HashTableForEach(table, IncrementSizetByOne, &size);
-	if(size != HashTableSize(table))
-	{
-		ERROR;
-	}
-	
-	
-	
-	
-	
-	
-	
-	/*DictTest(table);*/
-
-	HashTableDestroy(table);
-	return (0);
-}
-
-
-
-int DictTest(hash_t *table)
-{
-	char string[LONGEST_WORD_SIZE] = "";
-	char *str = string;
-	char ch = '\0';
-		
-	FILE *file_pointer = fopen(DICT_PATH, "r");
-		
-	/*check every char for end of line char, while file not ended */
-	while(0 == feof(file_pointer))
-	{
-		ch = fgetc(file_pointer);
-		
-		if(ch == '\n')
-		{			
-			*str = '\0';
-			HashTableInsert(table, (void *)string);
-			/*printf("\n%s\n",string);*/
-			
-			str = string;
-			str = strcpy(str, "");
+		if (HashTableFind(table, buffer) != NULL)
+		{
+			printf("Word found\n");
 		}
-		
 		else
 		{
-			*str = ch;
-			++str;
+			printf("Not found\n");
 		}
-	}		
-
-	fclose(file_pointer);
+		
+		++i;
+	}
+	
+	HashTableForEach(table, FreeData, &param);
+	
+	HashTableDestroy(table);
 	
 	return 0;
 }
 
 	
+	
+static hash_t *InitHashTable()
+{
+	hash_t *table = HashTableCreate(HashSimple, CmpString, NUM_LETTERS_IN_ABC - 1);
 
-
-
+	char *buffer = NULL;
+	
+	FILE *fp = fopen(DICT_PATH , "r");
+	
+	while (feof(fp) == 0)
+	{
+		buffer = calloc(30, 1);
+		fgets(buffer, 30, fp);
+		HashTableInsert(table, buffer);
+	}
+	
+	fclose(fp);
+	
+	return table;
+}	
+	
+static int FreeData(void *data, void *arg)
+{
+	UNUSED(arg);
+	free(data);
+	return 0;
+}	
 
 /*
 sorts by letters. 
@@ -134,7 +99,7 @@ z gives index 25
 size_t HashSimple(const void *data_2_insert)
 {
 	const char *str = data_2_insert;
-	size_t hash = (tolower(*str) - 97 + 6) % HASH_TABLE_SIZE;
+	size_t hash = (tolower(*str) - 97 + 6);
 	
 	/*printf("\nindex for: %s is: %ld\n",str,hash);*/
 	
@@ -150,7 +115,7 @@ size_t HashDJB2(const void *data_2_insert)
 	
 	while((c = *str++))
 	{
-		hash = (((hash << 5) + hash) + c) % HASH_TABLE_SIZE;
+		hash = (((hash << 5) + hash) + c);
 	}
 	
 	return hash;
