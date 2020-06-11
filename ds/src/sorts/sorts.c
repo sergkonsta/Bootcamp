@@ -1,23 +1,338 @@
 
 /*****************************************
 **  Developer: Sergey Konstantinovsky   **
-**  Date:      19.05.2020               **
-**  Reviewer:  Eliran Abrevaya			**
+**  Date:      11.06.2020               **
+**  Reviewer:  Yael						**
 **  Status:    sent						**
 *****************************************/		
-#include <assert.h>	/*for assert*/
-#include <stdlib.h>	/*for calloc*/
-#include <string.h>	/*for memcpy*/
+#include <assert.h>		/*for assert*/
+#include <stdlib.h>		/*for calloc*/
+#include <string.h>		/*for memcpy*/
+#include <sys/types.h>	/*for ssize_t*/
 
 #include "sorts.h"
 
 #define MIN_VAL_RADIX (0)
 #define MAX_VAL_RADIX (9999999)
 #define RADIX_SORT_VAL (10)
+#define UNUSED(X) (void)(X)
 
 static void Swap(int *a, int *b);
 static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor);
 static int RadixGetMaxDevFactor(int *arr, size_t arr_size);
+static int BinarySearchRecImp(int *arr, size_t low_index, size_t high_index, int num_2_find);
+static int MergeSortRecImp(int *arr_to_sort, size_t low_index, size_t high_index);
+
+static int MergeCombineImp(int *arr_to_sort, size_t low_index, 
+						   size_t mid_index, size_t high_index);
+
+static void QuickSortRecursiveImp(int *arr, int low_index, int high_index,
+								  int(*compare)(const void *, const void *));
+								  						   
+static size_t QuickSortPivotPlaceImp(int *arr, size_t low_index, size_t high_index, 
+									 int (*compare)(const void *, const void *));
+									 
+/*----------------------------------------------------------------------------*/
+/*iterative  & tail recursive binary search*/
+/*
+	algorithm:
+		-> get sorted array of ints
+		-> get middle index of the array
+		-> compare num_2_find to number in middle index:
+			->is equal - return found
+			->if lower - update arr boundaries: from 0 to (last middle index - 1) 
+			->if higher -update arr boundaries: from (last middle index + 1) to END
+		repeat until found	
+*/
+int BinarySearchIter(int *arr, size_t arr_size, int num_2_find)
+{
+	size_t low_index = 0;
+	size_t mid_index = 0;
+	size_t high_index = arr_size - 1;
+	
+	assert(NULL != arr);
+	
+	while (low_index <= high_index)
+	{
+		mid_index = low_index + (high_index - low_index) / 2;
+		
+		if (num_2_find == arr[mid_index])
+		{
+			return (mid_index);
+		}
+		
+		/*number_2_find is in upper half of arr*/
+		else if (num_2_find > arr[mid_index])
+		{
+			low_index = mid_index + 1;
+		}
+		
+		/*number_2_find is in lower half of arr*/
+		else
+		{
+			high_index = mid_index - 1;
+		}
+	}
+	
+	/*not found*/
+	return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+int BinarySearchRec(int *arr, size_t arr_size, int num_2_find)
+{
+	assert (NULL != arr);
+	
+	return BinarySearchRecImp(arr, 0, arr_size - 1, num_2_find);	
+}
+
+/*tail rec*/
+static int BinarySearchRecImp(int *arr, size_t low_index, size_t high_index, int num_2_find)
+{
+	/*num_2_find is not out of bounds*/
+	if (high_index >= low_index) 
+	{ 
+		/*update mid index*/
+		int mid_index = low_index + (high_index - low_index) / 2; 
+
+		/*num is found*/
+		if (arr[mid_index] == num_2_find) 
+		{	
+			return mid_index; 
+		}
+		
+		/*number_2_find is in upper half of arr*/
+		if (num_2_find > arr[mid_index]) 
+		{	
+			return BinarySearchRecImp(arr, mid_index + 1, high_index, num_2_find); 
+		}
+		
+		/*number_2_find is in lower half of arr*/
+		return BinarySearchRecImp(arr, low_index, mid_index - 1, num_2_find); 
+	} 
+	
+	/*not found*/
+	return -1; 	
+}
+ 
+/*----------------------------------------------------------------------------*/
+/*iterative  & tail recursive binary search*/
+/*
+	algorithm:
+		-> get array of integers to sort
+		
+		-> stop: when size is 1
+		-> int 1 = call yourself with lower half of array
+		-> int 2 = call yourself with higher hlaf of array
+		
+		-> return: combine int1 and int2 while sorting
+		
+		
+	combine algorithm:
+		-create sub_arr_1[mid_index - low_index];
+		-create sub_arr_2[high_index - mid_index];
+		-check not failed
+				
+		-fill sub_arr_1 with nums from low to mid + 1
+		-fill sub_arr_2 with nums from mid + 1 to high + 1
+		
+		-while (sub_arr_1 not ended && sub_arr_2 not ended)
+			-fill arr_to_sort from low to high index with nums from sub arrays
+			 while sorting
+			 
+		-fill with remaining numbers from sub array 1 or 2 if exist
+		
+		release sub arrays					
+*/ 
+int MergeSortRec(int *arr_to_sort, size_t num_elements)
+{
+	assert (NULL != arr_to_sort);
+	
+	return MergeSortRecImp(arr_to_sort, 0, num_elements - 1); 	
+}
+
+static int MergeSortRecImp(int *arr_to_sort, size_t low_index, size_t high_index)
+{
+	/*update mid index*/
+	int mid_index = low_index + (high_index - low_index) / 2; 
+	
+	/*stop recursion when sub array is of 1 num*/
+	if(low_index < high_index)
+	{
+		/*lower half*/	
+		MergeSortRecImp(arr_to_sort, low_index, mid_index);
+		
+		/*upper half*/	
+		MergeSortRecImp(arr_to_sort, mid_index + 1, high_index);
+		
+		/*combines back*/
+		return MergeCombineImp(arr_to_sort, low_index, mid_index, high_index);	
+	}
+	
+	return 0;
+}
+
+/*return 0 for success, 1 for failed alloc*/
+static int MergeCombineImp(int *arr_to_sort, size_t low_index, 
+						   size_t mid_index, size_t high_index)
+{
+	/*loop iters*/
+	size_t i_1 = 0;
+	size_t i_2 = 0;
+	size_t i_sorted = low_index;
+	
+	/*calculating sub array sizes*/
+	size_t sub_1_size = mid_index  - low_index + 1; 
+    size_t sub_2_size = high_index - mid_index; 
+	
+	/*allocating sub arrays*/
+	int *sub_arr_1 = (int *)calloc(sub_1_size, sizeof(int));
+	int *sub_arr_2 = (int *)calloc(sub_2_size, sizeof(int));
+	if (NULL == sub_arr_1 || NULL == sub_arr_2)
+	{
+		free(sub_arr_1);
+		free(sub_arr_2);
+		
+		return 1;
+	}
+	
+	/*fill sub arr 1*/
+	for (i_1 = 0; i_1 < sub_1_size; i_1++) 
+	{
+		sub_arr_1[i_1] = arr_to_sort[low_index + i_1]; 
+	}
+	
+	/*fill sub arr 2*/
+	for (i_2 = 0; i_2 < sub_2_size; i_2++) 
+	{
+		sub_arr_2[i_2] = arr_to_sort[mid_index + 1 + i_2];	
+	}
+	
+	/*go back to start of arrays*/
+	i_1 = 0;
+	i_2 = 0;
+	i_sorted = low_index;
+	
+	/*fill original array while sorting*/	
+	while (i_1 < sub_1_size && i_2 < sub_2_size) 
+	{ 
+		if (sub_arr_1[i_1] <= sub_arr_2[i_2]) 
+		{ 
+			arr_to_sort[i_sorted] = sub_arr_1[i_1]; 
+			++i_1; 
+		} 
+	
+		else 
+		{ 
+			arr_to_sort[i_sorted] = sub_arr_2[i_2]; 
+			++i_2; 
+		} 
+		
+		++i_sorted; 
+	}
+	
+	/*moving all the rest if exist*/
+	while (i_1 < sub_1_size) 
+	{ 
+		arr_to_sort[i_sorted] = sub_arr_1[i_1]; 
+		++i_1; 
+		++i_sorted; 
+	} 
+
+	/*moving all the rest if exist*/
+	while (i_2 < sub_2_size) 
+	{ 
+		arr_to_sort[i_sorted] = sub_arr_2[i_2]; 
+		++i_2; 
+		++i_sorted; 
+	} 
+
+	free(sub_arr_1);
+	free(sub_arr_2);
+	
+	return 0;
+}
+
+
+
+/*----------------------------------------------------------------------------*/
+/*
+base is array to sort, 
+nmemb - amount of members, 
+size - sizeof(member)
+compare func works like strcmp
+
+	algorithm:
+		-> choose last element as pivot
+		-> iterate the array with pivot_des and loop iterator 
+		   (to find where to place the pivot):
+				- if a specific element is smaller than pivot element: 
+					-- increment pivod dest 
+					-- swap places: arr[pivot dest] <--> arr[loop iter]
+
+		-> when done, place pivot in its sorted position
+		->return pivots index
+		
+		-> call yourself with array to the left of pivot
+		-> call yourself with array to the right of pivot
+*/
+
+/*wrapper*/
+void QuickSortRecursive(void *arr, size_t nmemb, size_t size, int(*compare)(const void *, const void *))
+{ 		
+	size_t low_index = 0; 
+	size_t high_index = nmemb - 1;		
+	
+	UNUSED(size);
+	
+	QuickSortRecursiveImp(arr, low_index, high_index, compare);
+}
+
+
+
+static void QuickSortRecursiveImp(int *arr, int low_index, int high_index,
+								  int(*compare)(const void *, const void *))
+{			
+	if(low_index < high_index) 
+	{ 
+		size_t pivot_index = QuickSortPivotPlaceImp(arr, low_index, high_index, compare); 
+
+		QuickSortRecursiveImp(arr, low_index, pivot_index - 1, compare); 
+		QuickSortRecursiveImp(arr, pivot_index + 1, high_index, compare); 
+	} 
+	
+	return;
+} 
+
+
+
+
+static size_t QuickSortPivotPlaceImp(int *arr, size_t low_index, size_t high_index, 
+									 int (*compare)(const void *, const void *)) 
+{ 
+	/*pivot of choice*/
+	size_t pivot_index = high_index;
+	
+	/*iters*/
+	ssize_t pivot_dest = low_index - 1;  
+	size_t  loop_iter  = low_index;
+	
+	/*find the right place for the pivot*/	
+	for(; loop_iter <= high_index - 1; loop_iter++) 
+	{ 
+		/*sort data according to pivot*/
+		if (0 > compare(&arr[loop_iter], &arr[pivot_index])) 
+		{ 
+			pivot_dest++;   
+			Swap(&arr[pivot_dest], &arr[loop_iter]); 
+		} 
+	} 
+
+	Swap(&arr[pivot_dest + 1], &arr[high_index]); 
+
+	return (pivot_dest + 1); 
+} 
+
 
 /*-----------------------------------------------------------------------------
 O(n^2)
@@ -311,7 +626,11 @@ static int RadixGetMaxDevFactor(int *arr, size_t arr_size)
 	
 	return (max_dev_factor);
 }
- 
+   
+
+/*----------------------------------------------------------------------------*/
+
+
   
 /*----------------------------------------------------------------------------*/
 /*--------------------------------HELPERS-------------------------------------*/
