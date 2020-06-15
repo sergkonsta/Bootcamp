@@ -3,33 +3,33 @@
 **  Developer: Sergey Konstantinovsky   **
 **  Date:      08.06.2020               **
 **  Reviewer:  Irina Smolkin			**
-**  Status:    ???						**
+**  Status:    Approved					**
 *****************************************/
 #include <stdlib.h>	/*for malloc*/
 #include <assert.h>	/*for assert*/
-#include <math.h>	/*for math*/
+#include <math.h>	/*for pow*/
 
-#include "hash.h"
 #include "dlist.h"
+#include "hash.h"
 
 struct hash
 {
 	hash_func_t hash_func;	
 	cmp_func_t cmp_func;	
-	size_t table_size;	/* total number of indexes*/	
+	size_t num_of_buckets;	
 	dlist_t *arr[1]; 	/*flex array*/
 };
 
-dlist_iter_t HashTableFindIterImp(const hash_t *table, const void *data);
+
 /*----------------------------------------------------------------------------*/
 /*
 O(1)
 creates hash table struct
 on success: returns pointer to hash_t  
 on fail: NULL
-udefined behavior: cmp_func (or) hash_func == NULL, table_size == 0
+udefined behavior: cmp_func (or) hash_func == NULL, num_of_buckets == 0
 */
-hash_t *HashTableCreate(hash_func_t hash_func, cmp_func_t cmp_func, size_t table_size)
+hash_t *HashTableCreate(hash_func_t hash_func, cmp_func_t cmp_func, size_t num_of_buckets)
 {
 	size_t i = 0;
 
@@ -37,28 +37,30 @@ hash_t *HashTableCreate(hash_func_t hash_func, cmp_func_t cmp_func, size_t table
 	hash_t *table = NULL;
 	
 	/* -1 for 1 cell that exists in sizeof(hash_t)*/
-	size_t size_2_alloc = ((sizeof(table->arr) * (table_size - 1)) + sizeof(hash_t));
+	size_t size_2_alloc = ((sizeof(table->arr) * (num_of_buckets - 1)) + sizeof(hash_t));
 	
 	assert(NULL != hash_func);	
 	assert(NULL != cmp_func);
 	
 	table = (hash_t *)malloc(size_2_alloc);
-	if(NULL == table)
+	if (NULL == table)
 	{
 		return NULL;
 	}
 	
 	table->hash_func = hash_func;
 	table->cmp_func = cmp_func;
-	table->table_size = table_size;	
+	table->num_of_buckets = num_of_buckets;	
 	
 	/*inits dlists in every hash-table index*/
-	for(; i < table_size; i++)
+	for(; i < num_of_buckets; ++i)
 	{
 		table->arr[i] = DListCreate();
 		if(NULL == table->arr[i])
 		{
-			HashTableDestroy(table);
+			table->num_of_buckets = i;
+			HashTableDestroy(table);	
+			return NULL;
 		}
 	}
 	
@@ -82,15 +84,18 @@ void HashTableDestroy(hash_t *table)
 	assert(NULL != table);
 	
 	/*iterate table cells*/
-	for(; i < table->table_size; i++)
+	for (; i < table->num_of_buckets; i++)
 	{
-		if(NULL != table->arr[i])
+		if (NULL != table->arr[i])
 		{
 			DListDestroy(table->arr[i]);
+			table->arr[i] = NULL;
 		}
 	}
 
 	free(table);
+
+	table = NULL;
 }
 
 
@@ -114,15 +119,11 @@ int HashTableInsert(hash_t *table, void *data)
 	hash_index = table->hash_func(data);
 		
 	/*get address of said container*/	
-	table_cell = table->arr[hash_index % table->table_size];	
+	table_cell = table->arr[hash_index % table->num_of_buckets]; 
 	
 	/*inserts data and checks if insertion successful*/
-	if(DListIsIterEqual(DListEnd(table_cell), DListInsert(DListBegin(table_cell), data)))
-	{
-		return 1;
-	}
-	
-	return 0;	
+	return DListIsIterEqual(DListEnd(table_cell), DListInsert(DListBegin(table_cell), data));
+
 }
 
 
@@ -145,17 +146,13 @@ void HashTableRemove(hash_t *table, const void *data)
 	
 	hash_index = table->hash_func(data);	
 	
-	table_cell = table->arr[hash_index % table->table_size];	
+	table_cell = table->arr[hash_index % table->num_of_buckets];	
 		
 	to_remove = DListFind(DListBegin(table_cell), DListEnd(table_cell), table->cmp_func, data);
-	if(DListIsIterEqual(to_remove, DListEnd(table_cell)))
+	if(!DListIsIterEqual(to_remove, DListEnd(table_cell)))
 	{
-		return;
+		DListRemove(to_remove);
 	}
-		
-	DListRemove(to_remove);
-	
-	return;
 }
 
 
@@ -172,14 +169,14 @@ void *HashTableFind(const hash_t *table, const void *data)
 {
 	size_t hash_index = 0;
 	dlist_t *table_cell = NULL;
-	void *iter_found = NULL;
+	void *iter_found = NULL; 
 	void *ret_data = NULL;
 		
 	assert(NULL != table);
 	
 	hash_index = table->hash_func(data);	
 	
-	table_cell = table->arr[hash_index % table->table_size];
+	table_cell = table->arr[hash_index % table->num_of_buckets];
 		
 	iter_found = DListFind(DListBegin(table_cell), DListEnd(table_cell), 
 					  table->cmp_func, data);
@@ -190,10 +187,12 @@ void *HashTableFind(const hash_t *table, const void *data)
 	}
 	
 	ret_data = DListGetData(iter_found);
-	
-	DListRemove(iter_found);
-	DListPushFront(table_cell, ret_data);
-	
+		
+	if (NULL != DListPushFront(table_cell, ret_data))
+	{
+		DListRemove(iter_found);
+	}	
+		
 	return ret_data;
 }
 
@@ -214,7 +213,7 @@ size_t HashTableSize(const hash_t *table)
 	assert(NULL != table);
 
 	/*iterate hash table and count datas in every bucket*/
-	for(; i< table->table_size; i++)
+	for(; i < table->num_of_buckets; ++i)
 	{
 		size += DListCount(table->arr[i]);
 	}
@@ -239,7 +238,7 @@ int HashTableIsEmpty(const hash_t *table)
 	assert(NULL != table);
 
 	/*iterate hash table and check if every bucket is empty*/
-	for(; i< table->table_size; i++)
+	for(; i < table->num_of_buckets; ++i)
 	{
 		if(0 == DListIsEmpty(table->arr[i]))
 		{
@@ -262,21 +261,23 @@ udefined behavior: table == NULL, must not change hash key
 int HashTableForEach(hash_t *table, act_func_t act_func, void *act_func_param)
 {
 	size_t i = 0;
-
+	int status = 0;
+	
 	assert(NULL != table);
 	assert(NULL != act_func);
 	
 	/*iterate hash table and perform for each on every data in every bucket*/
-	for(; i< table->table_size; i++)
+	for(; i< table->num_of_buckets; i++)
 	{
-		if(0 != DListForEach(DListBegin(table->arr[i]), DListEnd(table->arr[i]), 
-							 act_func, act_func_param))
+		status = DListForEach(DListBegin(table->arr[i]), DListEnd(table->arr[i]), 
+							  act_func, act_func_param); 
+		if(0 != status)
 		{
-			return 1;
+			return status;	
 		}
 	}
 		
-	return 0;
+	return status;
 }
 
 
@@ -288,7 +289,7 @@ on success:
 on fail: 
 udefined behavior: table == NULL
 */
-/*double HashTableSD(const hash_t *table)
+double HashTableSD(const hash_t *table)
 {
 	double avg = 0;
 	double sum_of_deviation = 0;
@@ -298,13 +299,13 @@ udefined behavior: table == NULL
 
 	avg = HashTableLoad(table);
 
-	for (i = 0; i < table->table_size; ++i)
+	for (i = 0; i < table->num_of_buckets; ++i)
 	{
 		sum_of_deviation += pow(DListCount(table->arr[i]) - avg, 2);
 	}	
 
 	return pow(sum_of_deviation, 0.5);
-}*/
+}
 
 
 /*------------------------------ADVANCE---------------------------------------*/
@@ -319,7 +320,7 @@ double HashTableLoad(const hash_t *table)
 {
 	assert(NULL != table);
 
-	return ((HashTableSize(table) / table->table_size));
+	return ((HashTableSize(table) / table->num_of_buckets));
 }
 
 

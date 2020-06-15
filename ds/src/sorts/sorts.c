@@ -18,6 +18,7 @@
 #define UNUSED(X) (void)(X)
 
 static void Swap(int *a, int *b);
+static void SwapImp(void *p1, void *p2, size_t size);
 static int RadixCountingSort(int *arr, size_t arr_size, int dev_factor);
 static int RadixGetMaxDevFactor(int *arr, size_t arr_size);
 static int BinarySearchRecImp(int *arr, size_t low_index, size_t high_index, int num_2_find);
@@ -27,11 +28,10 @@ static int MergeCombineImp(int *arr_to_sort, size_t low_index,
 						   size_t mid_index, size_t high_index);
 
 static void QuickSortRecursiveImp(int *arr, int low_index, int high_index,
-								  int(*compare)(const void *, const void *));
-								  						   
+								  int(*compare)(const void *, const void *), size_t size);
+			  						   
 static size_t QuickSortPivotPlaceImp(int *arr, size_t low_index, size_t high_index, 
-									 int (*compare)(const void *, const void *));
-									 
+									 int (*compare)(const void *, const void *), size_t size); 									 
 /*----------------------------------------------------------------------------*/
 /*iterative  & tail recursive binary search*/
 /*
@@ -285,20 +285,20 @@ void QuickSortRecursive(void *arr, size_t nmemb, size_t size, int(*compare)(cons
 	
 	UNUSED(size);
 	
-	QuickSortRecursiveImp(arr, low_index, high_index, compare);
+	QuickSortRecursiveImp(arr, low_index, high_index, compare, size);
 }
 
 
 
 static void QuickSortRecursiveImp(int *arr, int low_index, int high_index,
-								  int(*compare)(const void *, const void *))
+								  int(*compare)(const void *, const void *), size_t size)
 {			
 	if(low_index < high_index) 
 	{ 
-		size_t pivot_index = QuickSortPivotPlaceImp(arr, low_index, high_index, compare); 
+		size_t pivot_index = QuickSortPivotPlaceImp(arr, low_index, high_index, compare, size); 
 
-		QuickSortRecursiveImp(arr, low_index, pivot_index - 1, compare); 
-		QuickSortRecursiveImp(arr, pivot_index + 1, high_index, compare); 
+		QuickSortRecursiveImp(arr, low_index, pivot_index - 1, compare, size); 
+		QuickSortRecursiveImp(arr, pivot_index + 1, high_index, compare, size); 
 	} 
 	
 	return;
@@ -308,7 +308,7 @@ static void QuickSortRecursiveImp(int *arr, int low_index, int high_index,
 
 
 static size_t QuickSortPivotPlaceImp(int *arr, size_t low_index, size_t high_index, 
-									 int (*compare)(const void *, const void *)) 
+									 int (*compare)(const void *, const void *), size_t size) 
 { 
 	/*pivot of choice*/
 	size_t pivot_index = high_index;
@@ -324,11 +324,11 @@ static size_t QuickSortPivotPlaceImp(int *arr, size_t low_index, size_t high_ind
 		if (0 > compare(&arr[loop_iter], &arr[pivot_index])) 
 		{ 
 			pivot_dest++;   
-			Swap(&arr[pivot_dest], &arr[loop_iter]); 
+			SwapImp(&arr[pivot_dest], &arr[loop_iter], size); 
 		} 
 	} 
 
-	Swap(&arr[pivot_dest + 1], &arr[high_index]); 
+	SwapImp(&arr[pivot_dest + 1], &arr[high_index], size); 
 
 	return (pivot_dest + 1); 
 } 
@@ -649,3 +649,20 @@ static void Swap(int *a, int *b)
 	*b = temp_swap; 
 } 
 
+static void SwapImp(void *p1, void *p2, size_t size)
+{
+	char temp;
+	char *ptr1 = p1;
+	char *ptr2 = p2;
+	size_t i = 0;
+
+	while (size != i)
+	{
+		temp = ptr1[i];
+		ptr1[i] = ptr2[i];
+		ptr2[i] = temp;
+		++i;
+	}
+
+	return;	
+}

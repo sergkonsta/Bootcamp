@@ -3,18 +3,15 @@
 #							makefile for SCHED								#
 #																			#
 #############################################################################
-#
-#	includes dlist obj inside of sorted_list's shared library
-#
 
-NAME = sched
-SUB_NAME_1 = pqueue
+
+NAME = $(basename $(notdir $(wildcard *.c)))
+
+SUB_NAME_1 = heap_pq
 SUB_NAME_2 = task
 SUB_NAME_3 = uid
-SUB_NAME_4 = pqueue
-SUB_NAME_5 = sorted_list
-SUB_NAME_6 = dlist
-
+SUB_NAME_4 = dynamic_vector
+SUB_NAME_5 = heap
 #
 #			DON'T CHANGE FROM HERE!!!
 #
@@ -33,7 +30,7 @@ $(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c
 	-l$(NAME) #assumes all library files start with "lib" end with ".so"
 
 #target is shared library compiled of this projects obj and encapsulated obj
-$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME_1).o $(OBJ_PATH)$(SUB_NAME_2).o $(OBJ_PATH)$(SUB_NAME_3).o $(OBJ_PATH)$(SUB_NAME_4).o $(OBJ_PATH)$(SUB_NAME_5).o $(OBJ_PATH)$(SUB_NAME_6).o 
+$(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME_1).o $(OBJ_PATH)$(SUB_NAME_2).o $(OBJ_PATH)$(SUB_NAME_3).o $(OBJ_PATH)$(SUB_NAME_4).o $(OBJ_PATH)$(SUB_NAME_5).o
 	$(CC) $(LDFLAGS) -o $@ $^
 	
 $(OBJ_PATH)$(NAME).o: $(NAME).c
@@ -41,27 +38,24 @@ $(OBJ_PATH)$(NAME).o: $(NAME).c
 
 #if sub-obj file doesn't exist - go to sub-Make and create it
 $(OBJ_PATH)$(SUB_NAME_1).o: 
-	$(MAKE) -C ../$(SUB_NAME_1)
+	$(MAKE) -C ../$(SUB_NAME_1)/$(SUB_NAME_1).c
 
 #if sub-obj file doesn't exist - go to sub-Make and create it
 $(OBJ_PATH)$(SUB_NAME_2).o: 
-	$(MAKE) -C ../$(SUB_NAME_2)
+	$(MAKE) -C ../$(SUB_NAME_2)/$(SUB_NAME_2).c
 
 #if sub-obj file doesn't exist - go to sub-Make and create it
 $(OBJ_PATH)$(SUB_NAME_3).o: 
-	$(MAKE) -C ../$(SUB_NAME_3)
+	$(MAKE) -C ../$(SUB_NAME_3)/$(SUB_NAME_3).c
 
 #if sub-obj file doesn't exist - go to sub-Make and create it
 $(OBJ_PATH)$(SUB_NAME_4).o: 
-	$(MAKE) -C ../$(SUB_NAME_4)
+	$(MAKE) -C ../$(SUB_NAME_4)/$(SUB_NAME_4).c
 	
 #if sub-obj file doesn't exist - go to sub-Make and create it
 $(OBJ_PATH)$(SUB_NAME_5).o: 
-	$(MAKE) -C ../$(SUB_NAME_5)
-	
-#if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME_6).o: 
-	$(MAKE) -C ../$(SUB_NAME_6)
+	$(MAKE) -C ../$(SUB_NAME_5)/$(SUB_NAME_5).c
+
 	
 
 

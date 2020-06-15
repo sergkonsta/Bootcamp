@@ -11,14 +11,14 @@
 #include <unistd.h>		/*for sleep()*/
 
 #include "sched.h"
-#include "pqueue.h"
+#include "heap_pq.h"
 #include "task.h"
 
 ilrd_uid_t BAD_UID = {0,0,0};
 
 struct sched
 {
-	pq_t *pq;
+	heap_pq_t *pq;
 	int to_stop;			/*flag to stop event loop */
 	task_t *current_task; 	/*is NULL if no task is running*/
 };
@@ -40,7 +40,7 @@ sched_t *SchedCreate(void)
 		return (NULL);
 	}
 	
-	new_sched->pq = PQCreate(Compare);
+	new_sched->pq = HPQCreate(Compare);
 	if(NULL == new_sched->pq)
 	{
 		free(new_sched);
@@ -76,7 +76,7 @@ void SchedDestroy(sched_t *sched)
 	
 	sched->current_task = NULL;
 	
-	PQDestroy(sched->pq);
+	HPQDestroy(sched->pq);
 
 	free(sched);
 	
@@ -100,7 +100,7 @@ size_t SchedSize(const sched_t *sched)
 	assert(NULL != sched->pq);
 	
 	/*adds 1 to size if there is a current task running*/
-	return (PQSize(sched->pq) + (size_t)(NULL != sched->current_task));
+	return (HPQSize(sched->pq) + (size_t)(NULL != sched->current_task));
 }
 
 
@@ -116,7 +116,7 @@ int SchedIsEmpty(const sched_t *sched)
 	assert(NULL != sched);
 	assert(NULL != sched->pq);
 	
-	return (PQIsEmpty(sched->pq) && (NULL == sched->current_task));
+	return (HPQIsEmpty(sched->pq) && (NULL == sched->current_task));
 }
 
 
@@ -132,10 +132,10 @@ void SchedClear(sched_t *sched)
 	assert(NULL != sched);
 	assert(NULL != sched->pq);
 	
-	/*PQIsEmpty and not SchedIsEmpty - to make sure loop won't be infinite*/
-	while (!PQIsEmpty(sched->pq))
+	/*HPQIsEmpty and not SchedIsEmpty - to make sure loop won't be infinite*/
+	while (!HPQIsEmpty(sched->pq))
 	{
-		TaskDestroy(PQDeq(sched->pq));
+		TaskDestroy(HPQDeq(sched->pq));
 	}
 	
 	return;
@@ -148,7 +148,7 @@ void SchedClear(sched_t *sched)
 O(n)
 function: 	removes a specific task, UID must be correct
 Success:	---
-fail:		if PQErase return NULL, no operation is performed.
+fail:		if HPQErase return NULL, no operation is performed.
 */
 void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 {	
@@ -157,13 +157,13 @@ void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 	/*self remove check - current_task might be null*/
 	if(NULL == sched->current_task)
 	{
-		free( PQErase(sched->pq, TaskIsMatch, &uid ));
+		free( HPQErase(sched->pq, TaskIsMatch, &uid ));
 	}
 	else
 	{
 		if(0 == TaskIsMatch(sched->current_task, &uid))
 				{
-					free( PQErase(sched->pq, TaskIsMatch, &uid ));
+					free( HPQErase(sched->pq, TaskIsMatch, &uid ));
 				}	
 	}					
 			/*else for self remove check missing*/	
@@ -202,7 +202,7 @@ ilrd_uid_t SchedAddTask(sched_t *sched,
 		return BAD_UID;
 	}		
 
-	if(0 !=	PQEnq(sched->pq, new_task))
+	if(0 !=	HPQEnq(sched->pq, new_task))
 	{
 		/*missing: destroy task if PQ fails*/
 		return BAD_UID;
@@ -234,7 +234,7 @@ int SchedRun(sched_t *sched)
 	while((1 != sched->to_stop) && (1 != SchedIsEmpty(sched)))
 	{		
 		/*get first task*/
-		sched->current_task = (task_t *)PQDeq(sched->pq);
+		sched->current_task = (task_t *)HPQDeq(sched->pq);
 			/*missing: check that current task is really empty*/	
 
 		/*check when first task should occur*/
@@ -260,7 +260,7 @@ int SchedRun(sched_t *sched)
 			
 			/*if enq failed, 
 			  keep task in current task so the client can reEnq it*/
-			if(0 != PQEnq(sched->pq, sched->current_task))
+			if(0 != HPQEnq(sched->pq, sched->current_task))
 			{
 				SchedStop(sched);
 				

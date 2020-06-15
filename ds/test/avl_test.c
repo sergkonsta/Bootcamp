@@ -14,7 +14,7 @@ static int Compare(const void *data1, const void *data2)
 
 static int PrintAVL(void *data, void *param)
 {	
-	printf("key: %d  hight: %lu\n", *(int *)data, (size_t)param);
+	printf("key: %d  height: %lu\n", *(int *)data, (size_t)param);
 	
 	return 0;
 } 
