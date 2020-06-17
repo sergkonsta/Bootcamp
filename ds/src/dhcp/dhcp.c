@@ -24,7 +24,7 @@ typedef struct trie_node trie_node_t;
 struct trie_node
 {
 	trie_node_t *parent;
-	trie_node_t *children[NUMBER_OF_CHILDREN];
+	trie_node_t *child[NUMBER_OF_CHILDREN];
 	int is_full;
 }; 
 
@@ -114,8 +114,8 @@ static trie_node_t *CreateTrieNodeImp(trie_node_t *parent,
 	}
 
 	node->parent = parent;
-	node->children[LEFT] = left_child;
-	node->children[RIGHT] = right_child;
+	node->child[LEFT] = left_child;
+	node->child[RIGHT] = right_child;
 	node->is_full = is_full;
 	
 	return node;
@@ -191,8 +191,8 @@ static void DestroyTrieImp(trie_node_t *node)
 		return;
 	}
 
-	DestroyTrieImp(node->children[LEFT]);
-	DestroyTrieImp(node->children[RIGHT]);
+	DestroyTrieImp(node->child[LEFT]);
+	DestroyTrieImp(node->child[RIGHT]);
 	
 	free(node);
 }
@@ -229,8 +229,8 @@ size_t CountFullPreOrderImp(trie_node_t *node)
 	}
 
 	return( IsFullLeafImp(node) + 
-			CountFullPreOrderImp(node->children[LEFT]) + 
-			CountFullPreOrderImp(node->children[RIGHT]));
+			CountFullPreOrderImp(node->child[LEFT]) + 
+			CountFullPreOrderImp(node->child[RIGHT]));
 }
 
 static int IsFullLeafImp(trie_node_t *node)
@@ -238,8 +238,8 @@ static int IsFullLeafImp(trie_node_t *node)
 	assert(NULL != node);
 	
 	return (1 == node->is_full && 
-			NULL == node->children[LEFT] &&
-			NULL == node->children[RIGHT]);
+			NULL == node->child[LEFT] &&
+			NULL == node->child[RIGHT]);
 }
 
 /*	
@@ -263,7 +263,7 @@ dhcp_status_t DHCPAllocateIp(dhcp_t *dhcp, ip_t ip_request, ip_t *return_ip)
 {
 	dhcp_status_t status = DHCP_SUCCESS;
 	
-	char *path_arr = NULL;
+	child_t *path_arr = NULL;
 	
 	size_t i = 0;
 	size_t arr_size = 0;
@@ -273,7 +273,7 @@ dhcp_status_t DHCPAllocateIp(dhcp_t *dhcp, ip_t ip_request, ip_t *return_ip)
 	
 	/*array for bits*/
 	arr_size = TOTAL_NUM_OF_BITS - dhcp->locked_bits;
-	path_arr =  (char *)calloc(arr_size, sizeof(int));
+	path_arr =  (child_t *)calloc(arr_size, sizeof(child_t));
 	if (NULL == path_arr)
 	{
 		return DHCP_MALLOC_FAIL;
@@ -303,7 +303,7 @@ static int IsIpEqualImp(ip_t *ip_1, ip_t *ip_2)
 
 /*retrives correct path from ip_requested, 
 starting after locked bits, into arr given */
-static void RetrievePathImp(ip_t *ip, size_t locked_bits, char *arr)
+static void RetrievePathImp(ip_t *ip, size_t locked_bits, child_t *arr)
 {
 	size_t arr_index = 0;
 	size_t bit_num = 0;
@@ -320,7 +320,7 @@ static void RetrievePathImp(ip_t *ip, size_t locked_bits, char *arr)
 		/*single char loop*/
 		while (i < BITS_IN_BYTE)
 		{
-			char ch = (ip->ip_chars[byte_num] >> i) & 0x1;
+			child_t ch = (child_t)((ip->ip_chars[byte_num] >> i) & 0x1);
 
 			/*save in array only free bits*/
 			if (bit_num > locked_bits)
@@ -343,16 +343,65 @@ static void RetrievePathImp(ip_t *ip, size_t locked_bits, char *arr)
 	create if needed and update path_arr, set return status as DHCP_REQUEST_TAKEN
 	-if not full go it and check the next one
 	
--> when reached the end (arr_size (height) is 0)
+-> when reached the end (path index == height)
 	- mark node as is_full
 	
 -> go upward and check if parent has 2 children and they are full
 	-if so - make him full ad go up again
 	-if not, return status
 */
-dhcp_status_t ChoosePathImp(dhcp_t *dhcp, char *path_arr, size_t height)
+dhcp_status_t ChoosePathImp(dhcp_t *dhcp, child_t *path_arr, size_t height)
 {
+	trie_node_t *curr_node = NULL;
 	
+	child_t next_child = LEFT;
+	
+	size_t path_index = 0;
+	
+	dhcp_status_t status = DHCP_SUCCESS;
+	
+	assert(NULL != dhcp);
+	assert(NULL != path_arr);
+	assert(NULL != dhcp->root);
+	
+	curr_node = dhcp->root;
+	
+	/*until reached final leaf*/
+	while (path_index != height)
+	{
+		next_child = path_arr[path_index];
+		
+		/*if next child doesnt exist*/
+		if (NULL == curr_node->child[next_child])
+		{
+			/*create child, 
+			update path_arr*/
+		}
+		
+		/*if next child full*/
+		else if (1 == curr_node->child[next_child]->is_full)
+		{
+			/*go to next one in line closest from the right
+			set status: request taken
+			if no next - return NO_IP*/
+		}
+		
+		/*has a child and not full*/
+		else
+		{
+			curr_child = curr_child->child[next_child];
+		}
+				
+	}
+	
+	/*got to final leaf, mark curr node as full*/
+	
+	while (/*something*/)
+	{
+		/*go upward and mark as is_full what needs to be marked*/
+	}	
+	
+	return status;
 }
 
 
