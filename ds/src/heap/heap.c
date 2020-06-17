@@ -197,8 +197,7 @@ static void HeapifyDownImp(heap_t *heap, size_t index)
 	
 	assert (NULL != heap);
 	
-	while (RIGHT_CHILD(index) < HeapSize(heap) &&
-		   LEFT_CHILD(index) < HeapSize(heap))
+	while (RIGHT_CHILD(index) < HeapSize(heap) && LEFT_CHILD(index) < HeapSize(heap))
 	{	
 		/*get all datas*/
 		data_parent = DynVecGetValue(heap->vector,index); 

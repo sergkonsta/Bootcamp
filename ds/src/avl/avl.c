@@ -275,7 +275,9 @@ void *AVLRemove(avl_t *avl, const void *key_to_remove)
 	if(NULL == node_2_remove)
 	{
 		return (NULL);
-	}
+	}counts already existing full leaves in pre order
+pre-order means that i will count every time i go deeper into the Rec, 
+starting from the root and going left.
 	
 	/*save key for return*/
 	ret = node_2_remove->key;
