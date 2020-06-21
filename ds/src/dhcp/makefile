@@ -17,7 +17,7 @@ LIB_PATH = ../../lib/
 $(NAME).out : $(LIB_PATH)lib$(NAME).so $(TEST_PATH)$(NAME)_test.c	
 	$(CC) $(CFLAGS) -L$(LIB_PATH) -Wl,-rpath=$(LIB_PATH) \
 	-o $@ $^ \
-	-l$(NAME) #assumes all library files start with "lib" end with ".so"
+	-l$(NAME) -lm #assumes all library files start with "lib" end with ".so"
 
 #target is shared library compiled of this projects obj and encapsulated obj
 $(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o 

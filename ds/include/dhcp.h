@@ -3,14 +3,14 @@
 
 #include <stddef.h>		/*for size_t*/
 
-#define IPV4_LEN (4)
+#define IP_LEN (4)
 
 typedef struct dhcp dhcp_t;
 
 /* struct ip - enable passing ip by value to functions */
 typedef struct ip
 {
-	unsigned char ip_chars[IPV4_LEN];
+	unsigned char ip_chars[IP_LEN];
 } ip_t; 
 
 typedef enum dhcp_status 
@@ -19,7 +19,8 @@ typedef enum dhcp_status
 	DHCP_MALLOC_FAIL,
 	DHCP_NO_FREE_IP,
 	DHCP_REQUEST_TAKEN,
-	DHCP_ALREADY_FREE
+	DHCP_ALREADY_FREE,
+	DHCP_INVALID_FREE
 } dhcp_status_t;
 
 /*	O(1) create trie of size n. preallocate
