@@ -415,7 +415,6 @@ static dhcp_status_t FollowPathImp(dhcp_t *dhcp, child_t *path_arr, size_t heigh
 						curr_node  == curr_node->parent->child[RIGHT])	
 				{
 					curr_node = curr_node->parent;
-					path_arr[path_index] = RIGHT;
 					--path_index;				
 				}
 				
