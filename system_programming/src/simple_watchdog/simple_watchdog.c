@@ -19,7 +19,7 @@ static int ForkImp(char *argv[]);
 
 int SimpleWatchdog(char *argv[])
 {
-	ForkImp(argv);
+	/*ForkImp(argv);*/
 	
 	SystemImp(argv);
 	
@@ -40,10 +40,9 @@ static int SystemImp(char *argv[])
 	strcat(abs_path, argv[1]);
 	strcat(abs_path, argv[0]);
 	
-	for (;i < 3; ++i)
+	while (1)
 	{
-		status = system(abs_path);
-		sleep(1);
+		system(abs_path);	
 	}
 	
 	free(abs_path);
@@ -106,6 +105,12 @@ static void CheckForkReturnStatusImp(int status)
 		printf("\nexited with normal status of: %d.\n",WEXITSTATUS(status));
 	}
 	
+	/*stopped by signal*/
+	else if (WIFSTOPPED(status))
+	{
+		printf("\nwas terminated by signal number: %d.\n",WSTOPSIG(status));
+	}
+	
 	/*terminated by signal*/
 	else if (WIFSIGNALED(status))
 	{
@@ -115,12 +120,6 @@ static void CheckForkReturnStatusImp(int status)
 		{
 			printf("\nCore was dumped.");
 		}
-	}
-	
-	/*stopped by signal*/
-	else if (WIFSTOPPED(status))
-	{
-		printf("\nwas terminated by signal number: %d.\n",WSTOPSIG(status));
 	}
 }
 
