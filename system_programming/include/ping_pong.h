@@ -2,9 +2,12 @@
 #define __PING_PONG_H__
 
 /*EX1*/
-int PingPongWithFork(); 
+int PingPongWithFork(void); 
 
 /*EX2*/
-int ForkAndExec();
+int ForkAndExec(void);
+
+/*EX3*/
+void TwoProcs(void);
 
 #endif

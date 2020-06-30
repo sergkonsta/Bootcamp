@@ -24,7 +24,7 @@ $(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o
 	$(CC) $(LDFLAGS) -o $@ $^ 
 
 $(OBJ_PATH)$(NAME).o: $(NAME).c
-	$(CC) $(CFLAGS) -D_POSIX_C_SOURCE -c -fPIC -o $@ $^ 
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^ 
 
 #############################################################################
 #									PHONYS									#

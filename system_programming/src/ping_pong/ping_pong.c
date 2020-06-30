@@ -1,26 +1,63 @@
 /*
 Developer: Sergey Konstantinovsky
 Date:      28.06.2020
-Reviewer:  
+Reviewer:  Elimelech
 */
+
+/*for signal.h symbols definitions - must come before includes*/
+#define _XOPEN_SOURCE (500)	
+
+#include <signal.h>		/*for signal*/
 #include <stdlib.h>		/*for exit*/
 #include <sys/types.h>	/*for waitpid & fork*/
 #include <unistd.h>		/*for fork, pause*/
 #include <stdio.h>		/*for printf*/
-#include <signal.h>		/*for signal*/
 
 #include "ping_pong.h"
 
 #define UNUSED(X) (void)(X)
 
 static void UserSig(int sig);
+void GetPidHandler(int sig, siginfo_t *info, void *context);
 
 static sig_atomic_t to_print = 0;
+static sig_atomic_t signaled_flag = 0;
+static sig_atomic_t signal_pid = -1;
 
 
 
 /*----------------------------------------------------------------------------*/
-int ForkAndExec(char *argv[])
+void TwoProcs(void)
+{
+	size_t i = 0;
+	struct sigaction usr_act = {0};
+	usr_act.sa_flags = SA_SIGINFO;
+	usr_act.sa_sigaction = GetPidHandler;
+	signaled_flag = 0;
+	signal_pid = -1;
+
+	sigaction(SIGUSR1, &usr_act, NULL);
+
+	printf("\nFirst proc's PID is:%u \n", getpid());
+
+		while (i < 5)
+		{		
+			while (0 == signaled_flag)
+			{}
+			
+			printf("EX3 main anwser pong with SIGUSR2 to pid:[%u] , i: %lu\n",
+															(int)signal_pid, i);
+			kill((int)signal_pid, SIGUSR2);
+			pause();
+			++i;
+		}
+
+	kill(signal_pid, SIGTERM);
+}
+
+
+/*----------------------------------------------------------------------------*/
+int ForkAndExec()
 {
 	pid_t child_id = 0;
 
@@ -145,4 +182,14 @@ static void UserSig(int sig)
 	
 	to_print = 1;
 }
+
+/* save pid of the process which sent the signal */
+void GetPidHandler(int sig, siginfo_t *info, void *context)
+{
+	(void)sig;
+	(void)context;
+	signal_pid = info->si_pid;
+	signaled_flag = 1;
+}
+
 
