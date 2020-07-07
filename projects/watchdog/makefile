@@ -22,15 +22,15 @@ LIB_PATH = ../../ds/lib/
 client : lib/libwd_and_utils.so test/client.c
 	$(CC) $(CFLAGS) -L./lib -Wl,-rpath=./lib \
 	-o client.out $^ \
-	-lwd_and_utils
+	-lwd_and_utils -pthread
 
 .PHONY: watchdog_exe
 watchdog_exe : src/watchdog_exe.c lib/libwd_utils.so
 	$(CC) $(CFLAGS) -L./lib -Wl,-rpath=./lib \
 	-o watchdog_exe.out $^ \
-	-lwd_utils
+	-lwd_utils -pthread
 
-lib/libwd_and_utils.so : obj/wd.o obj/wd_utils.o
+lib/libwd_and_utils.so : obj/wd.o obj/wd_utils.o $(OBJ_PATH)sched.o $(OBJ_PATH)$(SUB_NAME_1).o $(OBJ_PATH)$(SUB_NAME_2).o $(OBJ_PATH)$(SUB_NAME_3).o $(OBJ_PATH)$(SUB_NAME_4).o $(OBJ_PATH)$(SUB_NAME_5).o
 	$(CC) $(LDFLAGS) -o $@ $^
 
 
@@ -74,22 +74,6 @@ obj/wd_utils.o : src/wd_utils.c
 clean : 
 	rm obj/*.o lib/*.so ../../ds/obj/*.o
 
-.PHONY: cgdb client
-cgdb client:
-	cgdb client.out
-
-.PHONY: cgdb watchdog_exe
-cgdb watchdog_exe:
-	cgdb watchdog_exe.out
-
-.PHONY: vlg client
-vlg client:
-	valgrind --leak-check=yes --track-origins=yes ./client.out
-
-.PHONY: vlg watchdog_exe
-vlg watchdog_exe:
-	valgrind --leak-check=yes --track-origins=yes ./watchdog_exe.out
-	
 #update git repository - ABSOLUTE PATH
 .PHONY: gitp
 gitp:

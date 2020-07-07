@@ -9,6 +9,8 @@ typedef struct watchdog_s watchdog_t;
 /* watchdog uses SIGUSER1 SIGUSER2 */
 /* The function starts the WatchDog.
 	Return: NULL if FAIL. */
+	
+/*must run client with excutable path as first arg*/
 watchdog_t *WDMMI(const char *client_path, size_t interval, size_t num_of_checks, char **client_process_argv);
 
 /* The fuction closes the given process. */

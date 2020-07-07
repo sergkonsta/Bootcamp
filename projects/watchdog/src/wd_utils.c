@@ -1,15 +1,13 @@
 #include <stdio.h>
+#include <signal.h>		/*sig_atomic_t*/
+
+#include "wd_utils.h"
 
 
-#include "sched.h"
-#include "watchdog.h"
-
-
-void FuncWD_UTILS()
+void TestFunc()
 {
-	sched_t *sched = SchedCreate();
 
-	printf("\nI am writing from wd_utils.c\n");
+	printf("\nI am the watchdog!\n");
 	
 
 }

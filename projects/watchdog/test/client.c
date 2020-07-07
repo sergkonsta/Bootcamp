@@ -2,9 +2,15 @@
 
 #include "watchdog.h"
 
-int main()
+
+
+int main(int argc, char *argv[])
 {
-	printf("\nI am writing from client.c\n");
+	
+	watchdog_t *watchdog = NULL;
+	
+	
+	watchdog = WDMMI(argv[0], 5, 3, argv);
 	
 	return 0;
 }
