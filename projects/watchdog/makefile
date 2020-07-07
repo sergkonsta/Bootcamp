@@ -74,6 +74,14 @@ obj/wd_utils.o : src/wd_utils.c
 clean : 
 	rm obj/*.o lib/*.so ../../ds/obj/*.o
 
+.PHONY: run_client
+run_client:
+	./client.out
+
+.PHONY: vlg
+vlg:
+	valgrind --leak-check=yes --track-origins=yes ./client.out ./watchdog_exe.out
+
 #update git repository - ABSOLUTE PATH
 .PHONY: gitp
 gitp:
