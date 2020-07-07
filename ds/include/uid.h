@@ -1,5 +1,5 @@
 #ifndef __OL87_UID_H__
-#define __OL87UID_H__
+#define __OL87_UID_H__
 
 #include <sys/types.h>	/*for pid_t*/
 
