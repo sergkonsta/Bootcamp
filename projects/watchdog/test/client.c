@@ -11,5 +11,7 @@ int main(int argc, char *argv[])
 	
 	watchdog = WDMMI(argv[0], 5, 3, argv);
 	
+	WDDNR(watchdog);
+	
 	return 0;
 }

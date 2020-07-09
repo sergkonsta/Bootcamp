@@ -76,7 +76,7 @@ clean :
 
 .PHONY: run_client
 run_client:
-	./client.out
+	./client.out ./watchdog_exe.out
 
 .PHONY: vlg
 vlg:

@@ -79,15 +79,15 @@ function: 	Adds new task to scheduler
 Success:	UID of added task
 fail:		---
 */
-/* void *param - how many times task should repeat
-	interval - time to start (when calling add func- time 0) + interval
-	act_func - what the task should do (print or whate...)
-	act_func returns int as status if task should be repeated/ if not should be repeated/ success*/
+/* 
+void *param - how many times task should repeat
+interval - time to start (when calling add func- time 0) + interval
+act_func - what the task should do 
+act_func returns non zero int as status if task should be repeated
+				zero - if should not be repeated 
+*/
 ilrd_uid_t SchedAddTask(sched_t *sched, int (*act_func)(void *param),
-		void *param, size_t interval_in_sec /*void TaskDestroy(void *param, void * ?*/);
-
-/*change : act_func should return repeat or not. and cannot fail*/
-
+		void *param, size_t interval_in_sec);
 
 
 /*stop running (should be sent to the sched via task)*/

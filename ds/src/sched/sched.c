@@ -166,9 +166,7 @@ void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 					free( HPQErase(sched->pq, TaskIsMatch, &uid ));
 				}	
 	}					
-			/*else for self remove check missing*/	
 			
-			/*destroy task missing*/		
 	return;
 }
 
@@ -204,7 +202,6 @@ ilrd_uid_t SchedAddTask(sched_t *sched,
 
 	if(0 !=	HPQEnq(sched->pq, new_task))
 	{
-		/*missing: destroy task if PQ fails*/
 		return BAD_UID;
 	}
 	
