@@ -84,7 +84,7 @@ static void *WDMonitorFunc(void *param)
 {
 	watchdog_t *watchdog = (watchdog_t *)param;
 	pid_t pid = 0;
-	sem_t *sem = sem_open(SHAREDSEM, O_CREAT, 0666, 0);
+	sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
 	
 	/*check in enviroment vars if watchdog is already up*/
 	while (0 == strcmp("False" ,getenv(WD_FLAG)))

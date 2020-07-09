@@ -69,23 +69,22 @@ static int WDTask(void *param)
 	sem_t *sem = sem_open(SEM_NAME, 0);
 	
 	/*set up sched on wd side*/
-	watchdog->wd_info = SetupCommunication(getenv(PATH_ENV), sem, watchdog->argv, 
+	watchdog->my_info = SetupCommunication(getenv(PATH_ENV), sem, watchdog->argv, 
 									watchdog->interval, watchdog->num_of_checks, 
-									watchdog->pid, getppid();
+									watchdog->pid, getppid());
 
 	sem_post(sem);
 
 	/*start sched on wd side*/
-	StartCommunication(info);
+	StartCommunication(watchdog->my_info);
 	
 	/*my comms are up - let client continue*/
 	/*sem_post(sem);*/
-	sem_unlink(SHAREDSEM);
-	free(info);
+	sem_unlink(SEM_NAME);
+	free(watchdog->my_info);
 
 	printf("finished wd \n");
-	return res;
-	
+	return 0;	
 }
 
 

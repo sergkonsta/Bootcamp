@@ -18,7 +18,7 @@ struct watchdog_s
 {
 	comm_t *my_info;
 	const char *my_path;
-	const char **argv;
+	char **argv;
 	size_t interval;
 	size_t num_of_checks;
 	pid_t pid;
