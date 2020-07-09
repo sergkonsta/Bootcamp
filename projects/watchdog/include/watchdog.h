@@ -12,6 +12,8 @@ typedef struct watchdog_s watchdog_t;
 	
 /*must run client with excutable path as first CLI arg
 second ard if exists, will be moved to the right*/
+
+
 watchdog_t *WDMMI(const char *client_path, size_t interval, size_t num_of_checks, char **client_process_argv);
 
 /* The fuction closes the given process. */
@@ -19,6 +21,23 @@ int WDDNR(watchdog_t *watchdog);
 
 
 #endif /* __OL87_WATCHDOG_H__*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*	MMI sets thread. - MMI need to check if an instance of wathcdog process is already up in env of client process.
 		(check in env)

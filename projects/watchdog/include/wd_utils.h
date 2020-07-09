@@ -18,10 +18,11 @@ struct watchdog_s
 {
 	comm_t *my_info;
 	const char *my_path;
-	char **argv;
+	char **my_argv;
 	size_t interval;
 	size_t num_of_checks;
 	pid_t pid;
+	pthread_t *thread_2_join;
 };
 
 /*sets up scheduler*/

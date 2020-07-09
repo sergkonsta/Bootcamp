@@ -52,10 +52,11 @@ int main(int argc, char *argv[])
 	}
 	watchdog->my_info = NULL;
 	watchdog->my_path = getenv(PATH_ENV);
-	watchdog->argv = argv;
+	watchdog->my_argv = argv;
 	watchdog->interval = (size_t)atoi( getenv(INT_ENV) );
 	watchdog->num_of_checks = (size_t)atoi( getenv(NUM_ENV) );
 	watchdog->pid = getpid();
+	watchdog->thread_2_join = NULL;
 	
 	WDTask((void *)watchdog);
 	
@@ -74,7 +75,7 @@ static int WDTask(void *param)
 									watchdog->pid, getppid());
 
 	sem_post(sem);
-
+printf("\n starting WD sched\n");						
 	/*start sched on wd side*/
 	StartCommunication(watchdog->my_info);
 	

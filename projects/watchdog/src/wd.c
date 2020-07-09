@@ -19,7 +19,7 @@
 
 #define UNUSED(X) (void)(X)
 
-static void StoreDataInEnvs(watchdog_t *watchdog);
+static void StoreDataInEnvs(watchdog_t *client);
 static void *WDMonitorFunc(void *client_process_argv);
 static void Usr1Handler(int signum);
 static void Usr2Handler(int signum);
@@ -37,20 +37,21 @@ watchdog_t *WDMMI(const char *my_path, size_t interval,
 	struct sigaction sig1 = {0};
 	struct sigaction sig2 = {0};
 	
-	/*init watchdog struct*/	
-	watchdog_t *watchdog = (watchdog_t *)malloc(sizeof(watchdog_t));
-	if (NULL == watchdog)
+	/*init client struct*/	
+	watchdog_t *client = (watchdog_t *)malloc(sizeof(watchdog_t));
+	if (NULL == client)
 	{
 		return NULL;
 	}
-	watchdog->my_info = NULL;
-	watchdog->my_path = my_path;
-	watchdog->argv = (char **)client_process_argv;
-	watchdog->interval = interval;
-	watchdog->num_of_checks = num_of_checks;
+	client->my_info = NULL;
+	client->my_path = my_path;
+	client->my_argv = client_process_argv;
+	client->interval = interval;
+	client->num_of_checks = num_of_checks;
+	client->thread_2_join = &wd_monitor_thread;
 	
 	/*stores user data in env vars*/
-	StoreDataInEnvs(watchdog);
+	StoreDataInEnvs(client);
 	
 	/*Establish the signal handler*/
 	sig1.sa_handler = Usr1Handler;
@@ -68,10 +69,9 @@ watchdog_t *WDMMI(const char *my_path, size_t interval,
 	}
 	
 	/*creates monitor thread*/
-	pthread_create(&wd_monitor_thread, 0, WDMonitorFunc, watchdog);
-	pthread_join(wd_monitor_thread, NULL);
+	pthread_create(&wd_monitor_thread, 0, WDMonitorFunc, client);
 
-	return watchdog;
+	return client;
 }
 
 
@@ -79,78 +79,81 @@ watchdog_t *WDMMI(const char *my_path, size_t interval,
 
 
 /*----------------------------------------------------------------------------*/
-/*thread that monitors watchdog*/
+/*thread that monitors client*/
 static void *WDMonitorFunc(void *param)
 {
-	watchdog_t *watchdog = (watchdog_t *)param;
+	watchdog_t *client = (watchdog_t *)param;
 	pid_t pid = 0;
 	sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
 	
-	/*check in enviroment vars if watchdog is already up*/
-	while (0 == strcmp("False" ,getenv(WD_FLAG)))
+	/*check in enviroment vars if watchdog is not running*/
+	if (0 == strcmp("False" ,getenv(WD_FLAG)))
 	{
-		/*create watchdog monitor process*/
+		/*create client monitor process*/
 		pid = fork();
 		if (-1 == pid)
 		{
-			return (void *)-1; /*check if this is the desired action when fork fails*/
+			sem_unlink(SEM_NAME);
+			free(client);
+			
+			return NULL;
 		}
 		
-		/*child case - execute watchdog*/
+		/*child case - execute client*/
 		if (0 == pid)
 		{
-			execv(getenv(PATH_ENV_WD), watchdog->argv);
+			if (-1 == execv(getenv(PATH_ENV_WD), client->my_argv))
+			{
+				sem_unlink(SEM_NAME);
+				free(client);
+			
+				return NULL;
+			}
 		}
-		
-		/*parent case - waits for first signal to arrive - 
-			meaning watchdog is up and running*/
-		if (0 < pid)
-		{
-			/*setup comm device*/
-			my_info = SetupCommunication(getenv(PATH_ENV_WD), 
-								sem, (char **)client_process_argv, 
-								(size_t)atoi(getenv(INT_ENV)),							
-								(size_t)atoi(getenv(NUM_ENV)), getpid(), pid);
-			
-			/*wait for first signal from watchdog*/
-			sem_wait(sem);
-			
-			/*set env - watchdog is runing*/
-			setenv(WD_FLAG, "True", 1);
-			
-			/*start sending signals back*/
-			StartCommunication(my_info);
-			
-			return (void *)0;
-		}
-	}
+	}	
 	
-	/*starts sched*/
-	StartCommunication(my_info);
+	/*setup comm device*/
+	client->my_info = SetupCommunication(getenv(PATH_ENV_WD), sem, 
+						client->my_argv, (size_t)atoi(getenv(INT_ENV)),
+						(size_t)atoi(getenv(NUM_ENV)), getpid(), pid);
 	
-	return (void *)0;
+	/*parent case - waits for first signal to arrive from watchdog*/
+	sem_wait(sem);
+	
+	/*set env - watchdog is runing*/
+	setenv(WD_FLAG, "True", 1);
+	
+printf("\n starting client sched\n");						
+	
+	/*start sending signals back*/
+	StartCommunication(client->my_info);
+
+	return NULL;
+
 }
 
 
 
 /*----------------------------------------------------------------------------*/
 /* The fuction closes the given process. */
-int WDDNR(watchdog_t *watchdog)
+int WDDNR(watchdog_t *client)
 {
 	g_do_not_revive = 1;
 
-	ShutDownCommunication();
+	ShutDownCommunication(client->my_info);
+
+	pthread_join(*(client->thread_2_join), NULL);
 
 	sem_unlink(SEM_NAME);
 	
-	free(watchdog);
+	free(client);
 	
 	return 0;
 }
 
 
 /*----------------------------------------------------------------------------*/
-/*increments counter of amounts of signals recieved from watchdog*/
+/*increments counter of amounts of signals recieved from client*/
 static void Usr1Handler(int signum)
 {
 	UNUSED(signum);
@@ -164,7 +167,7 @@ static void Usr2Handler(int signum)
 }
 
 /*----------------------------------------------------------------------------*/
-static void StoreDataInEnvs(watchdog_t *watchdog)
+static void StoreDataInEnvs(watchdog_t *client)
 {
 	/*create env var if runs for the first time*/
 	if (NULL ==  getenv(WD_FLAG))
@@ -173,16 +176,16 @@ static void StoreDataInEnvs(watchdog_t *watchdog)
 	}
 	
 	/*interval*/
-	SetIntEnv(INT_ENV, (int)watchdog->interval);
+	SetIntEnv(INT_ENV, (int)client->interval);
 
 	/*num_of_checks*/
-	SetIntEnv(NUM_ENV, (int)watchdog->num_of_checks);
+	SetIntEnv(NUM_ENV, (int)client->num_of_checks);
 	
 	/*my_path*/
-	setenv(PATH_ENV, watchdog->my_path, 1);
+	setenv(PATH_ENV, client->my_path, 1);
 	
-	/*watchdog path*/
-	setenv(PATH_ENV_WD, watchdog->wd_path, 1);
+	/*client path*/
+	setenv(PATH_ENV_WD, client->my_argv[1], 1);
 }
 
 static void SetIntEnv(const char *env_var, int param)

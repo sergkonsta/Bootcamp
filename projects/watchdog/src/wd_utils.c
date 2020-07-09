@@ -103,7 +103,9 @@ static int SendRepeatSig(void *params)
 	pid_t pid = 0;
 	comm_t *info = (comm_t *)params;
 	
-	printf("Clinet with pid %d sends signal to pid %d \n", info->pid, info->other_side_pid);
+printf("pid %d signals to 		pid %d     failed checks: %d\n\n", info->pid, info->other_side_pid, g_failed_checks);
+	
+	
 	kill(info->other_side_pid, SIGUSR1);
 
 	if (g_stop)
