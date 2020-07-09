@@ -16,6 +16,7 @@
 
 typedef struct watchdog_s watchdog_t;
 
+static int WDTask(void *param);
 static void Usr1Handler(int signum);
 static void Usr2Handler(int signum);
 
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
 	watchdog = (watchdog_t *)malloc(sizeof(watchdog_t));
 	if (NULL == watchdog)
 	{
-		return NULL;
+		return -1;
 	}
 	watchdog->my_info = NULL;
 	watchdog->my_path = getenv(PATH_ENV);
@@ -62,7 +63,7 @@ int main(int argc, char *argv[])
 }
 
 
-int WDTask(void *param)
+static int WDTask(void *param)
 {
 	watchdog_t *watchdog = (watchdog_t *)param;
 	sem_t *sem = sem_open(SEM_NAME, 0);
