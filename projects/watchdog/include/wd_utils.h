@@ -1,3 +1,9 @@
+/*
+Project:	Watchdog
+Developer:	Sergey Konstantinovsky
+Date:		10/07/2020
+*/
+
 #ifndef __OL87_WD_UTILS_H__
 #define __OL87_WD_UTILS_H__
 
@@ -5,36 +11,38 @@
 
 #include "sched.h"
 
-#define SEM_NAME "watchdog_started_sigs_sem"
-#define WD_FLAG "WATCHDOG_IS_RUNNING"
-#define INT_ENV "INTERVAL_BETWEEN_WD_CHECKS"
-#define NUM_ENV "NUM_OF_WD_CHECKS"
-#define PATH_ENV "PATH_OF_CLIENT"
-#define PATH_ENV_WD "PATH_OF_WATCHDOG"
+#define ENV_NAME "SERG-WD"
 
-typedef struct comm_s comm_t;
+#define UNUSED(X) (void)(X)
 
-struct watchdog_s
+typedef struct watchdog_s
 {
-	comm_t *my_info;
-	const char *my_path;
-	char **my_argv;
+	char **other_side_argv;
+	sched_t *my_sched;
+	const char *other_side_path;
 	size_t interval;
 	size_t num_of_checks;
-	pid_t pid;
-	pthread_t *thread_2_join;
-};
+	pid_t other_side_pid;
+	pthread_t thread_2_join;
+} wd_t;
+
+typedef enum 
+{
+	RUN,
+	SEND,
+	STOP
+} sched_state_t;
+
+
+extern sig_atomic_t g_sched_op;
+extern sem_t *wd_sem; 
 
 /*sets up scheduler*/
-comm_t *SetupCommunication(const char *other_side_path, sem_t *shared_sem, 
-							char **new_argv, 
-							size_t interval, size_t num_of_checks, 
-							pid_t pid, pid_t other_side_pid);
+int SetupCommunication(wd_t *wd);
 
 /*starts sched*/
-void StartCommunication(comm_t *info);
-
-void ShutDownCommunication(comm_t *info);
+int StartCommunication(wd_t *wd);
+int TrackCommunication(wd_t *wd);
 
 #endif /* __OL87_WD_UTILS_H__*/
 

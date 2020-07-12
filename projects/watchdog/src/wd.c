@@ -1,75 +1,65 @@
-#define _XOPEN_SOURCE (600)
+/*
+Project:	Watchdog
+Developer:	Sergey Konstantinovsky
+Date:		10/07/2020
+*/
 
-#include <stdio.h>		/*test ------------- printf*/
-
-
+#define _POSIX_C_SOURCE 200112L  /*sem_wait requirement*/
 
 #include <stdlib.h>		/*malloc, setenv, atoi*/
 #include <sys/types.h>	/*pid_t, fork*/
 #include <unistd.h>		/*pid_t, fork, execve*/
 #include <pthread.h>	/*pthread*/
 #include <signal.h>		/*sigaction, sig_atomic_t*/
-#include <string.h>		/*strcmp*/
 #include <semaphore.h>	/*sem_open, sem_wait*/
 #include <fcntl.h>		/*O_* ocnstants*/
 #include <sys/stat.h>	/*mode constants*/
+#include <assert.h>		/*assert*/
 
 #include "wd_utils.h"
 #include "watchdog.h"
 
-#define UNUSED(X) (void)(X)
 
-static void StoreDataInEnvs(watchdog_t *client);
-static void *WDMonitorFunc(void *client_process_argv);
-static void Usr1Handler(int signum);
-static void Usr2Handler(int signum);
-static void SetIntEnv(const char *env_var, int param);
+static void CleanUp(watchdog_t *client);
+static void *WDMonitorFunc(void *param);
+static char **StoreDataInArgs(char **client_process_argv, size_t interval, size_t num_of_checks);
 
-extern sig_atomic_t g_stop;
-extern sig_atomic_t g_do_not_revive;
-extern sig_atomic_t g_failed_checks;
+sem_t client_sem;
 
-watchdog_t *WDMMI(const char *my_path, size_t interval, 
-					size_t num_of_checks, char **client_process_argv)
+/*----------------------------------------------------------------------------*/
+wd_t *WDMMI(const char *client_path, size_t interval, size_t num_of_checks,
+			char **client_process_argv)
 {
 	pthread_t wd_monitor_thread = 0;
-
-	struct sigaction sig1 = {0};
-	struct sigaction sig2 = {0};
 	
 	/*init client struct*/	
-	watchdog_t *client = (watchdog_t *)malloc(sizeof(watchdog_t));
+	wd_t *client = (wd_t *)malloc(sizeof(wd_t));
 	if (NULL == client)
 	{
 		return NULL;
 	}
-	client->my_info = NULL;
-	client->my_path = my_path;
-	client->my_argv = client_process_argv;
+	
+	assert(client_path);
+	assert(interval);
+	assert(num_of_checks);
+	assert(client_process_argv);
+	
+	UNUSED(client_path);
+	
+	client->other_side_path = client_process_argv[1];
+	client->other_side_argv = StoreDataInArgs(client_process_argv, interval, 
+												num_of_checks);
 	client->interval = interval;
 	client->num_of_checks = num_of_checks;
-	client->thread_2_join = &wd_monitor_thread;
 	
-	/*stores user data in env vars*/
-	StoreDataInEnvs(client);
-	
-	/*Establish the signal handler*/
-	sig1.sa_handler = Usr1Handler;
-	sig2.sa_handler = Usr2Handler;
-	
-	/**/
-	if(sigfillset(&sig1.sa_mask) || sigfillset(&sig2.sa_mask)
-	|| sigdelset(&sig1.sa_mask, SIGUSR1) || sigdelset(&sig2.sa_mask, SIGUSR2)
-	|| sigdelset(&sig1.sa_mask, SIGTERM) || sigdelset(&sig2.sa_mask, SIGTERM)
-	|| sigdelset(&sig1.sa_mask, SIGINT) || sigdelset(&sig2.sa_mask, SIGINT) 
-	|| sigaction(SIGUSR1, &sig1, NULL) || sigaction(SIGUSR2, &sig2, NULL))
-	{
-		printf("failed sig mmi \n");
-		return NULL;
-	}
+	sem_init(&client_sem, 0, 0);
 	
 	/*creates monitor thread*/
 	pthread_create(&wd_monitor_thread, 0, WDMonitorFunc, client);
+	client->thread_2_join = wd_monitor_thread;
+	
+	/*wait until wd is up*/
+	sem_wait(&client_sem);
 
 	return client;
 }
@@ -82,115 +72,129 @@ watchdog_t *WDMMI(const char *my_path, size_t interval,
 /*thread that monitors client*/
 static void *WDMonitorFunc(void *param)
 {
-	watchdog_t *client = (watchdog_t *)param;
-	pid_t pid = 0;
-	sem_t *sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
+	wd_t *client = (wd_t *)param;
 	
-	/*check in enviroment vars if watchdog is not running*/
-	if (0 == strcmp("False" ,getenv(WD_FLAG)))
-	{
-		/*create client monitor process*/
-		pid = fork();
-		if (-1 == pid)
-		{
-			sem_unlink(SEM_NAME);
-			free(client);
-			
-			return NULL;
-		}
-		
-		/*child case - execute client*/
-		if (0 == pid)
-		{
-			if (-1 == execv(getenv(PATH_ENV_WD), client->my_argv))
-			{
-				sem_unlink(SEM_NAME);
-				free(client);
-			
-				return NULL;
-			}
-		}
-	}	
+	assert(param);
 	
 	/*setup comm device*/
-	client->my_info = SetupCommunication(getenv(PATH_ENV_WD), sem, 
-						client->my_argv, (size_t)atoi(getenv(INT_ENV)),
-						(size_t)atoi(getenv(NUM_ENV)), getpid(), pid);
+	if (SetupCommunication(client))
+	{
+		CleanUp(client);
+		sem_post(&client_sem);
+		return NULL;
+	}
 	
-	/*parent case - waits for first signal to arrive from watchdog*/
-	sem_wait(sem);
+	/*watchdog is already running*/
+	if (getenv(ENV_NAME))
+	{
+		client->other_side_pid = getppid();
+		sem_post(wd_sem);
+	}
 	
-	/*set env - watchdog is runing*/
-	setenv(WD_FLAG, "True", 1);
-	
-printf("\n starting client sched\n");						
-	
-	/*start sending signals back*/
-	StartCommunication(client->my_info);
+	/*watchdog will now run*/
+	else
+	{	
+		setenv(ENV_NAME,"1",1);
 
+		ReviveOtherProc(client);
+		
+		sem_wait(wd_sem);
+	}
+
+	sem_post(&client_sem);
+
+	StartCommunication(client); 
+	
 	return NULL;
-
 }
 
 
 
 /*----------------------------------------------------------------------------*/
 /* The fuction closes the given process. */
-int WDDNR(watchdog_t *client)
+int WDDNR(wd_t *client)
 {
-	g_do_not_revive = 1;
-
-	ShutDownCommunication(client->my_info);
-
-	pthread_join(*(client->thread_2_join), NULL);
-
-	sem_unlink(SEM_NAME);
+	assert(client);
 	
-	free(client);
+	g_sched_op = SEND;
+	
+	kill(client->other_side_pid, SIGUSR2);
+	
+	pthread_join(client->thread_2_join, NULL);
+	
+	CleanUp(client);
 	
 	return 0;
 }
 
 
 /*----------------------------------------------------------------------------*/
-/*increments counter of amounts of signals recieved from client*/
-static void Usr1Handler(int signum)
+static char **StoreDataInArgs(char **client_process_argv, size_t interval, 
+							size_t num_of_checks)
 {
-	UNUSED(signum);
-	g_failed_checks = 0;
-}
-
-static void Usr2Handler(int signum)
-{
-	UNUSED(signum);
-	g_stop = 1;
-}
-
-/*----------------------------------------------------------------------------*/
-static void StoreDataInEnvs(watchdog_t *client)
-{
-	/*create env var if runs for the first time*/
-	if (NULL ==  getenv(WD_FLAG))
+	char **new_args = NULL;
+	char *interval_str = NULL;
+	char *check_str = NULL;
+	size_t args_amount = 0;
+	size_t i = 0;
+	
+	assert(client_process_argv);
+	
+	interval_str = malloc(sizeof(char) * 10);
+	check_str = malloc(sizeof(char) * 10);
+	if (NULL == check_str || NULL == interval_str)
 	{
-		setenv(WD_FLAG, "False", 1);
+		free(check_str);
+		free(interval_str);
+		return NULL;
+	}
+
+	sprintf(interval_str,"%ld",interval);
+	sprintf(check_str,"%ld",num_of_checks);
+
+	while (*client_process_argv)
+	{
+		++args_amount; 
+		++client_process_argv;
 	}
 	
-	/*interval*/
-	SetIntEnv(INT_ENV, (int)client->interval);
+	client_process_argv -= args_amount;
+		
+	new_args = (char **)malloc(sizeof(char *) * (args_amount + 3));
+	if (NULL == new_args)
+	{
+		return NULL;	
+	}
+	
+	new_args[0] = interval_str;
+	new_args[1] = check_str;
 
-	/*num_of_checks*/
-	SetIntEnv(NUM_ENV, (int)client->num_of_checks);
-	
-	/*my_path*/
-	setenv(PATH_ENV, client->my_path, 1);
-	
-	/*client path*/
-	setenv(PATH_ENV_WD, client->my_argv[1], 1);
+	for (i = 0; i < args_amount; ++i)
+	{
+		new_args[i + 2] = client_process_argv[i];
+	}
+	new_args[args_amount + 2] = NULL;
+
+	return new_args;
 }
 
-static void SetIntEnv(const char *env_var, int param)
+static void CleanUp(wd_t *client)
 {
-	char buffer[20] = {'\0'};
-	sprintf(buffer, "%d", param);
-	setenv(env_var, buffer, 1);
+	assert(client);
+	
+	free(client->other_side_argv[0]);
+	free(client->other_side_argv[1]);
+	free(client->other_side_argv);
+	
+	client->other_side_argv = NULL;	
+	
+	free(client);
+	
+	client = NULL;
+
+	sem_destroy(&client_sem);
+	sem_unlink(ENV_NAME);
+	
+	return;
 }
+

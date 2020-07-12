@@ -1,179 +1,161 @@
-#define _XOPEN_SOURCE (600)
+/*
+Project:	Watchdog
+Developer:	Sergey Konstantinovsky
+Date:		10/07/2020
+*/
 
-#include <stdio.h>	/*for test printf!!!!!!!!!!!!!!!!!!!!!!*/
+#define _POSIX_C_SOURCE 200809L  /*sigaction requirement*/
 
 #include <signal.h>		/*kill, getpid*/
 #include <sys/types.h>	/*kill*/
 #include <unistd.h>		/*getpid*/
 #include <stdlib.h>		/*malloc*/
 #include <signal.h>		/*sig_atomic_t*/
+#include <semaphore.h>	/*sem_open, sem_wait*/
+#include <fcntl.h>		/*O_* ocnstants*/
+#include <sys/stat.h>	/*mode constants*/
+#include <assert.h>		/*assert*/
 
 #include "wd_utils.h"
 
-static int SchedStopWrapper(void *param);
-static int SendRepeatSig(void *params);
+static int PingAndCheck(void *params);
+static void ResetSig(int sig);
+static void StopSchedSig(int sig);
 
-struct comm_s
-{
-	sched_t *my_sched;
-	const char *other_side_path;
-	sem_t *shared_sem;
-	char **new_argv;
-	size_t interval;
-	size_t num_of_checks;
-	pid_t pid;
-	pid_t other_side_pid;
-};
-
-sig_atomic_t g_stop = 0;
-sig_atomic_t g_do_not_revive = 0;
+sig_atomic_t g_sched_op = RUN;
 sig_atomic_t g_failed_checks = 0;
 
-comm_t *SetupCommunication(const char *other_side_path,	sem_t *shared_sem, 
-							char **new_argv, 
-							size_t interval, size_t num_of_checks, 
-							pid_t pid, pid_t other_side_pid)
+sem_t *wd_sem = NULL;
+
+int SetupCommunication(wd_t *wd)
 {
-	comm_t *info = (comm_t *)malloc(sizeof(comm_t));
-	if (NULL == info)
+	/*setup signals*/
+	struct sigaction sig1 = {0};
+	struct sigaction sig2 = {0};
+
+	assert(wd);
+
+	sig1.sa_handler = ResetSig;
+	if (sigaction(SIGUSR1, &sig1, NULL))
 	{
-		return NULL;
+		return -1;
 	}
 	
-	info->my_sched = SchedCreate();
-	if (NULL == info->my_sched)
+	sig2.sa_handler = StopSchedSig;
+	if (sigaction(SIGUSR2, &sig2, NULL))
 	{
-		free(info);
-		return NULL;
+		return -1;
 	}
 	
-	info->other_side_path = other_side_path;
-	info->shared_sem = shared_sem;
-	info->new_argv = new_argv;
-	info->interval = interval;
-	info->num_of_checks = num_of_checks;
-	info->pid = pid;
-	info->other_side_pid = other_side_pid;
-		
+	/*setup semaphore*/
+	wd_sem = sem_open(ENV_NAME, O_CREAT, 0666, 0);
+	if (SEM_FAILED == wd_sem)
+	{
+		return -1;
+	}
+	
+	wd->my_sched = SchedCreate();
+	if (NULL == wd->my_sched)
+	{
+		return -1;
+	}
+	
 	/*add routine task*/
-	SchedAddTask(info->my_sched, SendRepeatSig, (void *)info, interval);
-	
-	return info;
-}
-
-
-
-
-void StartCommunication(comm_t *info)
-{
-	SchedRun(info->my_sched);
-	
-	return;
-}
-
-
-
-
-void ShutDownCommunication(comm_t *info)
-{
-	/*other side my_sched already dead, confirm kill*/
-	kill(SIGSTOP, info->other_side_pid);
-	
-	/*g_stop my my_sched*/
-	SchedAddTask(info->my_sched, SchedStopWrapper, ((void *)(info->my_sched)), 0);
-	
-	/*destroy my_sched*/
-	free(info);
-	
-	return;
-}
-
-static int SchedStopWrapper(void *param)
-{
-	
-	SchedStop((sched_t *)param);
+	SchedAddTask(wd->my_sched, PingAndCheck, wd, wd->interval);
 	
 	return 0;
 }
 
 
-
-static int SendRepeatSig(void *params)
+int ReviveOtherProc(wd_t *wd)
 {
-	pid_t pid = 0;
-	comm_t *info = (comm_t *)params;
+	assert(wd);
 	
-printf("pid %d signals to 		pid %d     failed checks: %d\n\n", info->pid, info->other_side_pid, g_failed_checks);
-	
-	
-	kill(info->other_side_pid, SIGUSR1);
+	wd->other_side_pid = fork();
 
-	if (g_stop)
+	if (wd->other_side_pid < 0)
 	{
-		return 0;
-	}
-
-	if (g_do_not_revive)
-	{
-		kill(info->other_side_pid, SIGUSR2);
+		return -1;
 	}
 	
-	if (!g_do_not_revive && (size_t)g_failed_checks > info->num_of_checks)
+	if (0 == wd->other_side_pid)
 	{
-		printf("revive \n");
-		g_failed_checks = 0;
+		execvp(wd->other_side_path, wd->other_side_argv);
 
-		pid = fork();
+		return -1;
+	}
 
-		if (pid)
+	return 0;
+}
+
+int StartCommunication(wd_t *wd)
+{
+	assert(wd);
+	
+	SchedRun(wd->my_sched);
+
+	while (RUN == g_sched_op)
+	{
+		/*confirm kill*/
+		kill(wd->other_side_pid, SIGKILL);
+
+		if (ReviveOtherProc(wd))
 		{
-			info->other_side_pid = pid;
-			if (sem_wait(info->shared_sem))
-			{
-				printf("failed wait task\n");
-			}
+			return -1;
 		}
 		
-		else
-		{
-			if (-1 == execv(info->other_side_path, info->new_argv))
-			{
-				printf("failed exec\n");
-				return 0;
-			}
-		}
-	}
+		g_failed_checks = 0;
 
-	++g_failed_checks;
+		sem_wait(wd_sem);
+		SchedRun(wd->my_sched);
+	}
 	
-	return 1;
+	SchedDestroy(wd->my_sched);
+
+	return 0;
 }
 
 
+static int PingAndCheck(void *param)
+{
+	wd_t *wd = (wd_t *)param;
 
+	assert(param);
 
+	if (STOP == g_sched_op)
+	{	
+		SchedStop(wd->my_sched);
+		return 0;
+	}
+	
+	if (RUN == g_sched_op)
+	{
+		++g_failed_checks;    
+		
+		if((unsigned int)g_failed_checks >= wd->num_of_checks)
+		{	
+			SchedStop(wd->my_sched);
+		}
+	}
+	
+	kill(wd->other_side_pid, SIGUSR1);
 
+	return 1; 
+}
 
+/*----------------------------------------------------------------------------*/
+/*increments counter of amounts of signals recieved from wd*/
+static void ResetSig(int sig)
+{
+	UNUSED(sig);
+	g_failed_checks = 0;
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+static void StopSchedSig(int sig)
+{
+	UNUSED(sig);
+	g_sched_op = STOP;
+}
 
 
 

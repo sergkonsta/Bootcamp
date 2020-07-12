@@ -5,45 +5,32 @@
 
 #include "watchdog.h"
 
-					#include "wd_utils.h"
-					struct comm_s
-					{
-					sched_t *my_sched;
-					const char *other_side_path;
-					sem_t *shared_sem;
-					char **new_argv;
-					size_t interval;
-					size_t num_of_checks;
-					pid_t pid;
-					pid_t other_side_pid;
-					};
+#define UNUSED(X) (void)(X)
 
-sig_atomic_t flag = 1;
-
-void SigHandler(int signum)
-{
-	(void)signum;
-
-	flag = 0;
-}
 
 int main(int argc, char *argv[])
 {
-	watchdog_t *watchdog = NULL;
-	
-	struct sigaction sig = {0};
-	sig.sa_handler = SigHandler;
-	sigaction(SIGINT, &sig, NULL);
-	
-	
-	watchdog = WDMMI(argv[0], 1, 3, argv);
-	
-	printf("\n started sleeping\n");
-	
-	sleep(10);
-	
-	
-	WDDNR(watchdog);
-	
-	return 0;
+    size_t sleeper = 0;
+    
+    int *uninitialized_pointer;
+    watchdog_t *watchdog = NULL;
+
+    UNUSED(argc);
+
+    watchdog = WDMMI(argv[0], 2, 5, argv);
+	printf("\nmain client continues\n");	
+    
+    
+    while (sleeper < 5)
+	{
+		sleep(1);
+		++sleeper;
+	}
+    
+    /**uninitialized_pointer = 3;*/
+
+    
+    WDDNR(watchdog);
+	printf("\nmain client ended\n");	
+    return 0;
 }
