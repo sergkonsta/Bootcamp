@@ -4,18 +4,22 @@ Developer:	Sergey Konstantinovsky
 Date:		12/07/2020
 */
 
-#include <stdlib.h>		/*calloc*/
-#include <stdio.h>		/*print, fopenqq*/
-#include <assert.h>		/*assert*/
-#include <ctype.h>		/*isalpha*/
-#include <pthread.h>	/*pthread*/
+#include <stdlib.h>		/* calloc */
+#include <stdio.h>		/* print, fopen */
+#include <assert.h>		/* assert */
+#include <ctype.h>		/* isalpha */
+#include <pthread.h>	/* pthread */
+#include <string.h>		/* memcpy */
+#include <sys/timeb.h>	/* ftime */
 
 #define DICT_PATH ("/usr/share/dict/american-english")
 #define DICTIONARY_SIZE (102306)
 #define LETTERS_IN_ABC (26)
+#define MAX_THREADS (20)
+#define BIG_DATA (222)	
 
-#define NUM_OF_THREADS (1)
-#define BIG_DATA (2)	
+#define FTIME ((end_time_ms.time * 1000 + end_time_ms.millitm) -\
+				(start_time_ms.time * 1000 + start_time_ms.millitm))
 
 typedef struct thread_args
 {
@@ -24,7 +28,7 @@ typedef struct thread_args
 	size_t sub_seg_size;
 } thread_args_t;
 
-
+int MultiThreadBenchmark();
 char *CreateBigData(char *buffer, size_t *size_of_segment);
 void DestroyBigData(char *buffer);
 static size_t CountLetters(FILE *fp);
@@ -32,45 +36,68 @@ static void FillBuffer(FILE *fp, char *buffer);
 void *CountingSort(void *args);
 void DestroyThreads(pthread_t *arr_threads);				 
 
-void *Test(void *args);
+size_t g_num_of_threads = 1;
 
 int main()
 {
+	for (g_num_of_threads = 1; 
+		MAX_THREADS > g_num_of_threads; 
+		++g_num_of_threads)
+	{
+		MultiThreadBenchmark();
+	}
+	
+	return (0);
+}
+
+
+int MultiThreadBenchmark()
+{
+	struct timeb start_time_ms;
+	struct timeb end_time_ms;
+	
 	size_t i = 0;
-	
 	size_t size_of_segment = 0;
-	
 	char *buffer = NULL;
 	
-	pthread_t arr_threads[NUM_OF_THREADS] = {0};
+	pthread_t *arr_threads = 
+	(pthread_t *)calloc(g_num_of_threads, sizeof(pthread_t));
 	
-	thread_args_t *thread_args[NUM_OF_THREADS];
+	thread_args_t *thread_args = 
+	(thread_args_t *)calloc(g_num_of_threads, sizeof(thread_args_t));
 
-	if (NULL == CreateBigData(buffer, &size_of_segment))
+	buffer =  CreateBigData(buffer, &size_of_segment);
+	if (NULL == buffer)
 	{
-		return -1;
+		return (-1);
 	}
 	
-	/*start timer*/
+	ftime(&start_time_ms);
 	
-	/*each thread uses counting sort on one segment of the big buffer*/
-	for (i = 0; i < NUM_OF_THREADS; ++i)
+	for (i = 0; i < g_num_of_threads; ++i)
 	{
-		thread_args[i]->sub_seg_size = size_of_segment;
-		thread_args[i]->range = LETTERS_IN_ABC;
-		thread_args[i]->sub_segment = buffer + i * thread_args[i]->sub_seg_size;		
+		thread_args[i].sub_seg_size = size_of_segment;
+		thread_args[i].range = LETTERS_IN_ABC;
+		thread_args[i].sub_segment = (buffer + i * size_of_segment);		
 		
-		pthread_create(&(arr_threads[i]), NULL, Test, thread_args[i]);
+		pthread_create((arr_threads + i), NULL, CountingSort, (thread_args + i));
 	}
+	
+	DestroyThreads(arr_threads);
+	
+	ftime(&end_time_ms);
 	
 	DestroyBigData(buffer);
 	
-	/*join all threads and free mallocs*/
-	DestroyThreads(arr_threads);
+	free(arr_threads);
+	arr_threads = NULL;
+	free(thread_args);
+	thread_args = NULL;
 	
-	/*get end time*/
-	
-	return 0;
+	printf("\nNum of threads: %lu.\nTime elapsed: %ld[mSec].\n\n"
+										,g_num_of_threads,FTIME);
+										
+	return (0);
 }	
 
 
@@ -80,28 +107,34 @@ char *CreateBigData(char *buffer, size_t *size_of_segment)
 	FILE *fp = fopen(DICT_PATH , "r");
 
 	size_t letters_in_dict = CountLetters(fp);
+	size_t i = 0;
 	
-	*size_of_segment = letters_in_dict / NUM_OF_THREADS;
+	*size_of_segment = letters_in_dict / g_num_of_threads;
 	
-	buffer = (char *)calloc(letters_in_dict, sizeof(char *));
+	buffer = (char *)calloc(letters_in_dict, sizeof(char));
 	if (NULL == buffer)
 	{
-		return NULL;
+		return (NULL);
 	}
 	
 	FillBuffer(fp, buffer);
 	
 	/*duplicate dict buffer*/
-	buffer = realloc(buffer, BIG_DATA * letters_in_dict * sizeof(char *));
+	buffer = (char *)realloc(buffer, BIG_DATA * letters_in_dict * sizeof(char));
 	if (NULL == buffer)
 	{
-		free(buffer);
-		return NULL;
+		return (NULL);
+	}
+	
+	for (i = 0; i < BIG_DATA; ++i)
+	{
+		memcpy(buffer + (i * letters_in_dict), buffer, letters_in_dict);
 	}
 	
 	fclose(fp);
+	fp = NULL;
 	
-	return buffer;
+	return (buffer);
 }
 
 void DestroyBigData(char *buffer)
@@ -113,7 +146,7 @@ void DestroyBigData(char *buffer)
 void DestroyThreads(pthread_t *arr_threads)
 {
 	size_t i = 0;
-	for (i = 0; i < NUM_OF_THREADS; ++i)
+	for (i = 0; i < g_num_of_threads; ++i)
 	{
 		pthread_join(arr_threads[i], NULL);
 	}
@@ -132,7 +165,7 @@ static size_t CountLetters(FILE *fp)
 		counter += 1 * (0 != isalpha(fgetc(fp)));
 	}	
 
-	return counter;
+	return (counter);
 }
 
 static void FillBuffer(FILE *fp, char *buffer)
@@ -155,11 +188,6 @@ static void FillBuffer(FILE *fp, char *buffer)
 	}	
 }
 
-void *Test(void *args)
-{
-	return NULL;
-}
-
 
 void *CountingSort(void *args)
 {
@@ -170,38 +198,54 @@ void *CountingSort(void *args)
 	size_t range = input->range;
 	size_t arr_size = input->sub_seg_size;
 	
-	size_t *hist = NULL;
+	int *hist = NULL;
 	
-	/*alloc memory for histogram*/
-	hist = (size_t *)calloc(range, sizeof(size_t));
-	if(NULL == hist)
+	char *sorted_arr = (char *)calloc(arr_size, sizeof(char));
+	if (NULL == sorted_arr)
 	{
-		return NULL;
+		return (NULL);
 	}
 	
-	/*create histogram*/
-	while(iter < arr_size)
+	hist = (int *)calloc(range, sizeof(int));
+	if (NULL == hist)
 	{
-		++hist[ input_arr[iter] - 1 ];
+		free(sorted_arr);
+		sorted_arr = NULL;
+		return (NULL);
+	}
+	
+	/* create histogram */
+	while (iter < arr_size)
+	{
+		++hist[tolower(input_arr[iter]) - 97];
 		++iter;
 	}
 	
-	/*makes prefix sum from the histogram array*/
-	for(iter = 0; iter < range - 1; iter++)
+	/* makes prefix sum from the histogram array */
+	for (iter = 0; iter < range - 1; iter++)
 	{
 		hist[iter + 1] += hist[iter];
 	}
 	
-	/*placing the integer from the input arr, in its correct place 
-	  inside the sorted array, according to the histogram*/
-	for(iter = 0; iter < arr_size; iter++)
+	/* placing the integer from the input arr, in its correct place 
+	  inside the sorted array, according to the histogram */
+	for (iter = 0; iter < arr_size; iter++)
 	{		
-		/*sorted_arr[ hist[ input_arr[iter] - 1 ] -1 ] += input_arr[iter];*/
+		sorted_arr[ hist[tolower(input_arr[iter]) - 97] - 1] = input_arr[iter];
 		
-		--hist[ input_arr[iter] - 1 ];
-	}	
+		--hist[tolower(input_arr[iter]) - 97];
+	}
+	
+	memcpy(input_arr, sorted_arr, arr_size);
+	
+	free(sorted_arr);
+	sorted_arr = NULL;
 	
 	free(hist);
+	hist = NULL;
 	
 	return (0);
 }
+
+
+
