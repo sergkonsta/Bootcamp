@@ -1,115 +1,82 @@
 
-
-#include <stdlib.h>		/* calloc */
-#include <stdio.h>		/* print, fopen */
-#include <assert.h>		/* assert */
-#include <ctype.h>		/* isalpha */
-#include <pthread.h>	/* pthread */
-#include <string.h>		/* memcpy */
-#include <sys/timeb.h>	/* ftime */
-
-#define DICT_PATH ("/usr/share/dict/american-english")
-#define WORDS_IN_DICT (102306)
-#define LETTERS_IN_ABC (26)
-#define MAX_THREADS (20)
-#define BIG_DATA (2)	
-#define NEW_LINE_ASCII (10)
-#define LONG_WORD (30)
-
-char **CreateBigData(char **p_big_data);
-static int FillBuffer(char **p_big_data, FILE *fp);
-static size_t CountWords(FILE *fp);
-
-
-
-int main()
+/*return 0 for success, 1 for failed alloc*/
+static int MergeSortIter(char **arr_to_sort, size_t low_index, size_t mid_index, 
+						size_t high_index)
 {
+	/*loop iters*/
+	size_t i_1 = 0;
+	size_t i_2 = 0;
+	size_t i_sorted = low_index;
 	
-	size_t i = 0;
-	char **p_big_data = CreateBigData(p_big_data);
+	/*calculating sub array sizes*/
+	size_t sub_1_size = mid_index  - low_index + 1; 
+    size_t sub_2_size = high_index - mid_index; 
 	
-	if (NULL == p_big_data)
+	/*allocating sub arrays*/
+	char **sub_arr_1 = (char **)calloc(sub_1_size, sizeof(char *));
+	char **sub_arr_2 = (char **)calloc(sub_2_size, sizeof(char *));
+	if (NULL == sub_arr_1 || NULL == sub_arr_2)
 	{
-		printf("\nERROR\n");
-	}	
-	
-	
-	
-	for (i = 0; i < WORDS_IN_DICT * BIG_DATA; ++i)
-	{
-		printf("%s\n",(*p_big_data) + i);
-	}
-	
-
-}
-
-
-char **CreateBigData(char **p_big_data)
-{
-	FILE *fp = fopen(DICT_PATH , "r");
-
-	/*calloc amount of words in dict * big data multiplier*/
-	p_big_data = (char **)calloc(CountWords(fp) * BIG_DATA, sizeof(char *));
-	if (NULL == p_big_data)
-	{
-		return (NULL);
-	}
-	
-	FillBuffer(p_big_data, fp);
-	
-	
-	
-	
-	
-	fclose(fp);
-	fp = NULL;
-	
-	return (p_big_data);
-}
-
-static int FillBuffer(char **p_big_data, FILE *fp)
-{
-	char **start = p_big_data;
-	size_t i = 0;
-	
-	assert(NULL != fp);
-	assert(NULL != p_big_data);
-	
-	rewind(fp);
-	
-	while (0 == feof(fp))
-	{
-		*p_big_data = (char *)calloc(LONG_WORD, sizeof(char));
-		if (NULL == *p_big_data)
-		{
-			return (-1);
-		}
+		free(sub_arr_1);
+		free(sub_arr_2);
 		
-		fgets(*p_big_data, LONG_WORD, fp);
-
-		++*(p_big_data);
+		return 1;
 	}
 	
-
-	
-	/*for (i = 0; i < BIG_DATA; ++i, *p_big_data += WORDS_IN_DICT)
+	/*fill sub arr 1*/
+	for (i_1 = 0; i_1 < sub_1_size; ++i_1)
 	{
-		memcpy(p_big_data, start,WORDS_IN_DICT);
-	}*/
+		sub_arr_1[i_1] = arr_to_sort[low_index + i_1]; 
+	}
+	
+	/*fill sub arr 2*/
+	for (i_2 = 0; i_2 < sub_2_size; ++i_2)
+	{
+		sub_arr_2[i_2] = arr_to_sort[mid_index + 1 + i_2];	
+	}
+	
+	/*go back to start of arrays*/
+	i_1 = 0;
+	i_2 = 0;
+	i_sorted = low_index;
+	
+	/*fill original array while sorting*/	
+	while (i_1 < sub_1_size && i_2 < sub_2_size) 
+	{ 
+		if (0 >= SortCmpFunc((void *)(&sub_arr_1[i_1]), (void *)(&sub_arr_2[i_2]))) 
+		{ 
+			arr_to_sort[i_sorted] = sub_arr_1[i_1]; 
+			++i_1; 
+		} 
+	
+		else 
+		{ 
+			arr_to_sort[i_sorted] = sub_arr_2[i_2]; 
+			++i_2; 
+		} 
+		
+		++i_sorted; 
+	}
+	
+	/*moving all the rest if exist*/
+	while (i_1 < sub_1_size) 
+	{ 
+		arr_to_sort[i_sorted] = sub_arr_1[i_1]; 
+		++i_1; 
+		++i_sorted; 
+	} 
+
+	/*moving all the rest if exist*/
+	while (i_2 < sub_2_size) 
+	{ 
+		arr_to_sort[i_sorted] = sub_arr_2[i_2]; 
+		++i_2; 
+		++i_sorted; 
+	} 
+
+	free(sub_arr_1);
+	free(sub_arr_2);
 	
 	return 0;
 }
 
-static size_t CountWords(FILE *fp)
-{
-	size_t counter = 0;
-	
-	assert(NULL != fp);
-	
-	while (0 == feof(fp))
-	{
-		counter += 1 * (NEW_LINE_ASCII == fgetc(fp));
-	}	
-
-	return (counter);
-}
