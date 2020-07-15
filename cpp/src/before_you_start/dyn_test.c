@@ -8,20 +8,20 @@ foo_f foo = NULL;
 
 int main(int argc, char *argv[])
 {
-	void *sym_adress = NULL;	
+	void *shared_lib_handle = NULL;	
 
 	UNUSED(argc);
 
-	sym_adress = dlopen("./test_dl.so", RTLD_LAZY);
-	if (!sym_adress)
+	shared_lib_handle = dlopen("./test_dl.so", RTLD_LAZY);
+	if (!shared_lib_handle)
 	{
-		printf("\nCannot load symbol!");
+		printf("\nCannot load shared library!");
 	}
 	
-	*(void **)&foo = dlsym(sym_adress, argv[1]);
+	*(void **)&foo = dlsym(shared_lib_handle, argv[1]);
 	
-	sym_adress = dlerror();
-	if (sym_adress)
+	shared_lib_handle = dlerror();
+	if (shared_lib_handle)
 	{
 		printf("\nCannot find foo!");
 	}
