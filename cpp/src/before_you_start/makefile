@@ -10,14 +10,14 @@ LDFLAGS = -shared
 
 
 .PHONY: run
-run: a.out test_dl.so
+run: a.out test_dl.o
 	./a.out Foo
 
 a.out : dyn_test.c
 	$(CC) $(CFLAGS) dyn_test.c -ldl
 
-test_dl.so : test_dl.c
-	$(CC) $(LDFLAGS) $^ -o $@
+test_dl.o : test_dl.c
+	$(CC) $(LDFLAGS) -fPIC $^ -o $@
 
 
 
