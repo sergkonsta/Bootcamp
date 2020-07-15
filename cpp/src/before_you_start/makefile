@@ -30,13 +30,9 @@ test_dl.o : test_dl.c
 clean : 
 	rm *.o *.so *.out
 
-.PHONY: run_client
-run_client:
-	./client.out ./watchdog_exe.out
-
 .PHONY: vlg
 vlg:
-	valgrind --leak-check=yes --track-origins=yes ./client.out ./watchdog_exe.out
+	valgrind --leak-check=yes --track-origins=yes ./a.out Foo
 
 #update git repository - ABSOLUTE PATH
 .PHONY: gitp

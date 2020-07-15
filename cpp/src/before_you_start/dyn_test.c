@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include <stdio.h>	/* printf 			*/
 #include <dlfcn.h>	/* dlsym, dlopen 	*/
 
@@ -9,7 +11,8 @@ foo_f foo = NULL;
 int main(int argc, char *argv[])
 {
 	void *shared_obj_handle = NULL;	
-
+	char *error = NULL;
+	
 	UNUSED(argc);
 
 	shared_obj_handle = dlopen("./test_dl.o", RTLD_LAZY);
@@ -20,13 +23,15 @@ int main(int argc, char *argv[])
 	
 	*(void **)&foo = dlsym(shared_obj_handle, argv[1]);
 	
-	shared_obj_handle = dlerror();
-	if (shared_obj_handle)
+	error = dlerror();
+	if (error)
 	{
 		printf("\nCannot find foo!");
 	}
 
 	foo();
 	
+	dlclose(shared_obj_handle);
+
 	return 0;
 }
