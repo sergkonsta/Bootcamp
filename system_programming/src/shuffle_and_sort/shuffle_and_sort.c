@@ -1,26 +1,23 @@
 /*
-Project:	Multithreading count sort
+Project:	Shuffle and sort
 Developer:	Sergey Konstantinovsky
 Date:		12/07/2020
 */
 
 #include <stdlib.h>		/* calloc, qsort, rand */
-#include <stdio.h>		/* print, fopen */
+#include <stdio.h>		/* printf, fopen */
 #include <assert.h>		/* assert */
-#include <ctype.h>		/* isalpha */
-#include <pthread.h>	/* pthread */
-#include <string.h>		/* memcpy */
+#include <pthread.h>	/* pthread_create, pthread_join */
+#include <string.h>		/* memcpy, strcmp */
 #include <sys/timeb.h>	/* ftime */
 #include <time.h>		/* clock_getttime*/
 
 #define DICT_PATH ("/usr/share/dict/american-english")
 #define WORDS_IN_DICT (102306)
-#define LETTERS_IN_ABC (26)
-#define BIG_DATA (100)	
-#define LONG_WORD (30)
+#define NUM_OF_DICTS (100)	
+#define LONGEST_WORD (30)
 
 #define UNUSED(X) (void)(X)
-
 
 typedef struct thread_args
 {
@@ -28,8 +25,9 @@ typedef struct thread_args
 	size_t sub_seg_size;
 } thread_args_t;
 
+/*imp in the end for statics & description & better var names*/
 
-static char **InitWords();
+static char **InitWords();		/*change name to load dict*/
 static char **InitBigData(char **dict_words);
 static int RandomShuffleFunc(const void *a, const void *b);
 
@@ -38,36 +36,39 @@ static void *ThreadQSort(void *args);
 static int SortCmpFunc(const void *a, const void *b);
 
 static int MergeImp(char **arr, size_t l, size_t m, size_t r);
+
+void SelectionSort(char **arr, const size_t arr_length);
 												   
 size_t g_num_of_threads = 1;
 
 
 int main()
 {
-	char **dict_words = InitWords();
+	char **dict_words = InitWords(); 
 	char **p_big_data = InitBigData(dict_words);
 	
 	double time = 0.0;
 	
-	struct timespec requestStart, requestEnd;
+	struct timespec requestStart = {0}; /*change to clock_t type*/
+	struct timespec requestEnd = {0};
 	
 	/*test from 1 to 256 threads*/
-	for (; g_num_of_threads <= 256; g_num_of_threads *= 2)
+	for (g_num_of_threads = 1; g_num_of_threads <= 256; g_num_of_threads *= 2)
 	{
-		clock_gettime(CLOCK_REALTIME, &requestStart);
-		
 		/*random shuffle*/
-		qsort((void *)p_big_data, WORDS_IN_DICT * BIG_DATA, sizeof(char *),
+		qsort((void *)p_big_data, WORDS_IN_DICT * NUM_OF_DICTS, sizeof(char *),
 				RandomShuffleFunc);
 		
+		clock_gettime(CLOCK_REALTIME, &requestStart);
+		
 		SortSubArraysWithThreads(p_big_data);
-			
-		MergeImp(p_big_data, 0, WORDS_IN_DICT * BIG_DATA / 2, WORDS_IN_DICT * BIG_DATA);
 		
 		clock_gettime(CLOCK_REALTIME, &requestEnd);
+			
+		MergeImp(p_big_data, 0, WORDS_IN_DICT * NUM_OF_DICTS / 2, WORDS_IN_DICT * NUM_OF_DICTS);
 	
-		time = ( requestEnd.tv_sec - requestStart.tv_sec ) + 
-				( requestEnd.tv_nsec - requestStart.tv_nsec ) / 1E9;
+		time = (requestEnd.tv_sec - requestStart.tv_sec) + 
+				(requestEnd.tv_nsec - requestStart.tv_nsec) / 1E9;
 		printf("\n%lu threads finished in: %f time.\n",g_num_of_threads,time);
 	}
 		
@@ -78,22 +79,30 @@ int main()
 static int SortSubArraysWithThreads(char **p_big_data)
 {
 	size_t i = 0;
-	size_t size_of_segment = BIG_DATA * WORDS_IN_DICT;
+	size_t size_of_segment = NUM_OF_DICTS * WORDS_IN_DICT;
 
 	pthread_t *arr_threads = 
 	(pthread_t *)calloc(g_num_of_threads, sizeof(pthread_t));
+	if (NULL == arr_threads)
+	{
+		return -1;
+	}
 	
 	thread_args_t *thread_args = 
 	(thread_args_t *)calloc(g_num_of_threads, sizeof(thread_args_t));
+	if (NULL == thread_args)
+	{
+		return -1;
+	}
 	
 	for (i = 0; i < g_num_of_threads; ++i)
 	{
-		thread_args[i].sub_seg_size = size_of_segment / g_num_of_threads;
+		thread_args[i].sub_seg_size = (size_of_segment / g_num_of_threads);
 		
 		thread_args[i].sub_segment = 
-		p_big_data + i * thread_args[i].sub_seg_size;
+		p_big_data + (i * thread_args[i].sub_seg_size);
 		
-		pthread_create((arr_threads + i), NULL, ThreadQSort, (thread_args + i));
+		pthread_create((arr_threads + i), NULL, ThreadQSort, (thread_args + i)); /*failure check*/
 	}
 	
 	/* destroy threads */
@@ -116,7 +125,7 @@ static int SortSubArraysWithThreads(char **p_big_data)
 
 static void *ThreadQSort(void *args)
 {
-	thread_args_t *input = (thread_args_t *)args;
+	thread_args_t *input = (thread_args_t *)args; 
 	
 	qsort((void *)input->sub_segment, input->sub_seg_size, 
 							sizeof(char *), SortCmpFunc);
@@ -124,7 +133,7 @@ static void *ThreadQSort(void *args)
 	return (NULL);
 }
 
-static int SortCmpFunc(const void *a, const void *b)
+static int SortCmpFunc(const void *a, const void *b) /*change arg names*/
 {
 	return (strcmp(*(char **)a, *(char **)b));
 }
@@ -137,7 +146,7 @@ static char **InitWords()
 	FILE *fp = fopen(DICT_PATH , "r");
 
 	/*calloc amount of words in dict * big data multiplier*/
-	char **words = calloc(WORDS_IN_DICT * BIG_DATA, sizeof(char *));
+	char **words = calloc(WORDS_IN_DICT * NUM_OF_DICTS, sizeof(char *));
 	if (NULL == words)
 	{
 		return (NULL);
@@ -146,13 +155,13 @@ static char **InitWords()
 	/*create strings and fill with words*/
 	for (i = 0; i < WORDS_IN_DICT; ++i)
 	{
-		words[i] = (char *)calloc(LONG_WORD, sizeof(char));
+		words[i] = (char *)calloc(LONGEST_WORD, sizeof(char));
 		if (NULL ==  words[i])
 		{
-			return (NULL);
+			return (NULL); /*free all the rest and words*/
 		}
 
-		fgets(words[i], LONG_WORD, fp);
+		fgets(words[i], LONGEST_WORD, fp);
 	}
 	
 	
@@ -169,7 +178,7 @@ static char **InitBigData(char **dict_words)
 	size_t i = 0;
 
 	/* create arr_to_sort of pointers for big data */
-	char **p_big_data = calloc(WORDS_IN_DICT * BIG_DATA, sizeof(char *));
+	char **p_big_data = calloc(WORDS_IN_DICT * NUM_OF_DICTS, sizeof(char *));
 	if (NULL == p_big_data)
 	{ 
 
@@ -177,7 +186,7 @@ static char **InitBigData(char **dict_words)
 	}
 	
 	/* fill arr_to_sort of pointers */
-	for (i = 0; i < WORDS_IN_DICT * BIG_DATA; ++i)
+	for (i = 0; i < WORDS_IN_DICT * NUM_OF_DICTS; ++i)
 	{
 		p_big_data[i] = dict_words[i % WORDS_IN_DICT];
 	}
@@ -264,4 +273,42 @@ static int MergeImp(char **arr, size_t l, size_t m, size_t r)
 	return 0;
 }
 
+void SelectionSort(char **arr, const size_t arr_length)
+{
+	size_t min_elem_index = 0;
+	size_t iter_find = 0;
+	size_t iter_place = 0;
+	
+	char *temp = NULL;
+	
+	assert(NULL != arr);
+	assert(arr_length > 0);
+	
+	/*outer loop*/
+	while(iter_place < arr_length - 1)
+	{
+		/*restart min element with every inner loop*/
+		min_elem_index = iter_place;
+		
+		/*inner loop - to find min element*/
+		while(iter_find < arr_length)
+		{			
+			if(0 >= strcmp(arr[iter_find], arr[min_elem_index]))
+			{
+				min_elem_index = iter_find;
+			}
+			
+			++iter_find;
+		}
+		
+		/*swap*/
+		temp = arr[min_elem_index];
+		arr[min_elem_index] =  arr[iter_place];
+		arr[iter_place] = temp;		
 
+		++iter_place;
+		iter_find = iter_place + 1;
+	}	
+	
+	return;
+}
