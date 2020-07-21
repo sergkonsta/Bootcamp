@@ -10,8 +10,4 @@
 !makefile
 
 !.gitignore
-<<<<<<< HEAD
-!.pdf
-=======
-!.pdf
->>>>>>> 521cf968118019441485be66d153e6c9f7106571
+!*.pdf
