@@ -8,6 +8,8 @@
 typedef void (*foo_f)();
 foo_f foo = NULL;
 
+int g_serg = 2;
+
 int main(int argc, char *argv[])
 {
 	void *shared_obj_handle = NULL;	

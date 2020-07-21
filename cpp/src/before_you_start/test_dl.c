@@ -1,7 +1,7 @@
 
 #include <stdio.h>
 
-
+int g_serg;
 
 void Foo(void)
 {
