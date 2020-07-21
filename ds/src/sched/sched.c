@@ -1,10 +1,8 @@
-
-/*****************************************
-**  Developer: Sergey Konstantinovsky   **
-**  Date:      03.05.2020               **
-**  Reviewer:  Alon						**
-**  Status:    Sent						**
-*****************************************/	
+/*
+Project:	Watchdog
+Developer:	Sergey Konstantinovsky
+Date:		03/05/2020
+*/
 #include <stdlib.h>		/*for malloc*/
 #include <assert.h>		/*for assert*/
 #include <time.h>		/*for time()*/
