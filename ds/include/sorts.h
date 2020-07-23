@@ -1,3 +1,5 @@
+#ifndef __SORTS_H__
+#define __SORTS_H__
 
 #include <stddef.h>
 
@@ -63,3 +65,4 @@ void QuickSortRecursive(void *arr, size_t nmemb, size_t size,
 int(*compare)(const void *, const void *));
 
 
+#endif

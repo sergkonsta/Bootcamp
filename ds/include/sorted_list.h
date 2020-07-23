@@ -1,5 +1,5 @@
-#ifndef __OL87_SORTED_LIST__H__
-#define __OL87_SORTED_LIST__H__
+#ifndef __SORTED_LIST__H__
+#define __SORTED_LIST__H__
 
 
 #include <stddef.h> /* size_t*/
@@ -167,4 +167,4 @@ after merge source_list is empty(source list is not destroyed.)
 sort_list_t *SortListMerge(sort_list_t *dest_list, sort_list_t *source_list);
 
 
-#endif /*__OL87_SORTED_LIST_H__*/
+#endif

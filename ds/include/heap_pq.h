@@ -1,5 +1,5 @@
-#ifndef __OL87_HEAP_PQUEUE_H__
-#define __OL87_HEAP_PQUEUE_H__
+#ifndef __HEAP_PQUEUE_H__
+#define __HEAP_PQUEUE_H__
 
 #include <stddef.h>
 
@@ -80,4 +80,4 @@ return NULL if data not found
 void *HPQErase(heap_pq_t *pque, 
 		int(*is_match)(const void *data, const void *param), void *param);
 
-#endif /* Closing OL87 queue header file */
+#endif 

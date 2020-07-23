@@ -1,13 +1,12 @@
 #ignore all
 *
 
-#allow sub directories and types and ignore file
-
+#allow sub directories
 !/**/
 
+#allow types and ignore file
 !*.c
 !*.h
 !makefile
-
 !.gitignore
 !*.pdf

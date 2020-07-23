@@ -1,5 +1,5 @@
-#ifndef __OL87_TASK_H__
-#define __OL87_TASK_H__
+#ifndef __TASK_H__
+#define __TASK_H__
 
 #include <stddef.h>
 #include <time.h>
@@ -78,4 +78,4 @@ fail:		---
 int TaskIsMatch(const void *task, const void *uid);
 
 
-#endif /* Closing OL87 task header file */
+#endif 

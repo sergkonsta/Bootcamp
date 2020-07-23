@@ -1,5 +1,5 @@
-#ifndef __OL87_RECURSION_H__
-#define __OL87_RECURSION_H__
+#ifndef __RECURSION_H__
+#define __RECURSION_H__
 
 #include "slist.h"
 #include "stack.h"
@@ -26,4 +26,4 @@ slist_iter_t FlipList(slist_iter_t node);
 
 stack_t *SortStack(stack_t *stk);
 
-#endif /* __OL87_RECURSION_H__*/
+#endif 

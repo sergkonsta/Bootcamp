@@ -1,5 +1,5 @@
-#ifndef __OL87_QUEUE_H__
-#define __OL87_QUEUE_H__
+#ifndef __QUEUE_H__
+#define __QUEUE_H__
 
 #include <stddef.h>
 
@@ -25,4 +25,4 @@ int QueueIsEmpty(const queue_t *que);					/* O(1) */
 queue_t *QueueAppend(queue_t *dest, queue_t *src);		/* O(1) */
 
 
-#endif /* __OL87_QUEUE_H__ */
+#endif 

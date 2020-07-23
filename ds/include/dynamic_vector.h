@@ -1,5 +1,5 @@
-#ifndef __OL87_DYNAMIC_VECTOR_H__
-#define __OL87_DYNAMIC_VECTOR_H__
+#ifndef __DYNAMIC_VECTOR_H__
+#define __DYNAMIC_VECTOR_H__
 
 #include <stddef.h>		/* for size_t */
 

@@ -1,5 +1,5 @@
-#ifndef __OL87_SCHEDULER_H__
-#define __OL87_SCHEDULER_H__
+#ifndef __SCHEDULER_H__
+#define __SCHEDULER_H__
 
 #include <stddef.h>
 
@@ -101,7 +101,6 @@ return:
 int SchedRun(sched_t *sched);
 
 
-#endif /* Closing OL87 SCHEDULER header file */
-
+#endif 
 
 

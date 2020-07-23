@@ -1,5 +1,5 @@
-#ifndef __OL87_DLIST__H__
-#define __OL87_DLIST__H__
+#ifndef __DLIST__H__
+#define __DLIST__H__
 
 #include <stddef.h>	/*for size_t*/
 
@@ -176,4 +176,4 @@ Returns "where".
 dlist_iter_t DListSplice(dlist_iter_t from, dlist_iter_t to, dlist_iter_t where);
 
 
-#endif /* __OL87_DLIST__H__*/
+#endif /* __DLIST__H__*/

@@ -1,5 +1,5 @@
-#ifndef __OL87_DHCP_H__
-#define __OL87_DHCP_H__
+#ifndef __DHCP_H__
+#define __DHCP_H__
 
 #include <stddef.h>		/*for size_t*/
 

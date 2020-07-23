@@ -1,5 +1,5 @@
-#ifndef __OL87_UID_H__
-#define __OL87_UID_H__
+#ifndef __UID_H__
+#define __UID_H__
 
 #include <sys/types.h>	/*for pid_t*/
 
@@ -19,4 +19,4 @@ ilrd_uid_t 	UIDCreate(void);
 /*Compare 2 uids. If uids are same return: 1, else: 0 */
 int UIDIsSame(ilrd_uid_t uid1, ilrd_uid_t uid2);
 
-#endif /* __OL87UID_H__*/
+#endif 

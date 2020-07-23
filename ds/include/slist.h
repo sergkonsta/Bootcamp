@@ -1,5 +1,5 @@
-#ifndef __OL87_SLIST__H__
-#define __OL87_SLIST__H__
+#ifndef __SLIST__H__
+#define __SLIST__H__
 
 #include <stddef.h>
 
@@ -44,7 +44,7 @@ int SListForEach(slist_iter_t from, slist_iter_t to, int(*action_func)(void *dat
 	return iter to head of dest*/
 slist_t *SListAppendList(slist_t *dest, slist_t *src);
 
-#endif /* __OL87_SLIST__H__*/
+#endif 
 
 
 

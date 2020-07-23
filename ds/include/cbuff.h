@@ -1,5 +1,5 @@
-#ifndef __OL87_CIR_BUFFER__H__
-#define __OL87_CIR_BUFFER__H__
+#ifndef __CIR_BUFFER__H__
+#define __CIR_BUFFER__H__
 
 #include <sys/types.h>	/*for ssize_t & size_t*/
 
@@ -60,4 +60,4 @@ size_t CirBufferFreeSpace(const c_buff_t *cbuff);
 /*returns amount of bytes left to read*/
 size_t CirBufferSize(const c_buff_t *cbuff);
 
-#endif /* __OL87_CIR_BUFFER__H__ */
+#endif /* __CIR_BUFFER__H__ */
