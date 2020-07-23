@@ -342,32 +342,24 @@ return: ---
 void BubbleSort(int *arr, size_t arr_length)
 {
 	int swap_flag = 1;
-	size_t iter = 0;
-	
-	assert(NULL != arr);
-	assert(arr_length > 0);
-	
+	int *left = arr;
+	int *right = arr + 1;
+
 	/*until array is sorted*/
 	while(0 != swap_flag)
 	{
-		swap_flag = 0;
-		iter = 0;
-		
-		/*iterates through unsorted part of arr*/
-		while((iter + 1) < arr_length)
+		for (swap_flag = 0, left = arr, right = arr + 1;
+			right < arr + arr_length;
+			++left, ++right)
 		{
-			/*swap numbers if not in order*/
-			if(arr[iter] > arr[iter + 1])
+			if (*left > *right)
 			{
-				Swap(&arr[iter], &arr[iter + 1]);
+				Swap(left, right);
 				swap_flag = 1;
 			}
-			
-			++iter;
 		}
-		
-		/*adjust loop range 
-		(with every loop the last element is always the biggest)*/
+
+		/* adjust loop range */
 		--arr_length;
 	}
 	
