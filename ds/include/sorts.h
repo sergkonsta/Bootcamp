@@ -62,7 +62,7 @@ size - sizeof(member)
 compare func works like strcmp
 */
 void QuickSortRecursive(void *arr, size_t nmemb, size_t size, 
-int(*compare)(const void *, const void *));
+						int(*compare)(const void *, const void *));
 
 
 #endif
