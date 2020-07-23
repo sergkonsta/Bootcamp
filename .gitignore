@@ -1,5 +1,6 @@
 #ignore all
 *
+c
 
 #allow sub directories
 !/**/
