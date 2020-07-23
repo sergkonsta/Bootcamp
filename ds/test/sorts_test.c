@@ -34,14 +34,6 @@ int main()
 	
 	size_t i = 0;
 	
-	/*small test case*/
-	/*int a[6] = {170,45,-17,170,-9,24};
-	QuickSortRecursive(a, 6, sizeof(int), Cmp);		
-	
-	for(i = 0; i < 6; i++)
-	{
-		printf("\n%d",a[i]);
-	}*/
 	
 	/*------------------------------------------------------------------------*/
 	/*					ITERATIVE BINARY SEARCH TEST					      */
@@ -282,7 +274,7 @@ static void PrintTestResult(int test_result, char *test_name)
 	
 	if(1 != test_result)
 	{
-		printf(RED"\n\nError in %s, line: %d.\n\n"RESET,test_name,__LINE__);	
+		printf(RED"\n\nError in %s.\n\n"RESET,test_name);	
 	}
 	
 	return;
