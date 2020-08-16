@@ -81,4 +81,4 @@ vlg:
 #update git repository - ABSOLUTE PATH
 .PHONY: gitp
 gitp:
-	cd ~/sergey-konstantinovsky/; git add .; git commit -ma; git push -u; 
+	cd ~/bootcamp/; git add .; git commit -ma; git push -u; 
