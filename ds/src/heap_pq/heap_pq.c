@@ -37,6 +37,7 @@ heap_pq_t *HPQCreate( int(*compare)(const void *data1, const void *data2) )
 	if(NULL == pq->pq)
 	{
 		free(pq);
+		pq = NULL;
 		return (NULL);
 	}
 	
@@ -180,20 +181,5 @@ void *HPQErase(heap_pq_t *pque,
 	/* find element to remove */
 	return HeapRemove(pque->pq, is_match, param);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

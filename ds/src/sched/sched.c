@@ -26,7 +26,6 @@ int Compare(const void *task_in_pq, const void *time_to_start);
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function: 	creates a scheduler 
 Success:	pointer to sched
 fail:		NULL
@@ -46,10 +45,7 @@ sched_t *SchedCreate(void)
 		return (NULL);
 	}
 	
-	/*don't stop event loop*/
 	new_sched->to_stop = 0;
-	
-	/*no task yet*/
 	new_sched->current_task = NULL;	
 	
 	return (new_sched);	
@@ -60,7 +56,6 @@ sched_t *SchedCreate(void)
 
 /*----------------------------------------------------------------------------*/
 /*
-O(n)
 function: 	destroys
 Success:	pointer to sched
 fail:		NULL
@@ -78,6 +73,7 @@ void SchedDestroy(sched_t *sched)
 	HPQDestroy(sched->pq);
 
 	free(sched);
+	sched = NULL;
 	
 	return;
 }
@@ -154,16 +150,17 @@ void SchedRemove(sched_t *sched, ilrd_uid_t uid)
 	assert(NULL != sched);
 	
 	/*self remove check - current_task might be null*/
-	if(NULL == sched->current_task)
+	if (NULL == sched->current_task)
 	{
 		free( HPQErase(sched->pq, TaskIsMatch, &uid ));
 	}
+	
 	else
 	{
-		if(0 == TaskIsMatch(sched->current_task, &uid))
-				{
-					free( HPQErase(sched->pq, TaskIsMatch, &uid ));
-				}	
+		if (0 == TaskIsMatch(sched->current_task, &uid))
+		{
+			free( HPQErase(sched->pq, TaskIsMatch, &uid ));
+		}	
 	}					
 			
 	return;
@@ -194,12 +191,12 @@ ilrd_uid_t SchedAddTask(sched_t *sched,
 	assert(NULL != act_func);
 	
 	new_task = TaskCreate( 	act_func, param, interval_in_sec );
-	if(NULL == new_task)
+	if (NULL == new_task)
 	{
 		return BAD_UID;
 	}		
 
-	if(0 !=	HPQEnq(sched->pq, new_task))
+	if (0 !=	HPQEnq(sched->pq, new_task))
 	{
 		return BAD_UID;
 	}
@@ -227,7 +224,7 @@ int SchedRun(sched_t *sched)
 	sched->to_stop = 0;
 	
 	/*event loop*/
-	while((1 != sched->to_stop) && (1 != SchedIsEmpty(sched)))
+	while ((1 != sched->to_stop) && (1 != SchedIsEmpty(sched)))
 	{		
 		/*get first task*/
 		sched->current_task = (task_t *)HPQDeq(sched->pq);
@@ -237,7 +234,7 @@ int SchedRun(sched_t *sched)
 		time_offset = TaskGetNextRunTime(sched->current_task) - time(NULL);
 		
 		/*wait and make sure sleep doesn't wake up early*/
-		while(time_offset > 0)
+		while (time_offset > 0)
 		{
 			sleep(time_offset);
 			time_offset = TaskGetNextRunTime(sched->current_task) - time(NULL);
@@ -256,7 +253,7 @@ int SchedRun(sched_t *sched)
 			
 			/*if enq failed, 
 			  keep task in current task so the client can reEnq it*/
-			if(0 != HPQEnq(sched->pq, sched->current_task))
+			if (0 != HPQEnq(sched->pq, sched->current_task))
 			{
 				SchedStop(sched);
 				

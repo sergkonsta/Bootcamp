@@ -83,13 +83,13 @@ unspecified behaviour: heap == NULL
 */
 void HeapDestroy(heap_t *heap)
 {
-	assert (NULL != heap);
+	assert(NULL != heap);
 	
 	DynVecDestroy(heap->vector);
 	
 	heap->cmp_func = NULL;
 	
-	free (heap);
+	free(heap);
 }
 
 
@@ -103,7 +103,7 @@ unspecified behaviour: heap == NULL, input key already exists in the tree
 */
 int HeapPush(heap_t *heap, void *data)
 {
-	assert (NULL != heap);
+	assert(NULL != heap);
 
 	/*inserts data*/
 	if (1 == DynVecAppend(heap->vector, data))
@@ -127,8 +127,8 @@ unspecified behaviour: heap == NULL, Pop empty tree
 */
 void HeapPop(heap_t *heap)
 {
-	assert (NULL != heap);
-	assert (1 != HeapIsEmpty(heap));
+	assert(NULL != heap);
+	assert(1 != HeapIsEmpty(heap));
 
 	/*swap root with last node*/
 	if (1 < HeapSize(heap))
@@ -172,8 +172,9 @@ recieves: heap, index of node to heapify, size of data for swap
 static void HeapifyUpImp(heap_t *heap, size_t index)
 {
 	/*stop if reached root or no need to heapify*/
-	if  (ROOT_INDEX == index || 0 < heap->cmp_func(DynVecGetValue(heap->vector, PARENT(index)), 
-									 	  DynVecGetValue(heap->vector, index)))	  
+	if  (ROOT_INDEX == index || 
+		0 < heap->cmp_func(DynVecGetValue(heap->vector, PARENT(index)), 
+		DynVecGetValue(heap->vector, index)))	  
 	{
 		return;
 	}
