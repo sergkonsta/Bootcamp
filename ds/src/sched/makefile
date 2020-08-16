@@ -36,28 +36,23 @@ $(LIB_PATH)lib$(NAME).so: $(OBJ_PATH)$(NAME).o $(OBJ_PATH)$(SUB_NAME_1).o $(OBJ_
 $(OBJ_PATH)$(NAME).o: $(NAME).c
 	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
 
-#if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME_1).o: 
-	$(MAKE) -C ../$(SUB_NAME_1)/$(SUB_NAME_1).c
 
-#if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME_2).o: 
-	$(MAKE) -C ../$(SUB_NAME_2)/$(SUB_NAME_2).c
+##data structures - utilities
 
-#if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME_3).o: 
-	$(MAKE) -C ../$(SUB_NAME_3)/$(SUB_NAME_3).c
+../../obj/heap_pq.o: ../heap_pq/heap_pq.c
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
 
-#if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME_4).o: 
-	$(MAKE) -C ../$(SUB_NAME_4)/$(SUB_NAME_4).c
+../../obj/task.o: ../task/task.c
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
 	
-#if sub-obj file doesn't exist - go to sub-Make and create it
-$(OBJ_PATH)$(SUB_NAME_5).o: 
-	$(MAKE) -C ../$(SUB_NAME_5)/$(SUB_NAME_5).c
-
+../../obj/uid.o: ../uid/uid.c
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
 	
+../../obj/dynamic_vector.o: ../dynamic_vector/dynamic_vector.c
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^	
 
+../../obj/heap.o: ../heap/heap.c
+	$(CC) $(CFLAGS) -c -fPIC -o $@ $^
 
 
 #############################################################################
