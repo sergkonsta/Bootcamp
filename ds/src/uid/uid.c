@@ -1,10 +1,8 @@
-
-/*****************************************
-**  Developer: Sergey Konstantinovsky   **
-**  Date:      28.04.2020               **
-**  Reviewer:  Irina					**
-**  Status:    Sent						**
-*****************************************/		
+/*
+Project:	UID
+Developer:	Sergey Konstantinovsky
+Date:		28/04/2020
+*/
 
 #include <unistd.h>	/*for getpid()*/
 #include <time.h>	/*for time()*/
@@ -13,7 +11,7 @@
 
 extern ilrd_uid_t BAD_UID;
 
-/* Creat a unique uid value and return it. If Create fail-return BAD_UID */
+/* Create a unique uid value and return it. If Create fail-return BAD_UID */
 ilrd_uid_t UIDCreate(void)
 {
 	static size_t counter = 0;
@@ -27,7 +25,7 @@ ilrd_uid_t UIDCreate(void)
 	/*pull time stamps and put into uid.time*/
 	uid.time = time(NULL);
 	
-	/*inc counter*/
+	/*increment counter*/
 	++counter;
 	uid.counter = counter;
 	
@@ -35,12 +33,12 @@ ilrd_uid_t UIDCreate(void)
 	{
 		uid = BAD_UID;
 	}
+	
 	return (uid);
 }
 
-/*----------------------------------------------------------------------------*/
 /*Compare 2 uids. If uids are same return: 1, else: 0 */
-int UIDIsSame(ilrd_uid_t uid1, ilrd_uid_t uid2)
+int UIDIsSame(const ilrd_uid_t uid1, const ilrd_uid_t uid2)
 {
 	return ((	uid1.pid	 == uid2.pid && 
 				uid1.time	 == uid2.time && 

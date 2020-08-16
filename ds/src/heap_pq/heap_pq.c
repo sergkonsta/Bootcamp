@@ -1,12 +1,8 @@
-
-/*****************************************
-**				HEAP DS					**
-**										**
-**  Developer: Sergey Konstantinovsky   **
-**  Date:      14.06.2020               **
-**  Reviewer:  Alon						**
-**  Status:    Approved					**
-*****************************************/	
+/*
+Project:	Heap Priority Queue
+Developer:	Sergey Konstantinovsky
+Date:		14/06/2020
+*/
 
 #include <stdlib.h>		/*for malloc*/
 #include <assert.h>		/*for assert*/

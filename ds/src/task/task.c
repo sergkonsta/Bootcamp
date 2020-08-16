@@ -1,22 +1,26 @@
+/*
+Project:	task
+Developer:	Sergey Konstantinovsky
+Date:		29/04/2020
+*/
 
 #include <assert.h>		/*for assert*/
 #include <stdlib.h>		/*for malloc*/
-#include <time.h>
+#include <time.h>		/*for time*/
 
 #include "task.h"
 
 struct task
 {
 	ilrd_uid_t uid;
-	size_t time_to_run; 			/*my comment: shows next time to run*/
-	size_t interval_in_sec; 		/*first time to run and all after if repeat is on*/
-	int (*act_func)(void *param); 	/*returns repeat or not*/
+	size_t time_to_run; 			/*shows next time to run*/
+	size_t interval_in_sec; 		
+	int (*act_func)(void *param); 	/*returns if task should repeat or not*/
 	void *param;					/*param for act_fun*/
 };
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function: 	creates a task according to task struct 
 success:	pointer to task
 fail:		NULL
@@ -49,7 +53,6 @@ task_t *TaskCreate(	int (*act_func)(void *param), void *param,
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function:	runs act_func
 success:	1 for repeat / 0 for don't repeat
 fail:		--- 
@@ -57,7 +60,7 @@ fail:		---
 int TaskRun(task_t *task)
 {
 	assert(NULL != task);
-	/*assert all members of task!!!!!*/
+	assert(NULL != task->act_func);
 	
 	return (task->act_func(task->param));
 }
@@ -65,7 +68,6 @@ int TaskRun(task_t *task)
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function:	gets UID of the task
 success: 	return UID of the task
 fail: 		---	
@@ -80,7 +82,6 @@ ilrd_uid_t TaskGetId(const task_t *task)
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function:	frees task.
 success:	---
 fail:		---
@@ -89,13 +90,16 @@ void TaskDestroy(task_t *task)
 {
 	assert(NULL != task);
 	
-	free(task);	
+	task->act_func = NULL;
+	task->param = NULL;
+	
+	free(task);
+	task = NULL;
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function: returns next time to run
 success:
 fail:
@@ -110,9 +114,7 @@ size_t TaskGetNextRunTime (const task_t *task)
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function:	updates next run time according to interval
-			
 success: 	---
 fail:		---
 */
@@ -126,7 +128,6 @@ void TaskUpdateNextRun(task_t *task)
 
 /*----------------------------------------------------------------------------*/
 /*
-O(1)
 function: 	checks if task has the same UID as 'uid'
 success: 	1 - is a match / 0 - no match
 fail:		---

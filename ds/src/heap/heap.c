@@ -1,12 +1,9 @@
-
-/*****************************************
-**				HEAP DS					**
-**										**
-**  Developer: Sergey Konstantinovsky   **
-**  Date:      14.06.2020               **
-**  Reviewer:  Alon						**
-**  Status:    ?????					**
-*****************************************/	
+/*
+Project:	Heap
+Developer:	Sergey Konstantinovsky
+Date:		14/06/2020
+*/
+	
 #include <stdlib.h>	/*for malloc*/
 #include <assert.h>	/*for assert*/
 
@@ -51,7 +48,7 @@ heap_t *HeapCreate(cmp_func_t cmp_func)
 {
 	heap_t *heap = NULL;
 	
-	assert (NULL != cmp_func);
+	assert(NULL != cmp_func);
 	
 	/*create heap struct*/
 	heap = (heap_t *)malloc(sizeof(heap_t));
@@ -65,6 +62,7 @@ heap_t *HeapCreate(cmp_func_t cmp_func)
 	if (NULL == heap->vector)
 	{
 		free (heap);
+		heap = NULL;
 		return NULL;
 	}
 	

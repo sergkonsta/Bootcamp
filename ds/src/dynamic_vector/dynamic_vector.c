@@ -1,10 +1,9 @@
+/*
+Project:	Dynamic Vector
+Developer:	Sergey Konstantinovsky
+Date:		07/04/2020
+*/
 
-/*****************************************
-**  Developer: Sergey Konstantinovsky   **
-**  Date:      07.04.2020               **
-**  Reviewer:  Amir						**
-**  Status:    in progress				**
-*****************************************/
 #include <assert.h>		/*for assert*/
 #include <stdlib.h>		/*for malloc*/
 
@@ -22,27 +21,21 @@ struct vector
 
 vector_t *DynVecCreate(size_t capacity)
 {
-	/*creating the stack struct*/
 	vector_t *dyn_vec = (vector_t *)malloc(sizeof(vector_t));
 	if(NULL == dyn_vec)
 	{
 		return (NULL);
 	}
 	
-	/*assert reasonable input from user*/
-	assert(0 < capacity);
-		
-	/*initializing members: size & capacity*/
-	dyn_vec->capacity = capacity; 
-	dyn_vec->size = 0;
-	
-	/*initializing member that points to the stack array*/
-	dyn_vec->base = (void**)malloc(sizeof(void *) * dyn_vec->capacity);
+	dyn_vec->base = (void **)malloc(sizeof(void *) * dyn_vec->capacity);
 	if(NULL == dyn_vec->base)
 	{
 		free(dyn_vec);
 		return (NULL);
 	}
+	
+	dyn_vec->capacity = capacity; 
+	dyn_vec->size = 0;	
 	
 	return (dyn_vec);
 }
