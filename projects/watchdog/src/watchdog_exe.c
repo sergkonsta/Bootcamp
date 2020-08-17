@@ -3,6 +3,7 @@ Project:	Watchdog
 Developer:	Sergey Konstantinovsky
 Date:		10/07/2020
 */
+
 #include <signal.h>		/*sig_atomic_t*/
 #include <stdlib.h>		/*atoi*/
 #include <semaphore.h>	/*sem_post*/

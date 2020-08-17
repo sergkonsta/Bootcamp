@@ -4,6 +4,7 @@
 #include <stddef.h>		/*size_t*/
 
 /* watchdog uses SIGUSER1 SIGUSER2 */
+/* run client with watchdog_exe relative path as first argv */
 
 typedef struct watchdog_s watchdog_t;
 

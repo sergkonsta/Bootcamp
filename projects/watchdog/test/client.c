@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include <unistd.h>	/*sleep*/
-#include <signal.h>
 
 #include "watchdog.h"
 
@@ -12,7 +11,6 @@ int main(int argc, char *argv[])
 {
     size_t sleeper = 0;
     
-    int *uninitialized_pointer;
     watchdog_t *watchdog = NULL;
 
     UNUSED(argc);
@@ -24,11 +22,10 @@ int main(int argc, char *argv[])
     while (sleeper < 5)
 	{
 		sleep(1);
+		printf("tick..\n");
 		++sleeper;
 	}
     
-    /**uninitialized_pointer = 3;*/
-
     
     WDDNR(watchdog);
 	printf("\nmain client ended\n");	

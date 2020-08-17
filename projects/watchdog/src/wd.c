@@ -15,6 +15,8 @@ Date:		10/07/2020
 #include <fcntl.h>		/*O_* ocnstants*/
 #include <sys/stat.h>	/*mode constants*/
 #include <assert.h>		/*assert*/
+#include <stdio.h>		/*sprintf*/
+
 
 #include "wd_utils.h"
 #include "watchdog.h"
@@ -64,12 +66,78 @@ wd_t *WDMMI(const char *client_path, size_t interval, size_t num_of_checks,
 	return client;
 }
 
-
-
+/*----------------------------------------------------------------------------*/
+/* The fuction closes the given process. */
+int WDDNR(wd_t *client)
+{
+	assert(client);
+	
+	g_sched_op = SEND;
+	
+	kill(client->other_side_pid, SIGUSR2);
+	
+	pthread_join(client->thread_2_join, NULL);
+	
+	CleanUp(client);
+	
+	return 0;
+}
 
 
 /*----------------------------------------------------------------------------*/
-/*thread that monitors client*/
+static char **StoreDataInArgs(char **client_process_argv, size_t interval, 
+							size_t num_of_checks)
+{
+	char **new_args = NULL;
+	char *interval_str = NULL;
+	char *check_str = NULL;
+	size_t args_amount = 0;
+	size_t i = 0;
+	
+	assert(client_process_argv);
+	
+	interval_str = malloc(sizeof(char) * 10);
+	check_str = malloc(sizeof(char) * 10);
+	
+	if (NULL == check_str || NULL == interval_str)
+	{
+		free(check_str);
+		free(interval_str);
+		return NULL;
+	}
+
+	sprintf(interval_str,"%ld",interval);
+	sprintf(check_str,"%ld",num_of_checks);
+
+	while (*client_process_argv)
+	{
+		++args_amount; 
+		++client_process_argv;
+	}
+	
+	client_process_argv -= args_amount;
+		
+	new_args = (char **)malloc(sizeof(char *) * (args_amount + 3));
+	if (NULL == new_args)
+	{
+		return NULL;	
+	}
+	
+	new_args[0] = interval_str;
+	new_args[1] = check_str;
+
+	for (i = 0; i < args_amount; ++i)
+	{
+		new_args[i + 2] = client_process_argv[i];
+	}
+	
+	new_args[args_amount + 2] = NULL;
+
+	return new_args;
+}
+
+
+/*----------------------------------------------------------------------------*/
 static void *WDMonitorFunc(void *param)
 {
 	wd_t *client = (wd_t *)param;
@@ -109,75 +177,7 @@ static void *WDMonitorFunc(void *param)
 }
 
 
-
 /*----------------------------------------------------------------------------*/
-/* The fuction closes the given process. */
-int WDDNR(wd_t *client)
-{
-	assert(client);
-	
-	g_sched_op = SEND;
-	
-	kill(client->other_side_pid, SIGUSR2);
-	
-	pthread_join(client->thread_2_join, NULL);
-	
-	CleanUp(client);
-	
-	return 0;
-}
-
-
-/*----------------------------------------------------------------------------*/
-static char **StoreDataInArgs(char **client_process_argv, size_t interval, 
-							size_t num_of_checks)
-{
-	char **new_args = NULL;
-	char *interval_str = NULL;
-	char *check_str = NULL;
-	size_t args_amount = 0;
-	size_t i = 0;
-	
-	assert(client_process_argv);
-	
-	interval_str = malloc(sizeof(char) * 10);
-	check_str = malloc(sizeof(char) * 10);
-	if (NULL == check_str || NULL == interval_str)
-	{
-		free(check_str);
-		free(interval_str);
-		return NULL;
-	}
-
-	sprintf(interval_str,"%ld",interval);
-	sprintf(check_str,"%ld",num_of_checks);
-
-	while (*client_process_argv)
-	{
-		++args_amount; 
-		++client_process_argv;
-	}
-	
-	client_process_argv -= args_amount;
-		
-	new_args = (char **)malloc(sizeof(char *) * (args_amount + 3));
-	if (NULL == new_args)
-	{
-		return NULL;	
-	}
-	
-	new_args[0] = interval_str;
-	new_args[1] = check_str;
-
-	for (i = 0; i < args_amount; ++i)
-	{
-		new_args[i + 2] = client_process_argv[i];
-	}
-	new_args[args_amount + 2] = NULL;
-
-	return new_args;
-}
-
 static void CleanUp(wd_t *client)
 {
 	assert(client);

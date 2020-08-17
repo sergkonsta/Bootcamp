@@ -12,7 +12,6 @@ Date:		10/07/2020
 #include "sched.h"
 
 #define ENV_NAME "SERG-WD"
-
 #define UNUSED(X) (void)(X)
 
 typedef struct watchdog_s
@@ -39,6 +38,8 @@ extern sem_t *wd_sem;
 
 /*sets up scheduler*/
 int SetupCommunication(wd_t *wd);
+
+int ReviveOtherProc(wd_t *wd);
 
 /*starts sched*/
 int StartCommunication(wd_t *wd);
