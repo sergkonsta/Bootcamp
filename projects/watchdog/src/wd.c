@@ -145,7 +145,7 @@ static void *WDMonitorFunc(void *param)
 	assert(param);
 	
 	/*setup comm device*/
-	if (SetupCommunication(client))
+	if (0 != SetupCommunication(client))
 	{
 		CleanUp(client);
 		sem_post(&client_sem);

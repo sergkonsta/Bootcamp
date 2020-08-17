@@ -26,14 +26,15 @@ int main(int argc, char *argv[])
 	
 	UNUSED(argc);
 	
-	/*set up sched on wd side*/
+	/*setup data*/
 	wd->other_side_path = argv[2];
 	wd->other_side_argv = argv + 2;
 	wd->interval = atoi(argv[0]);
 	wd->num_of_checks = atoi(argv[1]);
 	wd->other_side_pid = getppid();
-	
-	if (SetupCommunication(wd))
+
+	/*set up sched on wd side*/
+	if (0 != SetupCommunication(wd))
 	{
 		return -1;
 	}
