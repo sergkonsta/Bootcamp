@@ -300,17 +300,3 @@ int Compare(const void *task_in_pq, const void *time_to_start)
 			 TaskGetNextRunTime((task_t*)time_to_start));
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
