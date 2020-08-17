@@ -18,7 +18,7 @@ Date:		10/07/2020
 
 #include "wd_utils.h"
 
-static int PingAndCheck(void *params);
+static int PingAndCheckTask(void *params);
 static void ResetSig(int sig);
 static void StopSchedSig(int sig);
 
@@ -61,7 +61,7 @@ int SetupCommunication(wd_t *wd)
 	}
 	
 	/*add routine task*/
-	SchedAddTask(wd->my_sched, PingAndCheck, wd, wd->interval);
+	SchedAddTask(wd->my_sched, PingAndCheckTask, wd, wd->interval);
 	
 	return 0;
 }
@@ -115,8 +115,9 @@ int StartCommunication(wd_t *wd)
 	return 0;
 }
 
-
-static int PingAndCheck(void *param)
+/*----------------------------------------------------------------------------*/
+/*task for the schedulers*/
+static int PingAndCheckTask(void *param)
 {
 	wd_t *wd = (wd_t *)param;
 

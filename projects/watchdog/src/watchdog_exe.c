@@ -42,7 +42,10 @@ int main(int argc, char *argv[])
 	sem_post(wd_sem);
 
 	/*start sched on wd side*/
-	StartCommunication(wd);
+	if (0 != StartCommunication(wd))
+	{
+		return -1;
+	}
 
 	/*sched is ended, tell client to stop*/
 	kill(wd->other_side_pid, SIGUSR2);

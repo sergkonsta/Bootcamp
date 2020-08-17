@@ -171,7 +171,11 @@ static void *WDMonitorFunc(void *param)
 
 	sem_post(&client_sem);
 
-	StartCommunication(client); 
+	/*start sched on client side*/
+	if (0 != StartCommunication(client))
+	{
+		return NULL;
+	}
 	
 	return NULL;
 }
